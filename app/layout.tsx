@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
+
 import "./globals.css";
 
 const manrope = Manrope({
@@ -28,15 +31,20 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="bg" className={manrope.variable}>
+    <html lang={locale} className={manrope.variable}>
       <body className="min-h-dvh bg-background text-foreground antialiased">
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
