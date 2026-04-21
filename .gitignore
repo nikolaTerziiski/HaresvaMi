@@ -45,5 +45,12 @@ next-env.d.ts
 .vscode/
 .idea/
 
+# Playwright MCP output (screenshots, console logs)
+.claude/playwright/
+
+# Build logs (from CI / local build attempts)
+build.stdout.log
+build.stderr.log
+
 # OS
 Thumbs.db

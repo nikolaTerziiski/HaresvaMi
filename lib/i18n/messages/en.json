@@ -7,5 +7,27 @@
       "back": "Back",
       "next": "Continue"
     }
+  },
+  "dashboard": {
+    "onboarding": {
+      "eyebrow": "Step 1 of 1",
+      "title": "What is your restaurant called?",
+      "description": "We’ll use the name to create your account and the first address for your restaurant.",
+      "nameLabel": "Restaurant name",
+      "namePlaceholder": "Golden Chicken",
+      "submit": "Continue to dashboard",
+      "submitting": "Creating your restaurant...",
+      "helper": "We’ll add the menu and the rest of the setup a bit later.",
+      "error": "We couldn’t create your restaurant. Please try again.",
+      "slugError": "We couldn’t reserve a unique address. Please try again."
+    },
+    "placeholder": {
+      "eyebrow": "Your dashboard is ready",
+      "title": "{restaurantName} is already in HaresvaMi.",
+      "description": "This is the temporary home page for the signed-in area. Next we’ll add the real dashboard, menu, and settings.",
+      "restaurantLabel": "Restaurant",
+      "slugLabel": "Address",
+      "note": "Registration and restaurant creation are now working end to end."
+    }
   }
 }

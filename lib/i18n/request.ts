@@ -1,9 +1,12 @@
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 
-import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
-
-const LOCALE_COOKIE = "haresvami-locale";
+import {
+  defaultLocale,
+  isLocale,
+  localeCookieName,
+  type Locale,
+} from "@/lib/i18n/config";
 
 /**
  * Resolves the active locale for the request.
@@ -12,7 +15,7 @@ const LOCALE_COOKIE = "haresvami-locale";
  */
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+  const cookieLocale = cookieStore.get(localeCookieName)?.value;
   const locale: Locale =
     cookieLocale && isLocale(cookieLocale) ? cookieLocale : defaultLocale;
 

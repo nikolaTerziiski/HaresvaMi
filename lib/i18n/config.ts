@@ -1,5 +1,6 @@
 export const locales = ["bg", "en"] as const;
 export const defaultLocale = "bg";
+export const localeCookieName = "haresvami-locale";
 
 export type Locale = (typeof locales)[number];
 

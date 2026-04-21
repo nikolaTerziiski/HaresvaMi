@@ -35,8 +35,9 @@
   --color-warning: #d9883b;
   --color-error: #c82f35;
 
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -90,6 +91,25 @@
 }
 
 :root {
+  /* Mehana design tokens — used by page CSS modules */
+  --bg:       #F6F1E8;
+  --bg-2:     #EDE4D3;
+  --ink:      #1A1512;
+  --ink-2:    #4A3F35;
+  --ink-mute: #8A7A68;
+  --rule:     #D9CEBB;
+  --paper:    #FDF9F1;
+  --accent:   #C24D2C;
+  --accent-2: #E89A3C;
+  --plum:     #5B2A2A;
+  --good:     #6B8F5A;
+  --bad:      #C24D2C;
+
+  --f-display: var(--font-instrument-serif), "Cormorant Garamond", Georgia, serif;
+  --f-ui:      var(--font-inter), system-ui, sans-serif;
+  --f-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Shadcn semantic tokens */
   --background: #fbfaf7; /* cream-50 */
   --foreground: #1a1814; /* ink-900 */
 
@@ -108,8 +128,8 @@
   --muted: #f5f2ec; /* cream-100 */
   --muted-foreground: #8a857c; /* ink-500 */
 
-  --accent: #ffe5e6; /* coral-100 */
-  --accent-foreground: #7a1b1f; /* coral-900 */
+  --accent: #C24D2C; /* terracotta brand */
+  --accent-foreground: #FDF9F1; /* paper */
 
   --destructive: #c82f35; /* coral-700 */
   --destructive-foreground: #fbfaf7;
