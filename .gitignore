@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -47,6 +48,11 @@ next-env.d.ts
 
 # Playwright MCP output (screenshots, console logs)
 .claude/playwright/
+.playwright-mcp/
+
+# Local scratch files and design exports
+claude-deisgn/
+dashboard-*.png
 
 # Build logs (from CI / local build attempts)
 build.stdout.log

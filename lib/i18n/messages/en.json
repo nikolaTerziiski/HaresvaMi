@@ -21,13 +21,138 @@
       "error": "We couldn’t create your restaurant. Please try again.",
       "slugError": "We couldn’t reserve a unique address. Please try again."
     },
-    "placeholder": {
-      "eyebrow": "Your dashboard is ready",
-      "title": "{restaurantName} is already in HaresvaMi.",
-      "description": "This is the temporary home page for the signed-in area. Next we’ll add the real dashboard, menu, and settings.",
-      "restaurantLabel": "Restaurant",
-      "slugLabel": "Address",
-      "note": "Registration and restaurant creation are now working end to end."
+    "nav": {
+      "groups": {
+        "work": "Work",
+        "account": "Account"
+      },
+      "home": "Home",
+      "feedback": "Feedback",
+      "menu": "Menu",
+      "tablet": "Tablet",
+      "team": "Team",
+      "settings": "Settings",
+      "profile": "Profile"
+    },
+    "shell": {
+      "tierChipFree": "Free plan",
+      "role": {
+        "owner": "Owner"
+      },
+      "notifications": "Notifications",
+      "openMenu": "Menu",
+      "closeMenu": "Close",
+      "language": {
+        "bg": "BG",
+        "en": "EN"
+      },
+      "logout": "Sign out"
+    },
+    "greetings": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "home": {
+      "welcome": {
+        "title": "Welcome to HaresvaMi.",
+        "subtitle": "A few steps before the first piece of feedback comes in."
+      },
+      "checklist": {
+        "eyebrow": "Get started",
+        "progress": "{done} / {total} done",
+        "edit": "Edit",
+        "restaurant": {
+          "titleDone": "Restaurant created",
+          "descDone": "{name} · done."
+        },
+        "menu": {
+          "titleTodo": "Add your menu",
+          "descTodo": "So the AI can match dishes from printed receipts.",
+          "ctaTodo": "Add menu",
+          "titleDone": "Menu added",
+          "descDone": "{count, plural, one {# dish} other {# dishes}} · AI is learning your abbreviations."
+        },
+        "tablet": {
+          "titleTodo": "Pair your tablet",
+          "descTodo": "The tablet will scan your customers’ receipts at the table.",
+          "ctaTodo": "Pair tablet",
+          "lockedCta": "Unlocks after menu",
+          "titleDone": "Tablet paired",
+          "descDone": "Ready to scan."
+        },
+        "feedback": {
+          "title": "First feedback",
+          "descLocked": "We’ll tick this automatically the moment the first rating arrives.",
+          "descWaiting": "Everything is ready. The moment a customer rates a dish, you’ll see it here.",
+          "listening": "listening for feedback…"
+        }
+      },
+      "tier": {
+        "title": "Free plan",
+        "current": "Current",
+        "usage": "{used} / {limit} ratings this month",
+        "blurb": "The trial unlocks AI receipt scanning and unlimited feedback for 14 days.",
+        "cta": "Start 14-day trial"
+      },
+      "tutorial": {
+        "title": "How HaresvaMi works",
+        "subtitle": "The process, without jargon.",
+        "step1": "The waiter scans the receipt.",
+        "step2": "The customer rates each dish.",
+        "step3": "You watch the results come in live.",
+        "cta": "Watch a 30-second demo"
+      }
+    },
+    "stubs": {
+      "feedback": {
+        "title": "Feedback",
+        "description": "This is where you’ll see every rating your customers leave, dish by dish."
+      },
+      "menu": {
+        "title": "Menu",
+        "description": "This is where you’ll manage your dishes and receipt abbreviations."
+      },
+      "tablet": {
+        "title": "Tablet",
+        "description": "This is where you’ll pair and monitor the in-restaurant tablet."
+      },
+      "team": {
+        "title": "Team",
+        "description": "This is where you’ll invite staff and assign their roles."
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "This is where you’ll manage restaurant settings and your plan."
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "This is where you’ll manage your personal details and access."
+      },
+      "comingSoon": "Coming soon."
+    },
+    "menu": {
+      "title": "Menu",
+      "emptyEyebrow": "No items added",
+      "emptyTitle": "Add your menu",
+      "emptyDesc": "Use our AI to scan your menu from a photo, or enter items manually.",
+      "magicImportBtn": "Scan or upload menu",
+      "magicImportDesc": "Upload a photo of your physical menu. We extract items automatically.",
+      "manualBtn": "Enter manually",
+      "manualDesc": "Enter your products in a table.",
+      "uploading": "Reading menu... This might take a minute.",
+      "reviewTitle": "Review Menu",
+      "reviewDesc": "Review the extracted items and correct any mistakes before saving.",
+      "table": {
+        "name": "Item name",
+        "category": "Category",
+        "price": "Price (lv.)",
+        "add": "Add row",
+        "remove": "Remove"
+      },
+      "errors": {
+        "upload": "Failed to read menu. Try a clearer photo."
+      }
     }
   }
 }
