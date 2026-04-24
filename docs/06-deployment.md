@@ -79,8 +79,9 @@ In Authentication → URL Configuration:
 2. Activate account (requires business details)
 3. Test mode → Developers → API keys
 4. Copy `Publishable key` and `Secret key`
-5. Set up webhook endpoint after deploy: `https://haresva.mi/api/webhooks/stripe`
-6. Copy webhook signing secret
+5. Products -> create the Pro monthly subscription price and copy its `price_...` id
+6. Set up webhook endpoint after deploy: `https://haresva.mi/api/webhooks/stripe`
+7. Copy webhook signing secret
 
 ### 7. Local env file
 
@@ -98,13 +99,15 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 # Kiosk security
 KIOSK_SECRET=long-random-string-32-chars-min
+EXTRACT_RECEIPT_RATE_LIMIT_PER_MINUTE=20
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_NAME=HaresvaMi
 
-# Stripe (Phase 2 — leave blank for now)
+# Stripe
 STRIPE_SECRET_KEY=
+STRIPE_PRO_PRICE_ID=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 ```

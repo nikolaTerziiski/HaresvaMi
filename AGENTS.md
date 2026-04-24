@@ -36,6 +36,22 @@ Per-item feedback at the moment of payment. Owners learn *which dish* customers 
 - **Tone:** Warm, human, Bulgarian. Never corporate. Never translated-sounding.
 - **Typography:** Instrument Serif (display) + Inter (UI) + JetBrains Mono (mono)
 
+## Billing and AI usage rules
+
+- Never implement "unlimited" AI scans in code.
+- Paid plans should use explicit numeric limits.
+- All feature limits must be enforced server-side.
+- UI can hide or disable features, but API routes must make the final decision.
+- Do not call Gemini before checking scan entitlement.
+- Do not consume an AI scan credit until the AI extraction succeeds.
+- Failed AI calls should be logged but should not consume customer credits.
+- Always log model name, input tokens, output tokens, total tokens, success/failure, and estimated cost for AI calls.
+- Do not store full receipt images permanently unless explicitly required.
+- If receipt images are stored for debugging, they must expire.
+- Do not log customer names, receipt images, review comments, access tokens, or Stripe secrets.
+- Stripe webhooks update local subscription state; feature access is decided by local entitlement helpers.
+- Never grant Pro access from the Checkout success URL alone.
+- Use webhook-confirmed subscription state.
 ## Documentation map
 
 Read these in order when starting fresh:

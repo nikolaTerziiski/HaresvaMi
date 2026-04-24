@@ -8,6 +8,46 @@
       "next": "Continue"
     }
   },
+  "kiosk": {
+    "scan": {
+      "missingRestaurantTitle": "No restaurant selected",
+      "missingRestaurantBody": "Open tablet mode from the restaurant dashboard so we can connect this device.",
+      "scanEyebrow": "Tablet mode",
+      "title": "Scan the receipt",
+      "subtitle": "Photograph the receipt. If AI fails or the limit is exhausted, you can select the dishes manually.",
+      "remainingScansLabel": "AI scans",
+      "scanButton": "Scan receipt",
+      "scanAgain": "Try again",
+      "processing": "Reading the receipt...",
+      "exhaustedTitle": "AI limit exhausted",
+      "exhaustedBody": "This month's AI scans are used up. Select the dishes manually so the feedback can continue.",
+      "manualButton": "Select manually",
+      "manualTitle": "Select dishes from the menu",
+      "manualBody": "Mark what the customer ordered. The flow continues even without AI scanning.",
+      "manualSearch": "Search dish or category",
+      "noMenuTitle": "Menu needed first",
+      "noMenuBody": "There are no active dishes for manual selection. The owner needs to add a menu from the dashboard.",
+      "selectedCountLabel": "selected",
+      "continueWithSelection": "Continue with selected",
+      "chooseAtLeastOne": "Select at least one dish to continue.",
+      "extractedTitle": "We found these dishes",
+      "extractedBody": "Quickly check the list. If anything is missing, select manually.",
+      "useExtracted": "Continue with these",
+      "useManual": "Edit manually",
+      "scanFailed": "We could not read the receipt. Select the dishes manually and continue.",
+      "readyTitle": "Ready for the customer",
+      "readyBody": "Hand the tablet to the customer. The dishes are selected and rating can begin.",
+      "editSelection": "Edit selection",
+      "startCustomerStep": "Start rating",
+      "customerTitle": "What did you like?",
+      "customerBody": "Rate each dish from 1 to 10. It only takes a moment.",
+      "finish": "Done",
+      "thanksTitle": "Thank you!",
+      "thanksBody": "Your feedback helps the restaurant cook even better.",
+      "reset": "New customer",
+      "ownerUpgradeHint": "Scanning is paused because of the limit. Manual selection is still available."
+    }
+  },
   "dashboard": {
     "onboarding": {
       "eyebrow": "Step 1 of 1",
@@ -102,6 +142,47 @@
         "step2": "The customer rates each dish.",
         "step3": "You watch the results come in live.",
         "cta": "Watch a 30-second demo"
+      }
+    },
+    "billing": {
+      "eyebrow": "Plan and limits",
+      "title": "Restaurant plan",
+      "subtitle": "See the current plan, feedback usage, and AI receipt scans for this month.",
+      "currentPlan": "Current plan",
+      "trialEnds": "The trial ends on {date}.",
+      "plans": {
+        "free": "Free",
+        "starter": "Starter",
+        "pro": "Pro"
+      },
+      "statuses": {
+        "none": "No active subscription",
+        "trialing": "Trialing",
+        "active": "Active",
+        "past_due": "Past due",
+        "canceled": "Canceled",
+        "paused": "Paused"
+      },
+      "usage": {
+        "feedbackTitle": "Feedback this month",
+        "scansTitle": "AI scans this month",
+        "creditsTitle": "Remaining AI scans",
+        "usedOfLimit": "{used} / {limit}",
+        "feedbackHelper": "Period {period}. Only completed feedback sessions count.",
+        "scansHelper": "Period {period}. Successful receipt extraction consumes the limit.",
+        "creditsHelper": "Active trial or promo credits: {grants}."
+      },
+      "actions": {
+        "startTrial": "Start Pro trial",
+        "upgrade": "Upgrade to Pro",
+        "note": "Stripe payment will be added in the next step."
+      },
+      "scanLimit": {
+        "availableTitle": "AI scanning is active",
+        "availableBody": "{remaining} of {limit} AI scans remain for the current period.",
+        "exhaustedTitle": "AI scans are exhausted",
+        "exhaustedBody": "{used} of {limit} AI scans have been used. Scanning pauses until the next period or a higher plan is added.",
+        "manualFallback": "Manual dish selection remains available in tablet mode so service does not stop."
       }
     },
     "stubs": {
