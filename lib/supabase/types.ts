@@ -211,6 +211,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      feedback_ratings: {
+        Row: {
+          id: string;
+          session_id: string;
+          menu_item_id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          menu_item_id: string;
+          rating: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          menu_item_id?: string;
+          rating?: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       usage_counters: {
         Row: {
           restaurant_id: string;

@@ -90,8 +90,13 @@ export function KioskScanScreen({
           {flow.mode === "customer" ? (
             <CustomerPanel
               copy={copy}
+              isSaving={flow.isSavingFeedback}
               items={flow.selectedItems}
-              onFinish={flow.showThanks}
+              itemRatings={flow.itemRatings}
+              overallRating={flow.overallRating}
+              onFinish={flow.submitCustomerFeedback}
+              onItemRatingChange={flow.setItemRating}
+              onOverallRatingChange={flow.setOverallRating}
             />
           ) : null}
 

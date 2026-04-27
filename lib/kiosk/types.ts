@@ -23,6 +23,8 @@ export type SelectedItem = {
   quantity: number;
 };
 
+export type OverallRating = "like" | "dislike";
+
 export type EntitlementResult = {
   allowed: boolean;
   reason: string;
@@ -62,6 +64,12 @@ export type KioskScanCopy = {
   startCustomerStep: string;
   customerTitle: string;
   customerBody: string;
+  overallLike: string;
+  overallDislike: string;
+  chooseOverall: string;
+  savingFeedback: string;
+  feedbackFailed: string;
+  feedbackLimitReached: string;
   finish: string;
   thanksTitle: string;
   thanksBody: string;

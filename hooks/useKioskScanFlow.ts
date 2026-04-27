@@ -12,6 +12,7 @@ import type {
   KioskMenuItem,
   KioskRestaurant,
   KioskScanCopy,
+  OverallRating,
   ScreenMode,
   SelectedItem,
 } from "@/lib/kiosk/types";
@@ -37,8 +38,13 @@ export function useKioskScanFlow({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [extractedItems, setExtractedItems] = useState<SelectedItem[]>([]);
+  const [itemRatings, setItemRatings] = useState<Record<string, number>>({});
+  const [overallRating, setOverallRating] = useState<OverallRating | null>(
+    null,
+  );
   const [query, setQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const canScan = entitlement.remaining > 0 && menuItems.length > 0;
@@ -53,6 +59,10 @@ export function useKioskScanFlow({
 
   function showManualSelection() {
     setMode("manual");
+  }
+
+  function createDefaultRatings(items: SelectedItem[]) {
+    return Object.fromEntries(items.map((item) => [item.id, 7]));
   }
 
   function openCamera() {
@@ -153,21 +163,80 @@ export function useKioskScanFlow({
     }
 
     setSelectedItems(manualSelectedItems);
+    setItemRatings(createDefaultRatings(manualSelectedItems));
+    setOverallRating(null);
     setStatusMessage(null);
     setMode("ready");
   }
 
   function continueWithExtractedItems() {
     setSelectedItems(extractedItems);
+    setItemRatings(createDefaultRatings(extractedItems));
+    setOverallRating(null);
     setSelectedIds(new Set());
     setStatusMessage(null);
     setMode("ready");
+  }
+
+  function setItemRating(itemId: string, rating: number) {
+    setItemRatings((current) => ({
+      ...current,
+      [itemId]: rating,
+    }));
+  }
+
+  async function submitCustomerFeedback() {
+    if (!overallRating) {
+      setStatusMessage(copy.chooseOverall);
+      return;
+    }
+
+    setIsSavingFeedback(true);
+    setStatusMessage(copy.savingFeedback);
+
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          restaurantId: restaurant.id,
+          items: selectedItems,
+          ratings: itemRatings,
+          comments: {},
+          overallRating,
+          overallComment: null,
+          customerLanguage: "bg",
+          extractedItems,
+        }),
+      });
+
+      if (response.status === 402) {
+        setStatusMessage(copy.feedbackLimitReached);
+        return;
+      }
+
+      if (!response.ok) {
+        setStatusMessage(copy.feedbackFailed);
+        return;
+      }
+
+      setStatusMessage(null);
+      setMode("thanks");
+    } catch {
+      setStatusMessage(copy.feedbackFailed);
+    } finally {
+      setIsSavingFeedback(false);
+    }
   }
 
   function resetFlow() {
     setSelectedIds(new Set());
     setSelectedItems([]);
     setExtractedItems([]);
+    setItemRatings({});
+    setOverallRating(null);
     setQuery("");
     setStatusMessage(null);
     setMode(entitlement.remaining > 0 ? "scan" : "manual");
@@ -181,18 +250,23 @@ export function useKioskScanFlow({
     filteredMenuItems,
     handleFileChange,
     isProcessing,
+    isSavingFeedback,
+    itemRatings,
     manualSelectedItems,
     mode,
     openCamera,
+    overallRating,
     query,
     resetFlow,
     selectedIds,
     selectedItems,
     setQuery,
+    setItemRating,
+    setOverallRating,
     showCustomerStep: () => setMode("customer"),
     showManualSelection,
-    showThanks: () => setMode("thanks"),
     statusMessage,
+    submitCustomerFeedback,
     toggleMenuItem,
     continueWithExtractedItems,
     continueWithManualSelection,

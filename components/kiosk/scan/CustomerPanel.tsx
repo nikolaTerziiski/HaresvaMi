@@ -1,12 +1,30 @@
-import type { KioskScanCopy, SelectedItem } from "@/lib/kiosk/types";
+import type {
+  KioskScanCopy,
+  OverallRating,
+  SelectedItem,
+} from "@/lib/kiosk/types";
 
 type CustomerPanelProps = {
   copy: KioskScanCopy;
+  isSaving: boolean;
   items: SelectedItem[];
+  itemRatings: Record<string, number>;
+  overallRating: OverallRating | null;
+  onItemRatingChange: (itemId: string, rating: number) => void;
   onFinish: () => void;
+  onOverallRatingChange: (rating: OverallRating) => void;
 };
 
-export function CustomerPanel({ copy, items, onFinish }: CustomerPanelProps) {
+export function CustomerPanel({
+  copy,
+  isSaving,
+  items,
+  itemRatings,
+  overallRating,
+  onItemRatingChange,
+  onFinish,
+  onOverallRatingChange,
+}: CustomerPanelProps) {
   return (
     <div className="max-w-[720px]">
       <h2 className="m-0 font-[var(--f-display)] text-[60px] font-normal leading-none">
@@ -24,26 +42,63 @@ export function CustomerPanel({ copy, items, onFinish }: CustomerPanelProps) {
             <div className="mb-3 text-[20px] font-semibold">{item.name}</div>
             <div className="grid grid-cols-5 gap-2">
               {Array.from({ length: 10 }, (_, index) => index + 1).map(
-                (score) => (
-                  <button
-                    key={score}
-                    type="button"
-                    className="min-h-12 rounded-lg border border-[var(--rule)] bg-[var(--bg)] text-[18px] font-semibold text-[var(--ink)] focus:border-[var(--accent)] focus:bg-[var(--accent)] focus:text-[var(--paper)]"
-                  >
-                    {score}
-                  </button>
-                ),
+                (score) => {
+                  const selected = itemRatings[item.id] === score;
+
+                  return (
+                    <button
+                      key={score}
+                      type="button"
+                      className={[
+                        "min-h-12 rounded-lg border text-[18px] font-semibold transition",
+                        selected
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
+                          : "border-[var(--rule)] bg-[var(--bg)] text-[var(--ink)] focus:border-[var(--accent)] focus:bg-[var(--accent)] focus:text-[var(--paper)]",
+                      ].join(" ")}
+                      onClick={() => onItemRatingChange(item.id, score)}
+                    >
+                      {score}
+                    </button>
+                  );
+                },
               )}
             </div>
           </div>
         ))}
       </div>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          className={[
+            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition",
+            overallRating === "like"
+              ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
+              : "border-[var(--ink)] text-[var(--ink)]",
+          ].join(" ")}
+          onClick={() => onOverallRatingChange("like")}
+        >
+          {copy.overallLike}
+        </button>
+        <button
+          type="button"
+          className={[
+            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition",
+            overallRating === "dislike"
+              ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
+              : "border-[var(--ink)] text-[var(--ink)]",
+          ].join(" ")}
+          onClick={() => onOverallRatingChange("dislike")}
+        >
+          {copy.overallDislike}
+        </button>
+      </div>
       <button
         type="button"
-        className="mt-6 min-h-16 min-w-[260px] rounded-[24px] bg-[var(--accent)] px-8 py-5 text-[22px] font-semibold text-[var(--paper)]"
+        className="mt-6 min-h-16 min-w-[260px] rounded-[24px] bg-[var(--accent)] px-8 py-5 text-[22px] font-semibold text-[var(--paper)] transition disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={isSaving}
         onClick={onFinish}
       >
-        {copy.finish}
+        {isSaving ? copy.savingFeedback : copy.finish}
       </button>
     </div>
   );
