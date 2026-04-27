@@ -38,14 +38,24 @@ export function mapReceiptItems(
   menuItems: KioskMenuItem[],
 ): SelectedItem[] {
   const menuById = new Map(menuItems.map((item) => [item.id, item]));
+  const selectedById = new Map<string, SelectedItem>();
 
-  return receiptItems.map((item, index) => {
-    const menuItem = item.menu_item_id ? menuById.get(item.menu_item_id) : null;
+  receiptItems.forEach((item) => {
+    if (!item.menu_item_id) return;
 
-    return {
-      id: item.menu_item_id ?? `receipt-${index}`,
-      name: menuItem?.name ?? item.menu_item_name ?? item.raw_text,
-      quantity: item.quantity > 0 ? item.quantity : 1,
-    };
+    const menuItem = menuById.get(item.menu_item_id);
+
+    if (!menuItem) return;
+
+    const existing = selectedById.get(menuItem.id);
+    const quantity = item.quantity > 0 ? item.quantity : 1;
+
+    selectedById.set(menuItem.id, {
+      id: menuItem.id,
+      name: menuItem.name,
+      quantity: (existing?.quantity ?? 0) + quantity,
+    });
   });
+
+  return Array.from(selectedById.values());
 }

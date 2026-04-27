@@ -61,10 +61,6 @@ export function useKioskScanFlow({
     setMode("manual");
   }
 
-  function createDefaultRatings(items: SelectedItem[]) {
-    return Object.fromEntries(items.map((item) => [item.id, 7]));
-  }
-
   function openCamera() {
     if (!canScan || isProcessing) {
       setMode("manual");
@@ -163,7 +159,7 @@ export function useKioskScanFlow({
     }
 
     setSelectedItems(manualSelectedItems);
-    setItemRatings(createDefaultRatings(manualSelectedItems));
+    setItemRatings({});
     setOverallRating(null);
     setStatusMessage(null);
     setMode("ready");
@@ -171,7 +167,7 @@ export function useKioskScanFlow({
 
   function continueWithExtractedItems() {
     setSelectedItems(extractedItems);
-    setItemRatings(createDefaultRatings(extractedItems));
+    setItemRatings({});
     setOverallRating(null);
     setSelectedIds(new Set());
     setStatusMessage(null);
@@ -186,7 +182,9 @@ export function useKioskScanFlow({
   }
 
   async function submitCustomerFeedback() {
-    if (!overallRating) {
+    const hasItemRating = Object.keys(itemRatings).length > 0;
+
+    if (!hasItemRating && !overallRating) {
       setStatusMessage(copy.chooseOverall);
       return;
     }

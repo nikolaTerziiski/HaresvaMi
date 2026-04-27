@@ -50,11 +50,12 @@ export function CustomerPanel({
                       key={score}
                       type="button"
                       className={[
-                        "min-h-12 rounded-lg border text-[18px] font-semibold transition",
+                        "min-h-12 rounded-lg border text-[18px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
                         selected
                           ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
                           : "border-[var(--rule)] bg-[var(--bg)] text-[var(--ink)] focus:border-[var(--accent)] focus:bg-[var(--accent)] focus:text-[var(--paper)]",
                       ].join(" ")}
+                      disabled={isSaving}
                       onClick={() => onItemRatingChange(item.id, score)}
                     >
                       {score}
@@ -70,11 +71,12 @@ export function CustomerPanel({
         <button
           type="button"
           className={[
-            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition",
+            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
             overallRating === "like"
               ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
               : "border-[var(--ink)] text-[var(--ink)]",
           ].join(" ")}
+          disabled={isSaving}
           onClick={() => onOverallRatingChange("like")}
         >
           {copy.overallLike}
@@ -82,11 +84,12 @@ export function CustomerPanel({
         <button
           type="button"
           className={[
-            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition",
+            "min-h-14 min-w-[190px] rounded-[22px] border px-6 py-4 text-[20px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
             overallRating === "dislike"
               ? "border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]"
               : "border-[var(--ink)] text-[var(--ink)]",
           ].join(" ")}
+          disabled={isSaving}
           onClick={() => onOverallRatingChange("dislike")}
         >
           {copy.overallDislike}

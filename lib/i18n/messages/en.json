@@ -43,7 +43,7 @@
       "customerBody": "Rate each dish from 1 to 10. It only takes a moment.",
       "overallLike": "I liked it",
       "overallDislike": "I did not like it",
-      "chooseOverall": "Choose I liked it or I did not like it so we can save the feedback.",
+      "chooseOverall": "Rate at least one dish or choose I liked it / I did not like it.",
       "savingFeedback": "Saving feedback...",
       "feedbackFailed": "We could not save the feedback. Try again.",
       "feedbackLimitReached": "This restaurant reached its feedback limit for the month.",

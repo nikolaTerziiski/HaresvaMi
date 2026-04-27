@@ -82,6 +82,21 @@ Per-item feedback at the moment of payment. Owners learn _which dish_ customers 
   4. minimal UI
   5. tests or build/typecheck
 
+## Admin and plan management future rule
+
+- Plan defaults may be hard-coded during MVP.
+- All plan access must go through lib/billing helpers.
+- Do not read plan limits directly from UI components.
+- Future admin changes should use explicit override tables, not random edits to restaurants.
+- Every admin billing change must have an audit log with:
+  - admin_user_id
+  - restaurant_id
+  - changed field
+  - previous value
+  - new value
+  - reason
+  - created_at
+
 ## Suggested feature folder pattern
 
 For larger features, use this shape:
@@ -161,20 +176,22 @@ The developer is building solo on a Windows machine. When working on this projec
 
 ## Current phase
 
-**Phase 1: Auth + Onboarding.** Phase 0 (foundation) is complete. Now building:
+**Billing + feedback MVP.** Foundation, auth/onboarding, dashboard shell, menu setup, kiosk scan, internal trials, and feedback submission are in place. Now building:
 
-- Auth logic wired to Supabase (login, register, password reset)
-- Auth middleware enforcing protected routes
-- Dashboard shell layout
-- Onboarding wizard (restaurant info → menu placeholder → kiosk test → done)
-- Restaurant settings + logout
+- hardening billing entitlements and usage accounting
+- polishing feedback persistence and dashboard visibility
+- keeping Stripe webhook-confirmed access separate from local entitlement checks
+- preserving manual kiosk fallback when AI limits are exhausted
 
 ## Quick reference
 
 - Brand color: `#C24D2C` (terracotta)
 - Default language: `bg`
-- Free tier limit: 50 feedback responses per month
-- Pro tier price: €10/month (configurable)
-- Trial duration: 14 days
+- Tiers: Free / Starter / Pro
+- Free: 50 feedback sessions/month, 5 AI scans/month
+- Starter: 500 feedback sessions/month, 150 AI scans/month
+- Pro: 10000 feedback sessions/month, 1000 AI scans/month
+- Trial: 14 days, 100 AI scans, Pro preview
+- No unlimited AI scans
 - Receipt AI provider: Gemini 2.5 Flash
 - Database: Postgres via Supabase
