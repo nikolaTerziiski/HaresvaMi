@@ -52,6 +52,68 @@ Per-item feedback at the moment of payment. Owners learn *which dish* customers 
 - Stripe webhooks update local subscription state; feature access is decided by local entitlement helpers.
 - Never grant Pro access from the Checkout success URL alone.
 - Use webhook-confirmed subscription state.
+
+## Code organization and file-size rules
+
+- Do not create new files over 300 lines without a clear justification.
+- Do not add logic to files over 300 lines before proposing a split.
+- Files over 500 lines must be treated as refactor candidates.
+- API routes must be thin orchestration layers. Route handlers in `app/api/**/route.ts` should only:
+  - parse request
+  - authorize
+  - call domain/service functions
+  - return response
+- Route handlers must not contain long prompts, provider-specific AI calls, large SQL/business logic, or UI logic.
+- Client components should not contain server/business logic; they should render UI and manage local interaction only.
+- Client components must not directly call Supabase for privileged writes, Stripe, Gemini, or server-only billing logic.
+- Prefer Server Components by default. Use `"use client"` only for components that need state, event handlers, effects, or browser APIs.
+- Keep `"use client"` boundaries as small as possible. Do not mark a large page/screen as client if only one child needs interactivity.
+- Extract reusable types to `lib/<feature>/types.ts`.
+- Extract pure helpers to `lib/<feature>/*.ts`.
+- Extract complex client state to `hooks/use<Feature>.ts`.
+- Extract feature-specific UI panels to separate component files.
+- Do not define more than 2 substantial React components in one file.
+- A local subcomponent is acceptable only if it is small, private, and under ~40 lines.
+- Long Tailwind class strings should be wrapped with `cn(...)` or extracted into smaller components when readability suffers.
+- Every new feature should follow this order:
+  1. schema/types
+  2. server/domain logic
+  3. API/server action
+  4. minimal UI
+  5. tests or build/typecheck
+
+## Suggested feature folder pattern
+
+For larger features, use this shape:
+
+```text
+components/<feature>/
+  FeatureShell.tsx
+  FeaturePanel.tsx
+  FeatureEmptyState.tsx
+  FeatureActions.tsx
+
+hooks/
+  useFeatureFlow.ts
+
+lib/<feature>/
+  types.ts
+  schema.ts
+  service.ts
+  format.ts
+  permissions.ts
+```
+
+## Refactoring rule for The Agents
+
+Before implementing a task, inspect the files you plan to modify.
+If any target file is over 300 lines:
+- first propose a split,
+- then refactor into smaller files,
+- then implement the requested change.
+
+Do not keep adding logic to large files.
+
 ## Documentation map
 
 Read these in order when starting fresh:

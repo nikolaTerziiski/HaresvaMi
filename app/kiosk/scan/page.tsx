@@ -2,10 +2,12 @@ import { getTranslations } from "next-intl/server";
 
 import { KioskScanScreen } from "@/components/kiosk/KioskScanScreen";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
-import {
-  canScanReceipt,
-  type EntitlementResult,
-} from "@/lib/billing/entitlements";
+import { canScanReceipt } from "@/lib/billing/entitlements";
+import type {
+  EntitlementResult,
+  KioskMenuItem,
+  KioskRestaurant,
+} from "@/lib/kiosk/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 type KioskScanPageProps = {
@@ -13,18 +15,6 @@ type KioskScanPageProps = {
     restaurant_id?: string;
     restaurantId?: string;
   }>;
-};
-
-type KioskRestaurant = {
-  id: string;
-  name: string;
-};
-
-type KioskMenuItem = {
-  id: string;
-  name: string;
-  category: string | null;
-  price: number | null;
 };
 
 const EMPTY_ENTITLEMENT: EntitlementResult = {

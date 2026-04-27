@@ -7,16 +7,24 @@ const routeSource = readFileSync(
   join(process.cwd(), "app/api/extract-receipt/route.ts"),
   "utf8",
 );
+const extractorSource = readFileSync(
+  join(process.cwd(), "lib/ai/extract-receipt.ts"),
+  "utf8",
+);
+const geminiProviderSource = readFileSync(
+  join(process.cwd(), "lib/ai/providers/gemini-receipt.ts"),
+  "utf8",
+);
 const kioskSource = readFileSync(
   join(process.cwd(), "components/kiosk/KioskScanScreen.tsx"),
   "utf8",
 );
 
 test("receipt extraction checks entitlement server-side before Gemini", () => {
-  const entitlementIndex = routeSource.indexOf(
+  const entitlementIndex = extractorSource.indexOf(
     "const entitlement = await canScanReceipt",
   );
-  const geminiIndex = routeSource.indexOf("callGeminiForReceipt({");
+  const geminiIndex = extractorSource.indexOf("callGeminiForReceipt({");
 
   assert.notEqual(entitlementIndex, -1);
   assert.notEqual(geminiIndex, -1);
@@ -24,8 +32,8 @@ test("receipt extraction checks entitlement server-side before Gemini", () => {
 });
 
 test("failed AI extraction returns before consuming scan credit", () => {
-  const failureBranchIndex = routeSource.indexOf("if (!result.ok)");
-  const consumeIndex = routeSource.indexOf(
+  const failureBranchIndex = extractorSource.indexOf("if (!result.ok)");
+  const consumeIndex = extractorSource.indexOf(
     "const consumed = await consumeAiScanCredit",
   );
 
@@ -34,8 +42,10 @@ test("failed AI extraction returns before consuming scan credit", () => {
   assert.ok(failureBranchIndex < consumeIndex);
 });
 
-test("successful AI extraction consumes scan credit exactly once in the route", () => {
-  const matches = routeSource.match(/consumeAiScanCredit\(payload\.restaurantId\)/g);
+test("successful AI extraction consumes scan credit exactly once", () => {
+  const matches = extractorSource.match(
+    /consumeAiScanCredit\(payload\.restaurantId\)/g,
+  );
 
   assert.equal(matches?.length, 1);
 });
@@ -47,13 +57,30 @@ test("kiosk client does not call Gemini directly", () => {
 });
 
 test("receipt extraction rate limit runs before entitlement and Gemini", () => {
-  const rateLimitIndex = routeSource.indexOf("const rateLimit = checkRateLimit");
-  const entitlementIndex = routeSource.indexOf(
+  const rateLimitIndex = routeSource.indexOf(
+    "const rateLimit = checkReceiptExtractionRateLimit",
+  );
+  const extractorCallIndex = routeSource.indexOf(
+    "const result = await extractReceipt",
+  );
+  const entitlementIndex = extractorSource.indexOf(
     "const entitlement = await canScanReceipt",
   );
-  const geminiIndex = routeSource.indexOf("callGeminiForReceipt({");
+  const geminiIndex = extractorSource.indexOf("callGeminiForReceipt({");
 
   assert.notEqual(rateLimitIndex, -1);
-  assert.ok(rateLimitIndex < entitlementIndex);
-  assert.ok(rateLimitIndex < geminiIndex);
+  assert.notEqual(extractorCallIndex, -1);
+  assert.notEqual(entitlementIndex, -1);
+  assert.notEqual(geminiIndex, -1);
+  assert.ok(rateLimitIndex < extractorCallIndex);
+  assert.ok(entitlementIndex < geminiIndex);
+});
+
+test("receipt route stays thin and Gemini-specific code stays in provider", () => {
+  const routeLines = routeSource.trim().split(/\r?\n/);
+
+  assert.ok(routeLines.length < 200);
+  assert.equal(routeSource.includes("GoogleGenerativeAI"), false);
+  assert.equal(routeSource.includes("generateContent"), false);
+  assert.ok(geminiProviderSource.includes("GoogleGenerativeAI"));
 });
