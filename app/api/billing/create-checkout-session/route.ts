@@ -49,7 +49,9 @@ async function loadOwnerRestaurant(input: {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Unable to load restaurant billing state: ${error.message}`);
+    throw new Error(
+      `Unable to load restaurant billing state: ${error.message}`,
+    );
   }
 
   return data as RestaurantBillingRow | null;

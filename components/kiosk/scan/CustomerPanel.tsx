@@ -6,11 +6,7 @@ type CustomerPanelProps = {
   onFinish: () => void;
 };
 
-export function CustomerPanel({
-  copy,
-  items,
-  onFinish,
-}: CustomerPanelProps) {
+export function CustomerPanel({ copy, items, onFinish }: CustomerPanelProps) {
   return (
     <div className="max-w-[720px]">
       <h2 className="m-0 font-[var(--f-display)] text-[60px] font-normal leading-none">

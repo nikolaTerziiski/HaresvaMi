@@ -9,7 +9,10 @@ interface MenuEmptyStateProps {
   onManualEntry: () => void;
 }
 
-export function MenuEmptyState({ onFileSelect, onManualEntry }: MenuEmptyStateProps) {
+export function MenuEmptyState({
+  onFileSelect,
+  onManualEntry,
+}: MenuEmptyStateProps) {
   const t = useTranslations("dashboard.menu");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,7 +69,8 @@ export function MenuEmptyState({ onFileSelect, onManualEntry }: MenuEmptyStatePr
             </p>
             <div className="flex flex-col gap-1 rounded-lg border border-dashed border-[var(--rule)] bg-[var(--paper)] px-3.5 py-3 font-[var(--f-mono)] text-[11px] leading-[1.4] text-[var(--ink-2)]">
               <span>
-                {t("aiDemoSource")} <span className="text-[var(--accent)]">→</span>
+                {t("aiDemoSource")}{" "}
+                <span className="text-[var(--accent)]">→</span>
               </span>
               <span className="text-[var(--ink)]">{t("aiDemoResult")}</span>
             </div>

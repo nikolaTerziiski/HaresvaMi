@@ -26,7 +26,9 @@ const EMPTY_ENTITLEMENT: EntitlementResult = {
   upgradeTarget: null,
 };
 
-async function resolveRestaurantId(searchParams: KioskScanPageProps["searchParams"]) {
+async function resolveRestaurantId(
+  searchParams: KioskScanPageProps["searchParams"],
+) {
   const params = await searchParams;
   const requestedRestaurantId =
     params?.restaurant_id ?? params?.restaurantId ?? null;

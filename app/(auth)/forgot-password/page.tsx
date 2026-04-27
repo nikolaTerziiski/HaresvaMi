@@ -73,12 +73,16 @@ export default function ForgotPasswordPage() {
     setSuccessMessage(null);
 
     const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ?? window.location.origin;
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ??
+      window.location.origin;
     const redirectTo = new URL("/reset-password", appUrl).toString();
 
-    const { error } = await supabase.auth.resetPasswordForEmail(values.email.trim(), {
-      redirectTo,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      values.email.trim(),
+      {
+        redirectTo,
+      },
+    );
 
     if (error) {
       setError("root", {
@@ -144,7 +148,9 @@ export default function ForgotPasswordPage() {
         >
           {copy.title}
         </h1>
-        <p className="mt-4 max-w-lg text-[15px] text-[var(--ink-2)]">{copy.description}</p>
+        <p className="mt-4 max-w-lg text-[15px] text-[var(--ink-2)]">
+          {copy.description}
+        </p>
 
         {successMessage ? (
           <div className="mt-6 rounded-2xl border border-[color:color-mix(in_srgb,var(--good)_18%,transparent)] bg-[color:color-mix(in_srgb,var(--good)_8%,var(--paper))] px-4 py-3 text-sm text-[color:color-mix(in_srgb,var(--good)_75%,var(--ink))]">
@@ -171,7 +177,9 @@ export default function ForgotPasswordPage() {
               {...register("email")}
             />
             {errors.email?.message ? (
-              <p className="mt-2 text-sm text-[var(--bad)]">{errors.email.message}</p>
+              <p className="mt-2 text-sm text-[var(--bad)]">
+                {errors.email.message}
+              </p>
             ) : null}
           </div>
 
@@ -191,10 +199,16 @@ export default function ForgotPasswordPage() {
         </form>
 
         <div className="mt-8 flex flex-col gap-3 text-sm text-[var(--ink-2)]">
-          <Link href="/login" className="text-[var(--accent)] no-underline hover:underline">
+          <Link
+            href="/login"
+            className="text-[var(--accent)] no-underline hover:underline"
+          >
             {copy.backToLogin}
           </Link>
-          <Link href="/register" className="text-[var(--accent)] no-underline hover:underline">
+          <Link
+            href="/register"
+            className="text-[var(--accent)] no-underline hover:underline"
+          >
             {copy.createAccount}
           </Link>
         </div>

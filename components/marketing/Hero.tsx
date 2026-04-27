@@ -16,9 +16,8 @@ export default function Hero() {
           </h1>
 
           <p className="mt-6 max-w-lg leading-relaxed text-lg text-ink-700">
-            След като клиентът плати, сервитьорът сканира бона с таблета.
-            Гостът оценява всяко ядене поотделно — ти виждаш кое работи и кое
-            не.
+            След като клиентът плати, сервитьорът сканира бона с таблета. Гостът
+            оценява всяко ядене поотделно — ти виждаш кое работи и кое не.
           </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">

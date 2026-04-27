@@ -122,9 +122,7 @@ export async function getActiveScanCreditGrants(
 
   const { data, error } = await supabase
     .from("scan_credit_grants")
-    .select(
-      "id, credits_granted, credits_used, expires_at, created_at",
-    )
+    .select("id, credits_granted, credits_used, expires_at, created_at")
     .eq("restaurant_id", restaurantId)
     .lte("starts_at", timestamp)
     .or(`expires_at.is.null,expires_at.gt.${timestamp}`)

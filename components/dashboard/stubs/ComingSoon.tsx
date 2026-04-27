@@ -1,13 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 type ComingSoonProps = {
-  scope:
-    | "feedback"
-    | "menu"
-    | "tablet"
-    | "team"
-    | "settings"
-    | "profile";
+  scope: "feedback" | "menu" | "tablet" | "team" | "settings" | "profile";
 };
 
 export async function ComingSoon({ scope }: ComingSoonProps) {

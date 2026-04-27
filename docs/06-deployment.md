@@ -3,11 +3,13 @@
 ## Environments
 
 ### Local development
+
 - Next.js dev server: `npm run dev` → `http://localhost:3000`
 - Supabase: hosted project (free tier on supabase.com), no local Postgres needed
 - Stripe: test mode keys
 
 ### Production
+
 - Hosting: Vercel (free Hobby tier sufficient for first ~50 restaurants)
 - Database: Supabase Pro tier (€25/month, after we have paying users)
 - Domain: TBD — preferred options: `haresva.mi`, `haresvami.bg`, `haresvami.com`
@@ -30,6 +32,7 @@
 ### 2. Apply database migrations
 
 In Supabase dashboard → SQL Editor → run each migration file in order:
+
 1. `supabase/migrations/0001_initial_schema.sql`
 2. `supabase/migrations/0002_rls_policies.sql`
 3. `supabase/migrations/0003_indexes_and_triggers.sql`
@@ -41,16 +44,19 @@ Verify tables exist in Table Editor.
 In Supabase dashboard → Storage → New bucket:
 
 **`menu-images`**
+
 - Public: ✅ Yes
 - File size limit: 5 MB
 - Allowed MIME: `image/jpeg, image/png, image/webp`
 
 **`receipt-images`**
+
 - Public: ❌ No
 - File size limit: 5 MB
 - Allowed MIME: `image/jpeg, image/png`
 
 **`restaurant-logos`**
+
 - Public: ✅ Yes
 - File size limit: 2 MB
 - Allowed MIME: `image/jpeg, image/png, image/svg+xml`
@@ -58,11 +64,13 @@ In Supabase dashboard → Storage → New bucket:
 ### 4. Configure auth
 
 In Supabase dashboard → Authentication → Providers:
+
 - Enable **Email** provider
 - Enable **Magic Link** option (for passwordless login)
 - Configure email templates in Bulgarian (Authentication → Email Templates)
 
 In Authentication → URL Configuration:
+
 - Site URL: production URL when deployed, `http://localhost:3000` for now
 - Redirect URLs: add both prod and local
 
@@ -131,6 +139,7 @@ Create `.env.example` (commit this) with same keys but empty values.
 ### Custom domain
 
 After domain purchase:
+
 1. Vercel → Project → Settings → Domains → Add `haresva.mi`
 2. Configure DNS at registrar (CNAME or A record per Vercel instructions)
 3. Wait for SSL provisioning (~5 min)
@@ -141,6 +150,7 @@ After domain purchase:
 ### Production checklist
 
 Before announcing publicly:
+
 - [ ] All env vars set in Vercel (production environment)
 - [ ] Supabase migrations applied to prod project
 - [ ] Storage buckets created and configured
@@ -159,11 +169,13 @@ Before announcing publicly:
 ## Monitoring
 
 ### Phase 1 (free tools, sufficient for first 50 restaurants)
+
 - Vercel Analytics (built-in)
 - Supabase logs (built-in)
 - Manual dashboard check daily
 
 ### Phase 2 (when paying)
+
 - Sentry for error tracking
 - PostHog for product analytics
 - Better Stack for uptime monitoring
@@ -177,6 +189,7 @@ Before announcing publicly:
 ## Cost projections
 
 ### Month 1 (0–10 paying)
+
 - Vercel: €0 (Hobby tier)
 - Supabase: €0 (Free tier)
 - Gemini: ~€1
@@ -184,6 +197,7 @@ Before announcing publicly:
 - **Total: ~€2/month**
 
 ### Month 6 (50 paying)
+
 - Vercel: €0 (still under limits)
 - Supabase: €25 (Pro tier needed for backups + more bandwidth)
 - Gemini: ~€20
@@ -193,6 +207,7 @@ Before announcing publicly:
 - **Margin: ~€445**
 
 ### Month 12 (200 paying)
+
 - Vercel: €20 (Pro tier likely)
 - Supabase: €25 (still Pro tier sufficient)
 - Gemini: ~€80
@@ -207,16 +222,19 @@ These are rough estimates. Update after first month of real data.
 ## Disaster recovery
 
 ### If Supabase goes down
+
 - Display maintenance page on kiosk
 - Cache restaurant menu in localStorage on kiosk login (so kiosk can show standby + last known menu)
 - Receipt scans queue locally, sync when back online
 
 ### If Gemini API fails
+
 - Fallback to manual item selection automatically
 - Surface "AI temporarily unavailable, choose items manually" message
 - Don't charge it against any usage counter
 
 ### If Vercel goes down
+
 - Statuspage.com link in our marketing site (subdomain on different host)
 - Email notification to all owners with ETA
 

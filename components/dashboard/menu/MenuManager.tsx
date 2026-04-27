@@ -3,14 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Loader2,
-  Plus,
-  RotateCcw,
-  Search,
-  Trash2,
-  Undo2,
-} from "lucide-react";
+import { Loader2, Plus, RotateCcw, Search, Trash2, Undo2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -273,8 +266,8 @@ export function MenuManager({ restaurantId, initialItems }: MenuManagerProps) {
   const [mode, setMode] = useState<"empty" | "uploading" | "review">(
     initialItems.length === 0 ? "empty" : "review",
   );
-  const [items, setItems] = useState<MenuItemRow[]>(
-    () => createRowsFromInitialItems(initialItems),
+  const [items, setItems] = useState<MenuItemRow[]>(() =>
+    createRowsFromInitialItems(initialItems),
   );
   const [removedExistingIds, setRemovedExistingIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -381,7 +374,8 @@ export function MenuManager({ restaurantId, initialItems }: MenuManagerProps) {
     });
   }, [items, searchQuery, selectedCategoryKey]);
 
-  const isFiltering = searchQuery.trim().length > 0 || selectedCategoryKey !== null;
+  const isFiltering =
+    searchQuery.trim().length > 0 || selectedCategoryKey !== null;
 
   const handleFileSelect = async (file: File) => {
     if (file.size > MAX_MENU_FILE_SIZE_BYTES) {
@@ -929,9 +923,7 @@ export function MenuManager({ restaurantId, initialItems }: MenuManagerProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("startOverConfirmTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("startOverConfirmDesc")}
-            </DialogDescription>
+            <DialogDescription>{t("startOverConfirmDesc")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button

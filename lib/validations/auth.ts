@@ -7,9 +7,7 @@ export const registerSchema = z
       .trim()
       .min(1, "Въведи имейл адрес.")
       .email("Въведи валиден имейл адрес."),
-    password: z
-      .string()
-      .min(8, "Паролата трябва да е поне 8 символа."),
+    password: z.string().min(8, "Паролата трябва да е поне 8 символа."),
     confirmPassword: z.string().min(1, "Потвърди паролата си."),
     acceptTerms: z.boolean().refine((value) => value, {
       message: "Трябва да приемеш условията, за да продължиш.",
@@ -33,9 +31,7 @@ export const loginSchema = z.object({
     .trim()
     .min(1, "Въведи имейл адрес.")
     .email("Въведи валиден имейл адрес."),
-  password: z
-    .string()
-    .min(1, "Въведи паролата си."),
+  password: z.string().min(1, "Въведи паролата си."),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
@@ -52,9 +48,7 @@ export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, "Паролата трябва да е поне 8 символа."),
+    password: z.string().min(8, "Паролата трябва да е поне 8 символа."),
     confirmPassword: z.string().min(1, "Потвърди новата парола."),
   })
   .superRefine(({ password, confirmPassword }, context) => {

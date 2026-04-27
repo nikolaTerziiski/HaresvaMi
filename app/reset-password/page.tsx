@@ -46,8 +46,7 @@ const COPY = {
       "Open the email link and save a new password. After that, sign in again with it.",
     checking: "Checking your recovery link...",
     invalidTitle: "This link has expired or is invalid.",
-    invalidDescription:
-      "Request a fresh password reset link and try again.",
+    invalidDescription: "Request a fresh password reset link and try again.",
     requestNewLink: "Request a new link →",
     backToLogin: "Back to login →",
     passwordLabel: "New password",
@@ -69,7 +68,9 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [lang, setLang] = useState<Locale>("bg");
-  const [status, setStatus] = useState<"checking" | "ready" | "invalid">("checking");
+  const [status, setStatus] = useState<"checking" | "ready" | "invalid">(
+    "checking",
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
@@ -110,16 +111,18 @@ export default function ResetPasswordPage() {
       setStatus((current) => (current === "checking" ? "invalid" : current));
     };
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        markReady();
-        return;
-      }
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          markReady();
+          return;
+        }
 
-      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
-        markReady();
-      }
-    });
+        if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+          markReady();
+        }
+      },
+    );
 
     supabase.auth.getSession().then(({ data, error }) => {
       if (!isActive) {
@@ -224,7 +227,9 @@ export default function ResetPasswordPage() {
             >
               {copy.title}
             </h1>
-            <p className="mt-4 text-[15px] text-[var(--ink-2)]">{copy.checking}</p>
+            <p className="mt-4 text-[15px] text-[var(--ink-2)]">
+              {copy.checking}
+            </p>
           </>
         ) : null}
 
@@ -236,7 +241,9 @@ export default function ResetPasswordPage() {
             >
               {copy.invalidTitle}
             </h1>
-            <p className="mt-4 text-[15px] text-[var(--ink-2)]">{copy.invalidDescription}</p>
+            <p className="mt-4 text-[15px] text-[var(--ink-2)]">
+              {copy.invalidDescription}
+            </p>
             <div className="mt-8 flex flex-col gap-3 text-sm text-[var(--ink-2)]">
               <Link
                 href="/forgot-password"
@@ -244,7 +251,10 @@ export default function ResetPasswordPage() {
               >
                 {copy.requestNewLink}
               </Link>
-              <Link href="/login" className="text-[var(--accent)] no-underline hover:underline">
+              <Link
+                href="/login"
+                className="text-[var(--accent)] no-underline hover:underline"
+              >
                 {copy.backToLogin}
               </Link>
             </div>
@@ -259,7 +269,9 @@ export default function ResetPasswordPage() {
             >
               {copy.title}
             </h1>
-            <p className="mt-4 max-w-lg text-[15px] text-[var(--ink-2)]">{copy.description}</p>
+            <p className="mt-4 max-w-lg text-[15px] text-[var(--ink-2)]">
+              {copy.description}
+            </p>
 
             <form className="mt-8 space-y-5" noValidate onSubmit={onSubmit}>
               <div>
@@ -290,7 +302,9 @@ export default function ResetPasswordPage() {
                   </button>
                 </div>
                 {errors.password?.message ? (
-                  <p className="mt-2 text-sm text-[var(--bad)]">{errors.password.message}</p>
+                  <p className="mt-2 text-sm text-[var(--bad)]">
+                    {errors.password.message}
+                  </p>
                 ) : null}
               </div>
 
@@ -316,13 +330,17 @@ export default function ResetPasswordPage() {
                     type="button"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-[0.06em] text-[var(--ink-mute)]"
                     style={{ fontFamily: "var(--f-mono)" }}
-                    onClick={() => setShowConfirmPassword((current) => !current)}
+                    onClick={() =>
+                      setShowConfirmPassword((current) => !current)
+                    }
                   >
                     {showConfirmPassword ? copy.hide : copy.show}
                   </button>
                 </div>
                 {errors.confirmPassword?.message ? (
-                  <p className="mt-2 text-sm text-[var(--bad)]">{errors.confirmPassword.message}</p>
+                  <p className="mt-2 text-sm text-[var(--bad)]">
+                    {errors.confirmPassword.message}
+                  </p>
                 ) : null}
               </div>
 

@@ -34,7 +34,9 @@ async function getRestaurantEntitlementRow(restaurantId: string) {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Unable to read restaurant entitlement state: ${error.message}`);
+    throw new Error(
+      `Unable to read restaurant entitlement state: ${error.message}`,
+    );
   }
 
   return data;

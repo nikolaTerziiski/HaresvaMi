@@ -33,7 +33,11 @@ export async function TutorialCard() {
         type="button"
         className="mt-[18px] -ml-2 inline-flex w-fit items-center gap-2 rounded-md px-2 py-2 text-[13px] text-[var(--ink-2)] transition hover:bg-[color-mix(in_oklab,var(--paper)_60%,transparent)] hover:text-[var(--ink)]"
       >
-        <Play className="h-[13px] w-[13px]" strokeWidth={0} fill="currentColor" />
+        <Play
+          className="h-[13px] w-[13px]"
+          strokeWidth={0}
+          fill="currentColor"
+        />
         {t("cta")}
       </button>
     </article>

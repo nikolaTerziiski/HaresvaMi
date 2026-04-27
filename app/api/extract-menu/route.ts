@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     if (!user || !restaurant) {
       return NextResponse.json(
         { error: "Unauthorized or no restaurant found" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (!mimeType.startsWith("image/") && mimeType !== "application/pdf") {
       return NextResponse.json(
         { error: "Invalid file type. Only images and PDFs are supported." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     console.error("API Error in /extract-menu:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -17,6 +17,7 @@ Do NOT start writing code yet. Just confirm understanding.
 After my confirmation, your task is **Phase 0: Foundation Setup** as described in `docs/01-architecture.md` section "Build order (Phase 0)".
 
 You will:
+
 1. Initialize the Next.js 15 project in this directory
 2. Install all dependencies listed
 3. Set up shadcn/ui with our customized base
@@ -28,11 +29,13 @@ You will:
 9. Set up the basic folder structure under `app/`, `components/`, `lib/`
 
 Do NOT yet:
+
 - Build any pages (auth, dashboard, kiosk) — that's Phase 1
 - Connect to Supabase (I'll create the project and add env vars first)
 - Write any business logic
 
 After scaffold is done, give me a clear list of:
+
 - What to do on supabase.com (create project, run migrations, etc.)
 - What env vars to add to `.env.local`
 - The exact command to run to verify everything works (`npm run dev`)

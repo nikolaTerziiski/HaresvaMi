@@ -15,10 +15,10 @@ export interface MenuExtractionResult {
 
 export async function extractMenu(
   mimeType: string,
-  base64Data: string
+  base64Data: string,
 ): Promise<MenuExtractionResult> {
   const apiKey = process.env.GEMINI_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not set");
   }
@@ -38,21 +38,25 @@ export async function extractMenu(
   try {
     const result = await model.generateContent([prompt, imagePart]);
     const responseText = result.response.text();
-    
+
     // Clean up the response if it includes markdown code blocks
     let cleanedText = responseText.trim();
     if (cleanedText.startsWith("\`\`\`json")) {
-      cleanedText = cleanedText.replace(/^\`\`\`json\n/, "").replace(/\n\`\`\`$/, "");
+      cleanedText = cleanedText
+        .replace(/^\`\`\`json\n/, "")
+        .replace(/\n\`\`\`$/, "");
     } else if (cleanedText.startsWith("\`\`\`")) {
-      cleanedText = cleanedText.replace(/^\`\`\`\n/, "").replace(/\n\`\`\`$/, "");
+      cleanedText = cleanedText
+        .replace(/^\`\`\`\n/, "")
+        .replace(/\n\`\`\`$/, "");
     }
 
     const parsed = JSON.parse(cleanedText) as MenuExtractionResult;
-    
+
     if (parsed.error) {
       return { items: [], error: parsed.error };
     }
-    
+
     return { items: parsed.items || [] };
   } catch (error) {
     console.error("Error extracting menu:", error);

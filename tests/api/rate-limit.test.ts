@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  checkRateLimit,
-  resetRateLimitBuckets,
-} from "@/lib/api/rate-limit";
+import { checkRateLimit, resetRateLimitBuckets } from "@/lib/api/rate-limit";
 
 test("rate limiter blocks requests after the configured window limit", () => {
   resetRateLimitBuckets();

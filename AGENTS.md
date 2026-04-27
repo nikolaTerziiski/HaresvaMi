@@ -6,7 +6,7 @@
 
 HaresvaMi (Харесва ми) is a tablet-based customer feedback platform for Bulgarian restaurants. The owner places a tablet at the checkout. When a customer pays, the waiter scans the receipt with the tablet camera. AI extracts the items the customer ordered, then presents the customer with a per-item rating screen plus a final binary "Харесва ми / Не ми харесва" question.
 
-The product name is the final UX moment. Every other word in the app should reinforce that the customer is *telling the restaurant what they liked*.
+The product name is the final UX moment. Every other word in the app should reinforce that the customer is _telling the restaurant what they liked_.
 
 ## Target user
 
@@ -14,7 +14,7 @@ Bulgarian restaurant owners, primarily small to mid-size establishments (20–80
 
 ## Core value proposition
 
-Per-item feedback at the moment of payment. Owners learn *which dish* customers actually like or dislike, not just "how was your visit." This is fundamentally different from generic feedback tools (Zonka, SurveyStance, etc.) which only capture overall experience.
+Per-item feedback at the moment of payment. Owners learn _which dish_ customers actually like or dislike, not just "how was your visit." This is fundamentally different from generic feedback tools (Zonka, SurveyStance, etc.) which only capture overall experience.
 
 ## Tech stack (locked)
 
@@ -108,6 +108,7 @@ lib/<feature>/
 
 Before implementing a task, inspect the files you plan to modify.
 If any target file is over 300 lines:
+
 - first propose a split,
 - then refactor into smaller files,
 - then implement the requested change.
@@ -142,6 +143,7 @@ Read these in order when starting fresh:
 ### Developer preferences
 
 The developer is building solo on a Windows machine. When working on this project:
+
 - Give direct, honest pushback when ideas have problems
 - Provide clear next steps, never vague suggestions
 - Apply Bulgarian-aware UX thinking (don't suggest patterns that won't land with BG users)
@@ -160,6 +162,7 @@ The developer is building solo on a Windows machine. When working on this projec
 ## Current phase
 
 **Phase 1: Auth + Onboarding.** Phase 0 (foundation) is complete. Now building:
+
 - Auth logic wired to Supabase (login, register, password reset)
 - Auth middleware enforcing protected routes
 - Dashboard shell layout

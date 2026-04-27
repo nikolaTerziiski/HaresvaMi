@@ -11,6 +11,7 @@
 ## Tables
 
 ### `restaurants`
+
 The owner's restaurant. One per user in v1.
 
 ```sql
@@ -39,6 +40,7 @@ CREATE UNIQUE INDEX idx_restaurants_slug ON restaurants(slug);
 ```
 
 ### `menu_items`
+
 Dishes the restaurant sells. Owner adds these manually during onboarding.
 
 ```sql
@@ -64,6 +66,7 @@ CREATE INDEX idx_menu_items_active ON menu_items(restaurant_id, is_active) WHERE
 ```
 
 ### `receipt_aliases`
+
 The learned dictionary mapping receipt text (often abbreviated) to menu items.
 
 ```sql
@@ -76,7 +79,7 @@ CREATE TABLE receipt_aliases (
   times_seen INT NOT NULL DEFAULT 1,
   last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  
+
   UNIQUE (restaurant_id, alias)
 );
 
@@ -85,6 +88,7 @@ CREATE INDEX idx_receipt_aliases_lookup ON receipt_aliases(restaurant_id, alias)
 ```
 
 ### `feedback_sessions`
+
 One scan = one session. Anonymous customer interaction.
 
 ```sql
@@ -107,6 +111,7 @@ CREATE INDEX idx_feedback_sessions_completed ON feedback_sessions(restaurant_id,
 ```
 
 **`extracted_items` jsonb shape:**
+
 ```json
 [
   {
@@ -114,7 +119,7 @@ CREATE INDEX idx_feedback_sessions_completed ON feedback_sessions(restaurant_id,
     "menu_item_id": "uuid-here",
     "menu_item_name": "Кебапче с лук",
     "quantity": 2,
-    "matched_via": "alias" 
+    "matched_via": "alias"
   },
   {
     "raw_text": "PK",
@@ -127,6 +132,7 @@ CREATE INDEX idx_feedback_sessions_completed ON feedback_sessions(restaurant_id,
 ```
 
 ### `feedback_ratings`
+
 Per-item ratings within a session.
 
 ```sql
@@ -144,6 +150,7 @@ CREATE INDEX idx_feedback_ratings_menu_item ON feedback_ratings(menu_item_id, cr
 ```
 
 ### `usage_counters`
+
 Tracks tier limit usage per restaurant per month.
 
 ```sql
@@ -152,7 +159,7 @@ CREATE TABLE usage_counters (
   period TEXT NOT NULL,                   -- "2026-04" format
   feedback_count INT NOT NULL DEFAULT 0,
   receipt_scans_count INT NOT NULL DEFAULT 0,
-  
+
   PRIMARY KEY (restaurant_id, period)
 );
 
@@ -317,6 +324,7 @@ Handled in application code (slugify name + check uniqueness + append number if 
 Create these in Supabase dashboard:
 
 ### `menu-images` (public)
+
 - Stores menu item photos uploaded by owners
 - Public read, authenticated write
 - Path pattern: `{restaurant_id}/{menu_item_id}.{ext}`
@@ -324,6 +332,7 @@ Create these in Supabase dashboard:
 - Allowed types: image/jpeg, image/png, image/webp
 
 ### `receipt-images` (private)
+
 - Stores receipt photos from kiosk scans
 - No public access
 - Path pattern: `{restaurant_id}/{session_id}.jpg`
@@ -332,6 +341,7 @@ Create these in Supabase dashboard:
 - Lifecycle: auto-delete after 90 days (set up later)
 
 ### `restaurant-logos` (public)
+
 - Stores restaurant logos
 - Public read, authenticated write
 - Path pattern: `{restaurant_id}.{ext}`

@@ -37,7 +37,8 @@ export async function createSupabaseServerClient() {
  * where we know the action has been authorized by an RLS-protected read first.
  */
 export function createSupabaseServiceClient() {
-  const { createClient } = require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
+  const { createClient } =
+    require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
 
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

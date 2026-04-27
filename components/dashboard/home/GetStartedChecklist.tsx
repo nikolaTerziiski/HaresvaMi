@@ -63,14 +63,12 @@ export async function GetStartedChecklist({ data }: GetStartedChecklistProps) {
           ),
         };
 
-  let tabletRow:
-    | {
-        status: typeof steps.tablet;
-        title: string;
-        description: string;
-        action?: React.ReactNode;
-      }
-    | null = null;
+  let tabletRow: {
+    status: typeof steps.tablet;
+    title: string;
+    description: string;
+    action?: React.ReactNode;
+  } | null = null;
 
   if (steps.tablet === "done") {
     tabletRow = {

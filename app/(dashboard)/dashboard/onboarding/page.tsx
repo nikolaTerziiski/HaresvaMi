@@ -2,10 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { RestaurantSetupForm } from "@/components/dashboard/RestaurantSetupForm";
-import {
-  getCurrentOwnerState,
-  getOwnerLanguage,
-} from "@/lib/auth/owner";
+import { getCurrentOwnerState, getOwnerLanguage } from "@/lib/auth/owner";
 
 export default async function DashboardOnboardingPage() {
   const { user, restaurant } = await getCurrentOwnerState();

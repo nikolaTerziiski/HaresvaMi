@@ -9,17 +9,32 @@ import { useForm } from "react-hook-form";
 import { persistLocale } from "@/lib/i18n/browser";
 import type { Locale } from "@/lib/i18n/config";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from "@/lib/validations/auth";
 
 import styles from "./page.module.css";
 
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" width={18} height={18}>
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
     </svg>
   );
 }
@@ -37,8 +52,20 @@ function scorePassword(value: string) {
   return Math.min(4, score);
 }
 
-const PW_LABELS_BG = ["Въведи парола", "Слаба", "Добра", "Силна", "Много силна"];
-const PW_LABELS_EN = ["Enter password", "Weak", "Good", "Strong", "Very strong"];
+const PW_LABELS_BG = [
+  "Въведи парола",
+  "Слаба",
+  "Добра",
+  "Силна",
+  "Много силна",
+];
+const PW_LABELS_EN = [
+  "Enter password",
+  "Weak",
+  "Good",
+  "Strong",
+  "Very strong",
+];
 
 const COPY = {
   bg: {
@@ -72,7 +99,7 @@ const COPY = {
       "Акаунтът беше създаден, но няма активна сесия. Провери дали Email confirmation е изключен в Supabase.",
     duplicateEmailError: "Този имейл вече има акаунт.",
     genericError: "Не успяхме да създадем акаунт. Опитай пак.",
-    builtInBulgaria: "Построено в България"
+    builtInBulgaria: "Построено в България",
   },
   en: {
     eyebrow: "14 days Pro · no card",
@@ -92,7 +119,8 @@ const COPY = {
     termsLead: "I accept the ",
     termsLink: "Terms of Service",
     privacyLink: "Privacy Policy",
-    newsletter: "Send me monthly restaurant tips. No spam, easy to unsubscribe.",
+    newsletter:
+      "Send me monthly restaurant tips. No spam, easy to unsubscribe.",
     submit: "Create account — start 14 days Pro →",
     submitting: "Creating your account...",
     continueWithGoogle: "Continue with Google",
@@ -104,8 +132,8 @@ const COPY = {
       "The account was created, but there is no active session. Check that Email confirmation is disabled in Supabase.",
     duplicateEmailError: "This email already has an account.",
     genericError: "We couldn’t create your account. Please try again.",
-    builtInBulgaria: "Built in Bulgaria"
-  }
+    builtInBulgaria: "Built in Bulgaria",
+  },
 } as const;
 
 function getSignupErrorMessage(message: string, locale: Locale) {
@@ -152,7 +180,8 @@ export default function RegisterPage() {
     styles.strengthStrong,
     styles.strengthStrong,
   ];
-  const passwordsMatch = confirmPassword.length > 0 && confirmPassword === password;
+  const passwordsMatch =
+    confirmPassword.length > 0 && confirmPassword === password;
   const passwordsMismatch =
     confirmPassword.length > 0 && confirmPassword !== password;
 
@@ -197,10 +226,14 @@ export default function RegisterPage() {
       <div className={styles.left}>
         <div className={styles.topbar}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark}><span>h</span></span>
+            <span className={styles.brandMark}>
+              <span>h</span>
+            </span>
             HaresvaMi
           </Link>
-          <Link href="/" className={styles.back}>← {copy.back}</Link>
+          <Link href="/" className={styles.back}>
+            ← {copy.back}
+          </Link>
         </div>
 
         <div className={styles.formWrap}>
@@ -209,7 +242,9 @@ export default function RegisterPage() {
           <p className={styles.sub}>{copy.subtitle}</p>
 
           <form noValidate onSubmit={onSubmit}>
-            <div className={`${styles.field} ${errors.email ? styles.fieldError : ""}`}>
+            <div
+              className={`${styles.field} ${errors.email ? styles.fieldError : ""}`}
+            >
               <label htmlFor="email">{copy.emailLabel}</label>
               <input
                 id="email"
@@ -226,7 +261,9 @@ export default function RegisterPage() {
               ) : null}
             </div>
 
-            <div className={`${styles.field} ${errors.password ? styles.fieldError : ""}`}>
+            <div
+              className={`${styles.field} ${errors.password ? styles.fieldError : ""}`}
+            >
               <label htmlFor="password">{copy.passwordLabel}</label>
               <div className={styles.pwWrap}>
                 <input
@@ -242,18 +279,30 @@ export default function RegisterPage() {
                   className={styles.pwToggle}
                   onClick={() => setShowPassword((current) => !current)}
                 >
-                  {showPassword ? (lang === "bg" ? "Скрий" : "Hide") : (lang === "bg" ? "Покажи" : "Show")}
+                  {showPassword
+                    ? lang === "bg"
+                      ? "Скрий"
+                      : "Hide"
+                    : lang === "bg"
+                      ? "Покажи"
+                      : "Show"}
                 </button>
               </div>
               <div className={styles.pwMeter} aria-hidden="true">
                 {[0, 1, 2, 3].map((segment) => (
                   <i
                     key={segment}
-                    className={segment < passwordScore ? passwordStrengthClasses[passwordScore] : ""}
+                    className={
+                      segment < passwordScore
+                        ? passwordStrengthClasses[passwordScore]
+                        : ""
+                    }
                   />
                 ))}
               </div>
-              <div className={styles.pwLabel}>{passwordLabels[passwordScore]}</div>
+              <div className={styles.pwLabel}>
+                {passwordLabels[passwordScore]}
+              </div>
               {errors.password?.message ? (
                 <div className={styles.hint} style={{ color: "var(--bad)" }}>
                   {errors.password.message}
@@ -264,7 +313,9 @@ export default function RegisterPage() {
             <div
               className={`${styles.field} ${errors.confirmPassword ? styles.fieldError : ""}`}
             >
-              <label htmlFor="confirmPassword">{copy.confirmPasswordLabel}</label>
+              <label htmlFor="confirmPassword">
+                {copy.confirmPasswordLabel}
+              </label>
               <div className={styles.pwWrap}>
                 <input
                   id="confirmPassword"
@@ -280,8 +331,12 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword((current) => !current)}
                 >
                   {showConfirmPassword
-                    ? (lang === "bg" ? "Скрий" : "Hide")
-                    : (lang === "bg" ? "Покажи" : "Show")}
+                    ? lang === "bg"
+                      ? "Скрий"
+                      : "Hide"
+                    : lang === "bg"
+                      ? "Покажи"
+                      : "Show"}
                 </button>
               </div>
               {passwordsMatch && !errors.confirmPassword ? (
@@ -296,7 +351,9 @@ export default function RegisterPage() {
               ) : null}
             </div>
 
-            <label className={`${styles.check} ${errors.acceptTerms ? styles.checkError : ""}`}>
+            <label
+              className={`${styles.check} ${errors.acceptTerms ? styles.checkError : ""}`}
+            >
               <input type="checkbox" {...register("acceptTerms")} />
               <span>
                 {copy.termsLead}
@@ -316,7 +373,11 @@ export default function RegisterPage() {
               <span>{copy.newsletter}</span>
             </label>
 
-            <button type="submit" className={styles.submit} disabled={isSubmitting}>
+            <button
+              type="submit"
+              className={styles.submit}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? copy.submitting : copy.submit}
             </button>
 
@@ -344,25 +405,34 @@ export default function RegisterPage() {
               type="button"
               className={`${styles.langBtn} ${lang === "bg" ? styles.langBtnActive : ""}`}
               onClick={() => toggleLanguage("bg")}
-            >BG</button>
+            >
+              BG
+            </button>
             <span style={{ color: "var(--ink-mute)" }}>/</span>
             <button
               type="button"
               className={`${styles.langBtn} ${lang === "en" ? styles.langBtnActive : ""}`}
               onClick={() => toggleLanguage("en")}
-            >EN</button>
-          </div>
-          {" "}· © 2026 HaresvaMi · {copy.builtInBulgaria}
+            >
+              EN
+            </button>
+          </div>{" "}
+          · © 2026 HaresvaMi · {copy.builtInBulgaria}
         </div>
       </div>
 
       <aside className={styles.right}>
         <div>
           <div className={styles.quote}>
-            Престани да гадаеш кое ястие харесват.
-            Започни да <em style={{ color: "var(--accent)", fontStyle: "italic" }}>знаеш</em>.
+            Престани да гадаеш кое ястие харесват. Започни да{" "}
+            <em style={{ color: "var(--accent)", fontStyle: "italic" }}>
+              знаеш
+            </em>
+            .
           </div>
-          <div className={styles.quoteCite}>— HaresvaMi за български механи</div>
+          <div className={styles.quoteCite}>
+            — HaresvaMi за български механи
+          </div>
         </div>
 
         <div className={styles.scene}>
@@ -371,22 +441,42 @@ export default function RegisterPage() {
 
             <div className={styles.metricCard}>
               <div className={styles.metricK}>Response rate</div>
-              <div className={styles.metricN}>30<em>%+</em></div>
+              <div className={styles.metricN}>
+                30<em>%+</em>
+              </div>
             </div>
 
             <div className={styles.receipt}>
               <div className={styles.receiptHead}>МЕХАНА КЪЩАТА</div>
-              <div className={styles.receiptRow}><span>Шопска</span><span>8.90</span></div>
-              <div className={styles.receiptRow}><span>Кебапче ×2</span><span>7.80</span></div>
-              <div className={styles.receiptRow}><span>PK</span><span>4.50</span></div>
-              <div className={styles.receiptRow}><span>Ракия 50</span><span>6.00</span></div>
+              <div className={styles.receiptRow}>
+                <span>Шопска</span>
+                <span>8.90</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>Кебапче ×2</span>
+                <span>7.80</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>PK</span>
+                <span>4.50</span>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>Ракия 50</span>
+                <span>6.00</span>
+              </div>
               <hr />
-              <div className={styles.receiptRow}><b>СУМА</b><b>27.20</b></div>
+              <div className={styles.receiptRow}>
+                <b>СУМА</b>
+                <b>27.20</b>
+              </div>
             </div>
 
             <div className={styles.tablet}>
               <div className={styles.tabletScreen}>
-                <div className={styles.tsStatus}><span>19:42</span><span>HaresvaMi</span></div>
+                <div className={styles.tsStatus}>
+                  <span>19:42</span>
+                  <span>HaresvaMi</span>
+                </div>
                 <div className={styles.tsBody}>
                   <div className={styles.tsQ}>Какво поръча днес?</div>
                   {[
@@ -398,7 +488,10 @@ export default function RegisterPage() {
                       <b>{dish.name}</b>
                       <div className={styles.tsScale}>
                         {Array.from({ length: 10 }, (_, index) => (
-                          <i key={index} className={index < dish.score ? styles.on : ""} />
+                          <i
+                            key={index}
+                            className={index < dish.score ? styles.on : ""}
+                          />
                         ))}
                       </div>
                     </div>
@@ -411,9 +504,15 @@ export default function RegisterPage() {
 
         <div className={styles.rightFoot}>
           <div className={styles.pips}>
-            <span className={styles.pip}>{lang === "bg" ? "Без карта" : "No card"}</span>
-            <span className={styles.pip}>{lang === "bg" ? "Без договор" : "No contract"}</span>
-            <span className={styles.pip}>{lang === "bg" ? "30 мин. настройка" : "30 min setup"}</span>
+            <span className={styles.pip}>
+              {lang === "bg" ? "Без карта" : "No card"}
+            </span>
+            <span className={styles.pip}>
+              {lang === "bg" ? "Без договор" : "No contract"}
+            </span>
+            <span className={styles.pip}>
+              {lang === "bg" ? "30 мин. настройка" : "30 min setup"}
+            </span>
           </div>
           <div>v1.0</div>
         </div>

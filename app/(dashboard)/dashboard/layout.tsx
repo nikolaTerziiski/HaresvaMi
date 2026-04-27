@@ -13,5 +13,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  return <div className="min-h-dvh bg-[var(--bg)] text-[var(--ink)]">{children}</div>;
+  return (
+    <div className="min-h-dvh bg-[var(--bg)] text-[var(--ink)]">{children}</div>
+  );
 }

@@ -9,7 +9,7 @@ Restaurant owners in Bulgaria have almost no reliable way to know which specific
 - **Verbal "was everything okay?" from waiter** → Customers default to "yes, thank you" out of politeness.
 - **International tools (Zonka, SurveyStance)** → Generic experience surveys. They ask "how was the food" not "how was the кебапче you actually ordered."
 
-The owner ends up flying blind. They might know revenue per dish from the POS, but not satisfaction per dish. A dish can sell well *and* be hated — customers order it once, dislike it, never come back, and the owner never knows.
+The owner ends up flying blind. They might know revenue per dish from the POS, but not satisfaction per dish. A dish can sell well _and_ be hated — customers order it once, dislike it, never come back, and the owner never knows.
 
 ## The insight
 
@@ -30,6 +30,7 @@ A tablet sits at the checkout. The owner is logged in, kiosk mode is active. Whe
 7. Thank you screen, auto-resets to standby
 
 Owner sees in dashboard:
+
 - Per-dish satisfaction trends over time
 - Plain Bulgarian alerts: "Кебапчето пада на 5.2/10 от 3 седмици. Виж отзивите →"
 - % "Харесва ми" this week vs last week
@@ -47,6 +48,7 @@ Owner sees in dashboard:
 - Heard about the product from a friend or saw it in another restaurant
 
 **What Дани needs from the product:**
+
 - Setup in under 30 minutes
 - One-tap kiosk mode that any waiter can run
 - Insights in plain Bulgarian, on his phone, once a week
@@ -64,6 +66,7 @@ Owner sees in dashboard:
 ### Tiers
 
 **Free (forever):**
+
 - 1 location
 - Manual item selection only (no receipt scanning)
 - Up to 50 feedback responses per month
@@ -71,6 +74,7 @@ Owner sees in dashboard:
 - Bulgarian only
 
 **Pro — €10/month** (with 14-day trial of all Pro features):
+
 - 1 location
 - AI receipt scanning (unlimited)
 - Unlimited feedback responses
@@ -80,6 +84,7 @@ Owner sees in dashboard:
 - Push notifications
 
 **Restaurant Group — €40/month** (post-MVP):
+
 - Multiple locations
 - Cross-location comparisons
 - Staff performance per location
@@ -96,6 +101,7 @@ This is a starting price. Adjust after first 50 paying customers based on churn 
 ### Unit economics check
 
 At €10/month:
+
 - Stripe fees: ~€0.50
 - Supabase (per restaurant, light usage): ~€0.20
 - Gemini API (assume 100 receipts/month avg): ~€0.30
@@ -106,6 +112,7 @@ Break-even on personal time: probably never on this product alone. This is a sta
 ## Success metrics (v1)
 
 **By end of Month 3:**
+
 - 30 free-tier signups
 - 10 paying restaurants
 - €100 MRR
@@ -113,6 +120,7 @@ Break-even on personal time: probably never on this product alone. This is a sta
 - One restaurant publicly endorsing the product
 
 **By end of Month 12:**
+
 - 200 free-tier signups
 - 80 paying restaurants
 - €800 MRR

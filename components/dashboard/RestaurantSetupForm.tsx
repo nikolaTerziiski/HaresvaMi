@@ -19,7 +19,10 @@ type RestaurantSetupFormProps = {
   ownerLanguage: Locale;
 };
 
-function isSlugConflict(error: { code?: string | null; message?: string | null }) {
+function isSlugConflict(error: {
+  code?: string | null;
+  message?: string | null;
+}) {
   return (
     error.code === "23505" &&
     (error.message ?? "").toLowerCase().includes("slug")
@@ -48,12 +51,13 @@ export function RestaurantSetupForm({
   const onSubmit = handleSubmit(async ({ restaurantName }) => {
     const trimmedName = restaurantName.trim();
 
-    const { data: existingRestaurant, error: existingRestaurantError } = await supabase
-      .from("restaurants")
-      .select("id")
-      .eq("owner_id", ownerId)
-      .limit(1)
-      .maybeSingle();
+    const { data: existingRestaurant, error: existingRestaurantError } =
+      await supabase
+        .from("restaurants")
+        .select("id")
+        .eq("owner_id", ownerId)
+        .limit(1)
+        .maybeSingle();
 
     if (existingRestaurantError) {
       setError("root", {

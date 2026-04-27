@@ -55,10 +55,7 @@ const GEMINI_PRICING_USD_PER_1M_TOKENS = {
     input: 0.3,
     output: 2.5,
   },
-} as const satisfies Record<
-  GeminiCostModel,
-  { input: number; output: number }
->;
+} as const satisfies Record<GeminiCostModel, { input: number; output: number }>;
 
 function assertNonNegativeInteger(value: number, label: string) {
   if (!Number.isInteger(value) || value < 0) {

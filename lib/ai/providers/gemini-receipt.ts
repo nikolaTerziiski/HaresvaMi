@@ -2,10 +2,7 @@ import "server-only";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-import {
-  readGeminiTokenUsage,
-  type TokenUsage,
-} from "@/lib/ai/usage-logging";
+import { readGeminiTokenUsage, type TokenUsage } from "@/lib/ai/usage-logging";
 
 export const PRIMARY_RECEIPT_MODEL = "gemini-2.5-flash-lite";
 export const RETRY_RECEIPT_MODEL = "gemini-2.5-flash";
@@ -59,7 +56,8 @@ function parseReceiptExtraction(text: string): ReceiptExtraction {
 
   return {
     confidence:
-      typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence)
+      typeof parsed.confidence === "number" &&
+      Number.isFinite(parsed.confidence)
         ? Math.max(0, Math.min(1, parsed.confidence))
         : 0,
     items: Array.isArray(parsed.items) ? parsed.items : [],
@@ -73,7 +71,8 @@ export async function callGeminiForReceipt(input: {
   imageBuffer: Buffer;
   mimeType: string;
 }): Promise<GeminiReceiptResult> {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
+  const apiKey =
+    process.env.GOOGLE_GEMINI_API_KEY ?? process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return {

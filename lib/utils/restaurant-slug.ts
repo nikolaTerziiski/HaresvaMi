@@ -65,7 +65,11 @@ export async function reserveUniqueRestaurantSlug(
 ) {
   const baseSlug = slugifyRestaurantName(restaurantName);
 
-  for (let collisionIndex = 0; collisionIndex < maxAttempts; collisionIndex += 1) {
+  for (
+    let collisionIndex = 0;
+    collisionIndex < maxAttempts;
+    collisionIndex += 1
+  ) {
     const candidate = createSlugCandidate(baseSlug, collisionIndex);
     const reserved = await reserveSlug(candidate);
 

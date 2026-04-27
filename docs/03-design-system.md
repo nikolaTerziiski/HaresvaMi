@@ -19,32 +19,32 @@ Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary. Gradient-heav
 
 ```css
 /* Coral — the brand color, used sparingly for emphasis */
---color-coral-50:  #FFF4F4;
---color-coral-100: #FFE5E6;
---color-coral-200: #FFCBCD;
---color-coral-300: #FFA0A4;
---color-coral-400: #FF7A80;
---color-coral-500: #FF5A5F;   /* PRIMARY BRAND */
---color-coral-600: #ED3F45;
---color-coral-700: #C82F35;
---color-coral-800: #A02227;
---color-coral-900: #7A1B1F;
+--color-coral-50: #fff4f4;
+--color-coral-100: #ffe5e6;
+--color-coral-200: #ffcbcd;
+--color-coral-300: #ffa0a4;
+--color-coral-400: #ff7a80;
+--color-coral-500: #ff5a5f; /* PRIMARY BRAND */
+--color-coral-600: #ed3f45;
+--color-coral-700: #c82f35;
+--color-coral-800: #a02227;
+--color-coral-900: #7a1b1f;
 
 /* Warm neutrals — for everything else */
---color-cream-50:  #FBFAF7;   /* Page background */
---color-cream-100: #F5F2EC;
---color-cream-200: #EBE6DC;
+--color-cream-50: #fbfaf7; /* Page background */
+--color-cream-100: #f5f2ec;
+--color-cream-200: #ebe6dc;
 
---color-ink-900:   #1A1814;   /* Primary text */
---color-ink-700:   #4A4640;   /* Secondary text */
---color-ink-500:   #8A857C;   /* Muted text */
---color-ink-300:   #C4BFB5;   /* Borders */
---color-ink-100:   #E8E4DC;   /* Subtle dividers */
+--color-ink-900: #1a1814; /* Primary text */
+--color-ink-700: #4a4640; /* Secondary text */
+--color-ink-500: #8a857c; /* Muted text */
+--color-ink-300: #c4bfb5; /* Borders */
+--color-ink-100: #e8e4dc; /* Subtle dividers */
 
 /* Functional colors — used very sparingly */
---color-success: #2D8659;     /* Pickle green, not Apple green */
---color-warning: #D9883B;     /* Mustard, not safety orange */
---color-error:   #C82F35;     /* Coral-700, same family as brand */
+--color-success: #2d8659; /* Pickle green, not Apple green */
+--color-warning: #d9883b; /* Mustard, not safety orange */
+--color-error: #c82f35; /* Coral-700, same family as brand */
 ```
 
 ### Color rules
@@ -63,15 +63,17 @@ Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary. Gradient-heav
 **Manrope** — single family, three weights.
 
 ```css
-font-family: 'Manrope', system-ui, sans-serif;
+font-family: "Manrope", system-ui, sans-serif;
 ```
 
 Weights used:
+
 - `400` — body text
 - `500` — labels, secondary headings
 - `700` — primary headings, emphasis
 
 Why Manrope:
+
 - Excellent Cyrillic glyphs (most fonts have weak BG support)
 - Slightly geometric but warm
 - Free, open source
@@ -80,14 +82,14 @@ Why Manrope:
 ### Type scale
 
 ```css
---text-xs:   0.75rem;    /* 12px — captions, timestamps */
---text-sm:   0.875rem;   /* 14px — secondary labels */
---text-base: 1rem;       /* 16px — body */
---text-lg:   1.125rem;   /* 18px — emphasized body */
---text-xl:   1.5rem;     /* 24px — section headings */
---text-2xl:  2rem;       /* 32px — page titles */
---text-3xl:  2.5rem;     /* 40px — landing headlines */
---text-4xl:  3.5rem;     /* 56px — kiosk standby text */
+--text-xs: 0.75rem; /* 12px — captions, timestamps */
+--text-sm: 0.875rem; /* 14px — secondary labels */
+--text-base: 1rem; /* 16px — body */
+--text-lg: 1.125rem; /* 18px — emphasized body */
+--text-xl: 1.5rem; /* 24px — section headings */
+--text-2xl: 2rem; /* 32px — page titles */
+--text-3xl: 2.5rem; /* 40px — landing headlines */
+--text-4xl: 3.5rem; /* 56px — kiosk standby text */
 ```
 
 ### Type rules
@@ -115,10 +117,10 @@ Avoid `gap-3`, `gap-5`, `gap-7` — these are reach values that often signal ind
 ## Border radius
 
 ```css
---radius-sm:  4px;    /* Inputs, badges */
---radius-md:  8px;    /* Buttons, cards */
---radius-lg:  16px;   /* Major containers, modals */
---radius-xl:  24px;   /* Hero elements, kiosk buttons */
+--radius-sm: 4px; /* Inputs, badges */
+--radius-md: 8px; /* Buttons, cards */
+--radius-lg: 16px; /* Major containers, modals */
+--radius-xl: 24px; /* Hero elements, kiosk buttons */
 --radius-full: 9999px; /* Avatars, pills, the big like/dislike buttons */
 ```
 
@@ -131,6 +133,7 @@ Avoid `gap-3`, `gap-5`, `gap-7` — these are reach values that often signal ind
 Three variants, no more.
 
 **Primary** — coral background, cream text. One per screen.
+
 ```tsx
 <button className="bg-coral-500 hover:bg-coral-600 text-cream-50 font-medium px-6 py-3 rounded-md transition-colors">
   Запази
@@ -138,6 +141,7 @@ Three variants, no more.
 ```
 
 **Secondary** — ink-100 background, ink-900 text. The default action.
+
 ```tsx
 <button className="bg-ink-100 hover:bg-ink-200 text-ink-900 font-medium px-6 py-3 rounded-md transition-colors">
   Откажи
@@ -145,6 +149,7 @@ Three variants, no more.
 ```
 
 **Ghost** — transparent, ink-700 text. For tertiary actions.
+
 ```tsx
 <button className="text-ink-700 hover:text-ink-900 hover:bg-ink-100 font-medium px-6 py-3 rounded-md transition-colors">
   Изтрий
@@ -152,6 +157,7 @@ Three variants, no more.
 ```
 
 **Kiosk-mode buttons** — much larger touch targets.
+
 - Minimum 64px tall
 - Minimum 200px wide
 - Font size `text-2xl`
@@ -166,6 +172,7 @@ Three variants, no more.
 ```
 
 Rules:
+
 - No drop shadows by default
 - Border on cream-50 background uses `border-ink-100`
 - Card padding is `p-6` (24px) standard, `p-8` for hero cards
@@ -203,12 +210,14 @@ Rules:
 This is where AI-generated UIs always fail. Empty states must have personality.
 
 ### Bad (generic)
+
 ```
 No data available
 [Add new]
 ```
 
 ### Good (HaresvaMi style)
+
 ```
 Все още няма отзиви
 
@@ -221,7 +230,9 @@ No data available
 
 ```tsx
 <div className="text-center py-16 max-w-md mx-auto">
-  <div className="text-4xl mb-4">{/* Optional small illustration or large icon */}</div>
+  <div className="text-4xl mb-4">
+    {/* Optional small illustration or large icon */}
+  </div>
   <h3 className="text-xl font-bold text-ink-900 mb-2">{title}</h3>
   <p className="text-ink-700 mb-6">{description}</p>
   {action && <Button>{action}</Button>}
@@ -280,46 +291,46 @@ This is part of design. Words matter as much as visuals.
 
 ```ts
 // tailwind.config.ts
-import type { Config } from 'tailwindcss';
+import type { Config } from "tailwindcss";
 
 export default {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         coral: {
-          50:  '#FFF4F4',
-          100: '#FFE5E6',
-          200: '#FFCBCD',
-          300: '#FFA0A4',
-          400: '#FF7A80',
-          500: '#FF5A5F',
-          600: '#ED3F45',
-          700: '#C82F35',
-          800: '#A02227',
-          900: '#7A1B1F',
+          50: "#FFF4F4",
+          100: "#FFE5E6",
+          200: "#FFCBCD",
+          300: "#FFA0A4",
+          400: "#FF7A80",
+          500: "#FF5A5F",
+          600: "#ED3F45",
+          700: "#C82F35",
+          800: "#A02227",
+          900: "#7A1B1F",
         },
         cream: {
-          50:  '#FBFAF7',
-          100: '#F5F2EC',
-          200: '#EBE6DC',
+          50: "#FBFAF7",
+          100: "#F5F2EC",
+          200: "#EBE6DC",
         },
         ink: {
-          900: '#1A1814',
-          700: '#4A4640',
-          500: '#8A857C',
-          300: '#C4BFB5',
-          100: '#E8E4DC',
+          900: "#1A1814",
+          700: "#4A4640",
+          500: "#8A857C",
+          300: "#C4BFB5",
+          100: "#E8E4DC",
         },
       },
       fontFamily: {
-        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        sans: ["Manrope", "system-ui", "sans-serif"],
       },
       fontSize: {
-        '4xl': ['3.5rem', { lineHeight: '1.1' }],
+        "4xl": ["3.5rem", { lineHeight: "1.1" }],
       },
       borderRadius: {
-        'xl': '24px',
+        xl: "24px",
       },
     },
   },

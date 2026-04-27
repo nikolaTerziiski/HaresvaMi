@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-import {
-  getStripeClient,
-  getStripeWebhookSecret,
-} from "@/lib/billing/stripe";
+import { getStripeClient, getStripeWebhookSecret } from "@/lib/billing/stripe";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -49,7 +46,9 @@ function stripeObjectId(value: unknown) {
 }
 
 function unixToIso(value: number | null | undefined) {
-  return typeof value === "number" ? new Date(value * 1000).toISOString() : null;
+  return typeof value === "number"
+    ? new Date(value * 1000).toISOString()
+    : null;
 }
 
 function periodAccessEnded(periodEnd: string | null) {
@@ -103,7 +102,9 @@ function getSessionRestaurantId(session: Stripe.Checkout.Session) {
 function getInvoiceSubscriptionId(invoice: Stripe.Invoice) {
   return (
     stripeObjectId(invoice.parent?.subscription_details?.subscription) ??
-    stripeObjectId((invoice as Stripe.Invoice & { subscription?: unknown }).subscription)
+    stripeObjectId(
+      (invoice as Stripe.Invoice & { subscription?: unknown }).subscription,
+    )
   );
 }
 
@@ -138,7 +139,9 @@ async function updateRestaurantBilling(
   const { data, error } = await query.select("id").maybeSingle();
 
   if (error) {
-    throw new Error(`Unable to update restaurant billing state: ${error.message}`);
+    throw new Error(
+      `Unable to update restaurant billing state: ${error.message}`,
+    );
   }
 
   if (!data) {

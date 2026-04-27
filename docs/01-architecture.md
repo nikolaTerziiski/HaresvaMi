@@ -3,9 +3,11 @@
 ## Stack rationale
 
 ### Why Next.js 15 (App Router)
+
 Familiar to the developer (KoiRaboti uses it). App Router gives us server components by default, which means less client JS, faster TTI on cheap tablets. Streaming, parallel routes, and intercepting routes are useful for the kiosk modal flow.
 
 ### Why Supabase
+
 - Postgres (real database, not a NoSQL toy)
 - Auth out of the box with email + magic link
 - Storage for receipt images
@@ -13,6 +15,7 @@ Familiar to the developer (KoiRaboti uses it). App Router gives us server compon
 - Free tier is generous enough for first 100 restaurants
 
 ### Why Gemini 2.5 Flash for receipts
+
 - 5–10x cheaper than Claude Sonnet for vision
 - Fast enough that the customer doesn't wait awkwardly (target: <3 seconds per scan)
 - Good enough at structured extraction with a well-written prompt
@@ -20,6 +23,7 @@ Familiar to the developer (KoiRaboti uses it). App Router gives us server compon
 - **Architecture rule:** the AI provider is hidden behind a clean interface in `lib/ai/extract-receipt.ts`. Swapping providers should require zero changes elsewhere.
 
 ### Why PWA, not React Native
+
 - No App Store / Play Store friction
 - Owner adds to home screen during onboarding, looks native after
 - One codebase
@@ -27,6 +31,7 @@ Familiar to the developer (KoiRaboti uses it). App Router gives us server compon
 - Push notifications work on Android PWAs
 
 ### Why Stripe (deferred to Phase 2)
+
 - Industry standard
 - Bulgarian card support
 - Easy to integrate with Supabase user IDs
@@ -199,13 +204,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 When Claude Code starts Phase 0, execute in this exact order:
 
 1. **Initialize Next.js project**
+
    ```
    npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias "@/*"
    ```
+
    - When prompted, accept all defaults except: skip ESLint setup if it's slow
    - **Verify Tailwind is v4** in `package.json`. If v3, upgrade.
 
 2. **Install core dependencies**
+
    ```
    npm install @supabase/supabase-js @supabase/ssr
    npm install react-hook-form @hookform/resolvers zod
@@ -216,14 +224,17 @@ When Claude Code starts Phase 0, execute in this exact order:
    ```
 
 3. **Install shadcn/ui base**
+
    ```
    npx shadcn@latest init
    ```
+
    - Style: New York
    - Base color: Neutral (we override with our coral)
    - CSS variables: Yes
 
 4. **Add initial shadcn components**
+
    ```
    npx shadcn@latest add button input card label dialog form
    ```
@@ -257,6 +268,7 @@ When Claude Code starts Phase 0, execute in this exact order:
     - Apply via Supabase dashboard SQL editor (developer does this manually for v1)
 
 11. **Generate TypeScript types from Supabase**
+
     ```
     npx supabase gen types typescript --project-id YOUR_REF > lib/supabase/types.ts
     ```

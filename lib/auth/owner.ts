@@ -21,7 +21,9 @@ export async function getCurrentOwnerState() {
   } = await supabase.auth.getUser();
 
   if (userError && userError.name !== "AuthSessionMissingError") {
-    throw new Error(`Unable to read the current auth user: ${userError.message}`);
+    throw new Error(
+      `Unable to read the current auth user: ${userError.message}`,
+    );
   }
 
   if (!user) {

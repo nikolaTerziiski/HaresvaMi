@@ -7,18 +7,22 @@
 You need these installed:
 
 ### 1. Node.js 20 LTS or newer
+
 Check: `node --version` (should be v20.x or v22.x)
 Install if needed: https://nodejs.org/en/download → Windows installer
 
 ### 2. Git
+
 Check: `git --version`
 Install if needed: https://git-scm.com/download/win
 
 ### 3. A terminal
+
 **Recommended:** Windows Terminal (free from Microsoft Store)
 Alternative: PowerShell that comes with Windows
 
 ### 4. VS Code (or your editor of choice)
+
 Download: https://code.visualstudio.com/
 
 ## Step 1 — Set up the project folder
@@ -57,6 +61,7 @@ haresvami/
 ```
 
 **Verify in PowerShell:**
+
 ```powershell
 ls
 # Should show: CLAUDE.md, KICKOFF-PROMPT.md, SETUP-WINDOWS.md, docs/
@@ -76,6 +81,7 @@ npm install -g @anthropic-ai/claude-code
 ```
 
 **Verify:**
+
 ```powershell
 claude --version
 ```
@@ -99,12 +105,14 @@ Open `KICKOFF-PROMPT.md` in your editor, copy the entire content (everything bel
 Paste it as your first message in Claude Code.
 
 Claude will:
+
 1. Read all the docs
 2. Confirm understanding back to you
 3. Wait for your "go ahead"
 4. Then scaffold the entire Phase 0 project
 
 Once scaffolding is done, Claude will tell you:
+
 - What env vars to set
 - What to do on supabase.com
 - How to verify it works
@@ -112,6 +120,7 @@ Once scaffolding is done, Claude will tell you:
 ## Step 7 — Set up Supabase
 
 Follow the instructions in `docs/06-deployment.md` section "Initial setup steps":
+
 1. Create Supabase project (Frankfurt region)
 2. Apply migrations from `supabase/migrations/` (Claude will create these in Step 6)
 3. Create storage buckets
@@ -153,6 +162,7 @@ git push -u origin main
 ```
 
 From now on, commit regularly:
+
 ```powershell
 git add .
 git commit -m "Phase 1: Auth pages complete"
@@ -169,10 +179,11 @@ claude
 ```
 
 In Claude Code, your first message of the session should be:
+
 ```
 Continuing HaresvaMi work. Read CLAUDE.md to refresh context.
 We're currently on [Phase X — what we're doing].
-Last session we finished [...]. 
+Last session we finished [...].
 Today let's [...].
 ```
 
@@ -181,23 +192,30 @@ Claude will pick up where you left off with full context.
 ## Common gotchas on Windows
 
 ### "npm install" is slow or hangs
+
 Try: `npm install --no-audit --prefer-offline`
 
 ### Permission errors
+
 Run terminal as Administrator OR install npm packages without `-g` (use `npx` instead)
 
 ### Path with spaces in username
+
 If your Windows username has spaces ("John Smith"), Node.js sometimes struggles. Move project to `C:\Projects\haresvami` to avoid the user folder entirely.
 
 ### Long file paths
+
 Windows has a 260-char path limit by default. Enable long paths:
+
 ```powershell
 # As admin:
 git config --system core.longpaths true
 ```
 
 ### PowerShell execution policy
+
 If scripts won't run:
+
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```

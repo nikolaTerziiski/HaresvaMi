@@ -3,6 +3,7 @@
 ## Tier limits
 
 ### Free tier
+
 - 1 restaurant
 - Manual item selection only (customer picks dishes from a menu list, no AI scanning)
 - 50 feedback responses per calendar month (resets on the 1st)
@@ -11,6 +12,7 @@
 - Email support
 
 ### Pro tier — €10/month
+
 - Everything in Free, plus:
 - AI receipt scanning (unlimited)
 - Unlimited feedback responses
@@ -20,12 +22,14 @@
 - Priority email support
 
 ### 14-day Pro trial
+
 - Auto-starts when an owner attempts to use a Pro feature for the first time
 - No credit card required upfront
 - After trial: features lock back to Free unless they subscribe
 - One trial per restaurant, lifetime
 
 ### Restaurant Group — €40/month (Phase 4+)
+
 - Multiple locations under one account
 - Cross-location dashboard
 - Comparative insights between locations
@@ -35,9 +39,15 @@
 Implemented in `lib/utils/tier-limits.ts`:
 
 ```ts
-export async function canScanReceipt(restaurantId: string): Promise<{ ok: boolean; reason?: string }>;
-export async function canSubmitFeedback(restaurantId: string): Promise<{ ok: boolean; reason?: string }>;
-export async function getCurrentMonthUsage(restaurantId: string): Promise<UsageSnapshot>;
+export async function canScanReceipt(
+  restaurantId: string,
+): Promise<{ ok: boolean; reason?: string }>;
+export async function canSubmitFeedback(
+  restaurantId: string,
+): Promise<{ ok: boolean; reason?: string }>;
+export async function getCurrentMonthUsage(
+  restaurantId: string,
+): Promise<UsageSnapshot>;
 ```
 
 ### Rules
@@ -68,17 +78,20 @@ export async function getCurrentMonthUsage(restaurantId: string): Promise<UsageS
 
 ```ts
 // lib/ai/prompts.ts
-export function buildReceiptExtractionPrompt(menu: MenuItem[], aliases: ReceiptAlias[]): string {
+export function buildReceiptExtractionPrompt(
+  menu: MenuItem[],
+  aliases: ReceiptAlias[],
+): string {
   return `
 You are a receipt parser for a Bulgarian restaurant feedback app.
 
 Extract the food and drink items the customer ordered from this receipt image.
 
 The restaurant's menu items are:
-${menu.map(m => `- "${m.name_bg}" (id: ${m.id})`).join('\n')}
+${menu.map((m) => `- "${m.name_bg}" (id: ${m.id})`).join("\n")}
 
 Known abbreviations and aliases for this restaurant:
-${aliases.map(a => `- "${a.alias}" → "${menu.find(m => m.id === a.menu_item_id)?.name_bg}" (menu_item_id: ${a.menu_item_id})`).join('\n')}
+${aliases.map((a) => `- "${a.alias}" → "${menu.find((m) => m.id === a.menu_item_id)?.name_bg}" (menu_item_id: ${a.menu_item_id})`).join("\n")}
 
 Return ONLY valid JSON in this exact shape, with no markdown or explanation:
 {
@@ -125,13 +138,13 @@ export interface ExtractedItem {
   menu_item_id: string | null;
   menu_item_name: string | null;
   quantity: number;
-  matched_via: 'alias' | 'fuzzy_match' | 'unknown';
+  matched_via: "alias" | "fuzzy_match" | "unknown";
 }
 
 export async function extractReceipt(
   imageBuffer: Buffer,
   menu: MenuItem[],
-  aliases: ReceiptAlias[]
+  aliases: ReceiptAlias[],
 ): Promise<ReceiptExtractionResult> {
   // Currently uses Gemini 2.5 Flash
   return extractWithGemini(imageBuffer, menu, aliases);
@@ -143,6 +156,7 @@ The provider implementation lives in `lib/ai/providers/gemini.ts`. To swap provi
 ### Cost tracking
 
 Log every Gemini API call with:
+
 - Restaurant ID
 - Image size (KB)
 - Tokens used (input/output)
@@ -177,11 +191,13 @@ When AI is uncertain (low confidence fuzzy match), it can return `matched_via: "
 ### The form
 
 Per-item rating:
+
 - 1–10 slider or stepper
 - Optional comment field (collapsed by default, "Добави коментар" link)
 - Default value: 7 (so customer must actively move it to leave a low rating)
 
 Overall rating (final screen):
+
 - Two big buttons: "❤️ Харесва ми" / "💔 Не ми харесва"
 - Optional overall comment
 
@@ -213,6 +229,7 @@ Plain-Bulgarian insights are generated weekly by a cron job.
 ### Generation flow
 
 Weekly cron → for each restaurant with Pro tier:
+
 1. Aggregate last 7 days of ratings vs prior 7 days
 2. Identify dishes with significant changes (statistical significance: ≥5 ratings, change ≥1.5 points)
 3. Use Claude Sonnet to write the insight in natural Bulgarian
@@ -243,30 +260,36 @@ Return only the insight text, no explanation.
 ## Edge cases
 
 ### Receipt scanning fails
+
 - Image too blurry / unreadable: show "Бонът не се чете ясно. Опитай отново."
 - No menu items detected: show "Не разпознахме продукти. Можеш ли да ги избереш ръчно?" → fallback to manual selection
 - Gemini API down: fallback to manual selection mode automatically
 
 ### No menu items configured
+
 - Block kiosk mode entry: "Първо добави продукти в менюто си" with link to /dashboard/menu
 - During onboarding, can't complete step 4 without at least 5 menu items
 
 ### Customer abandons mid-rating
+
 - Session stays in DB with `completed_at = NULL`
 - After 30 minutes of inactivity in kiosk, auto-redirect to standby
 - Incomplete sessions don't count toward usage limit
 
 ### Owner logs out of kiosk mid-day
+
 - Kiosk falls back to lock screen requiring re-login
 - No data loss — incomplete sessions remain
 
 ### Owner deletes a menu item with existing ratings
+
 - Soft delete (`deleted_at = NOW()`)
 - Existing ratings preserved (FK doesn't cascade because we soft-delete)
 - Item disappears from kiosk and new feedback flows
 - Still appears in historical analytics with "(премахнато)" suffix
 
 ### Multiple customers at same table sharing receipt
+
 - One scan = one session
 - They negotiate amongst themselves who taps what
 - Future enhancement: split bill mode (post-MVP)

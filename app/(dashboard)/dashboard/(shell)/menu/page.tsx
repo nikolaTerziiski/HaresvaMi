@@ -33,8 +33,8 @@ export default async function MenuPage() {
 
   return (
     <div className="flex h-full w-full">
-      <MenuManager 
-        restaurantId={restaurant.id} 
+      <MenuManager
+        restaurantId={restaurant.id}
         initialItems={menuItems || []}
       />
     </div>

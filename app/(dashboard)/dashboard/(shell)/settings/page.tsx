@@ -3,12 +3,11 @@ import { getTranslations } from "next-intl/server";
 
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { canScanReceipt } from "@/lib/billing/entitlements";
+import { getPlanLimits, isPlanTier, type PlanTier } from "@/lib/billing/plans";
 import {
-  getPlanLimits,
-  isPlanTier,
-  type PlanTier,
-} from "@/lib/billing/plans";
-import { getActiveScanCreditSummary, getMonthlyUsage } from "@/lib/billing/usage";
+  getActiveScanCreditSummary,
+  getMonthlyUsage,
+} from "@/lib/billing/usage";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata = {

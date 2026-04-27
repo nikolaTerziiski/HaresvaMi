@@ -11,10 +11,7 @@ import {
   PRIMARY_RECEIPT_MODEL,
   RETRY_RECEIPT_MODEL,
 } from "@/lib/ai/providers/gemini-receipt";
-import {
-  insertAiUsageEvent,
-  type TokenUsage,
-} from "@/lib/ai/usage-logging";
+import { insertAiUsageEvent, type TokenUsage } from "@/lib/ai/usage-logging";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 const LOW_CONFIDENCE_THRESHOLD = 0.65;
@@ -101,7 +98,10 @@ async function readReceiptContext(restaurantId: string) {
 
 async function logReceiptScan(input: {
   restaurantId: string;
-  eventType: "receipt_scan_attempt" | "receipt_scan_success" | "receipt_scan_failed";
+  eventType:
+    | "receipt_scan_attempt"
+    | "receipt_scan_success"
+    | "receipt_scan_failed";
   model: string;
   usage?: TokenUsage;
   success: boolean;

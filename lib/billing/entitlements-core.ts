@@ -221,8 +221,7 @@ export function getScanEntitlement(input: {
   const planLimit = getAiScanLimit(plan.tier);
   const planRemaining = Math.max(0, planLimit - input.usage.aiScanCount);
   const extraUsedBeyondPlan = Math.max(0, input.usage.aiScanCount - planLimit);
-  const limit =
-    planLimit + extraUsedBeyondPlan + input.creditSummary.remaining;
+  const limit = planLimit + extraUsedBeyondPlan + input.creditSummary.remaining;
   const remaining = planRemaining + input.creditSummary.remaining;
 
   if (remaining > 0) {
