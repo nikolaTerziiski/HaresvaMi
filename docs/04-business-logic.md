@@ -2,20 +2,30 @@
 
 ## Tier limits
 
+The v1 source of truth is `lib/billing/plans.ts`. Every tier has explicit numeric AI scan limits.
+
 ### Free tier
 
 - 1 restaurant
-- Manual item selection only (customer picks dishes from a menu list, no AI scanning)
-- 50 feedback responses per calendar month (resets on the 1st)
+- 50 completed feedback sessions per calendar month (resets on the 1st)
+- 5 successful AI receipt scans per calendar month (resets on the 1st)
+- Manual item selection remains available even when AI scans are exhausted
 - Basic dashboard (overall ratings, last 30 days)
 - Bulgarian customer interface only
 - Email support
 
-### Pro tier — €10/month
+### Starter tier
 
 - Everything in Free, plus:
-- AI receipt scanning (unlimited)
-- Unlimited feedback responses
+- 500 completed feedback sessions per calendar month
+- 150 successful AI receipt scans per calendar month
+- Useful for restaurants that scan regularly but do not need the full Pro quota
+
+### Pro tier
+
+- Everything in Starter, plus:
+- 10000 completed feedback sessions per calendar month
+- 1000 successful AI receipt scans per calendar month
 - Per-dish analytics with trends (week/month/all-time)
 - Plain-Bulgarian weekly insights via push notification
 - BG + EN customer interface (toggle in onboarding)
@@ -23,39 +33,56 @@
 
 ### 14-day Pro trial
 
-- Auto-starts when an owner attempts to use a Pro feature for the first time
+- 14 days
+- Pro preview
+- 100 successful AI receipt scans total during the trial
+- Trial scan usage is tracked through `scan_credit_grants`, not monthly reset
 - No credit card required upfront
 - After trial: features lock back to Free unless they subscribe
 - One trial per restaurant, lifetime
 
-### Restaurant Group — €40/month (Phase 4+)
+### Future module: Restaurant Group / multi-restaurant
 
+- Not part of v1 limits or schema constraints
 - Multiple locations under one account
 - Cross-location dashboard
 - Comparative insights between locations
 
 ## Tier limit enforcement
 
-Implemented in `lib/utils/tier-limits.ts`:
+Implemented in:
+
+- `lib/billing/plans.ts`
+- `lib/billing/entitlements.ts`
+- `lib/billing/entitlements-core.ts`
+- `lib/billing/usage.ts`
 
 ```ts
 export async function canScanReceipt(
   restaurantId: string,
-): Promise<{ ok: boolean; reason?: string }>;
+): Promise<EntitlementResult>;
+export async function consumeAiScanCredit(
+  restaurantId: string,
+): Promise<EntitlementResult>;
 export async function canSubmitFeedback(
   restaurantId: string,
-): Promise<{ ok: boolean; reason?: string }>;
-export async function getCurrentMonthUsage(
+): Promise<EntitlementResult>;
+export async function incrementFeedbackUsage(
   restaurantId: string,
-): Promise<UsageSnapshot>;
+): Promise<void>;
+export async function getMonthlyUsage(
+  restaurantId: string,
+): Promise<MonthlyUsageSnapshot>;
 ```
 
 ### Rules
 
-1. **Receipt scanning is Pro-only.** Free tier sees a "Upgrade to Pro" message in kiosk mode where the scan button would be.
-2. **Feedback count is checked before insertion.** If at limit, the customer sees "Restaurant has reached its feedback limit for this month." — owner gets a push notification to upgrade.
-3. **Trial activation:** when a Free user first taps "Сканирай бона," instead of blocking, show a one-time modal: "Започни 14-дневен пробен период на Pro — без кредитна карта" with [Започни] / [Не сега]. If they tap [Започни], `restaurants.trial_ends_at = NOW() + 14 days` and `tier = 'pro'` (effectively).
-4. **Trial expiry:** a daily cron (or on-read check) downgrades restaurants where `trial_ends_at < NOW() AND stripe_subscription_id IS NULL` back to `tier = 'free'`.
+1. **All tiers use numeric limits.** Free, Starter, and Pro all have explicit monthly feedback and AI scan limits.
+2. **AI scans are checked before Gemini.** `/api/extract-receipt` calls `canScanReceipt()` before loading the image or calling the AI provider.
+3. **Only successful extraction consumes scan usage.** Failed Gemini calls are logged but do not increment `usage_counters.receipt_scans_count` or consume a scan credit.
+4. **Trial access uses credits.** A trial grants 100 AI scans for 14 days through `scan_credit_grants`; expired trials without paid access fall back to Free on entitlement reads.
+5. **Feedback count is checked before completion.** The feedback API must call `canSubmitFeedback()` before marking a session complete and increment `usage_counters.feedback_count` only when `completed_at` is set.
+6. **Manual selection is never blocked by AI scan limits.** If scans are exhausted, the kiosk falls back to manual item selection.
 
 ## Receipt extraction logic
 
@@ -63,21 +90,21 @@ export async function getCurrentMonthUsage(
 
 1. Customer pays. Waiter taps "Сканирай бона" in kiosk mode.
 2. Camera opens. Waiter takes a photo of the printed receipt.
-3. Image uploads to Supabase Storage at `receipt-images/{restaurant_id}/{session_uuid}.jpg`.
-4. POST to `/api/extract-receipt` with `{restaurant_id, image_path}`.
+3. Kiosk posts the captured image file to `/api/extract-receipt` with `restaurant_id`.
+4. The API also accepts a stored `image_path` for server-side receipt image downloads.
 5. Server fetches:
    - The image from Storage
    - The restaurant's `menu_items` (active, not deleted)
    - The restaurant's `receipt_aliases`
-6. Server calls Gemini 2.5 Flash with structured prompt (see below).
-7. Server returns `{items: [...], unknown_aliases: [...]}`.
-8. If `unknown_aliases.length > 0`: kiosk shows "Нови продукти открити" with mapping UI.
-9. Once mapped, customer proceeds to rating screen.
+6. Server calls Gemini 2.5 Flash Lite first, then retries with Gemini 2.5 Flash on low confidence.
+7. Server returns `{items, confidence, model, retryCount, usage}`.
+8. If extraction fails or returns no usable items, kiosk falls back to manual item selection.
+9. Customer proceeds to rating screen after the waiter confirms extracted or manually selected items.
 
 ### Gemini prompt template
 
 ```ts
-// lib/ai/prompts.ts
+// lib/ai/prompts/receipt-extraction.ts
 export function buildReceiptExtractionPrompt(
   menu: MenuItem[],
   aliases: ReceiptAlias[],
@@ -128,30 +155,20 @@ If the receipt is unreadable, return: {"items": [], "error": "unreadable"}
 
 ```ts
 // lib/ai/extract-receipt.ts
-export interface ReceiptExtractionResult {
-  items: ExtractedItem[];
-  error?: string;
-}
-
-export interface ExtractedItem {
-  raw_text: string;
-  menu_item_id: string | null;
-  menu_item_name: string | null;
-  quantity: number;
-  matched_via: "alias" | "fuzzy_match" | "unknown";
-}
-
 export async function extractReceipt(
-  imageBuffer: Buffer,
-  menu: MenuItem[],
-  aliases: ReceiptAlias[],
-): Promise<ReceiptExtractionResult> {
-  // Currently uses Gemini 2.5 Flash
-  return extractWithGemini(imageBuffer, menu, aliases);
-}
+  payload: ReceiptExtractionPayload,
+): Promise<ReceiptExtractionApiResult>;
+
+// lib/ai/providers/gemini-receipt.ts
+export async function callGeminiForReceipt(input: {
+  model: string;
+  prompt: string;
+  imageBuffer: Buffer;
+  mimeType: string;
+}): Promise<GeminiReceiptResult>;
 ```
 
-The provider implementation lives in `lib/ai/providers/gemini.ts`. To swap providers, change the single call inside `extractReceipt()`. Nothing else in the codebase knows or cares which AI is running.
+The provider implementation lives in `lib/ai/providers/gemini-receipt.ts`. To swap providers, change the single call inside `extractReceipt()`. Nothing else in the codebase knows or cares which AI is running.
 
 ### Cost tracking
 
@@ -164,7 +181,7 @@ Log every Gemini API call with:
 - Cost estimate (calculated)
 - Success/failure
 
-Store in a `ai_calls` table (Phase 3) for cost monitoring per restaurant.
+Store metadata in `ai_usage_events` for cost monitoring per restaurant. Never store receipt text, customer comments, images, names, access tokens, or secrets in this table.
 
 ## Alias learning loop
 

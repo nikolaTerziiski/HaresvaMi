@@ -16,7 +16,7 @@ CREATE TABLE restaurants (
   language_default         TEXT NOT NULL DEFAULT 'bg' CHECK (language_default IN ('bg', 'en')),
   customer_languages       TEXT[] NOT NULL DEFAULT ARRAY['bg'],
   logo_url                 TEXT,
-  tier                     TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'pro', 'group')),
+  tier                     TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'starter', 'pro')),
   trial_ends_at            TIMESTAMPTZ,
   stripe_customer_id       TEXT UNIQUE,
   stripe_subscription_id   TEXT UNIQUE,
