@@ -1,21 +1,19 @@
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { KioskScanScreen } from "@/components/kiosk/KioskScanScreen";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { canScanReceipt } from "@/lib/billing/entitlements";
+import {
+  KIOSK_SESSION_COOKIE,
+  verifyKioskToken,
+} from "@/lib/kiosk/session-token";
 import type {
   EntitlementResult,
   KioskMenuItem,
   KioskRestaurant,
 } from "@/lib/kiosk/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
-
-type KioskScanPageProps = {
-  searchParams?: Promise<{
-    restaurant_id?: string;
-    restaurantId?: string;
-  }>;
-};
 
 const EMPTY_ENTITLEMENT: EntitlementResult = {
   allowed: false,
@@ -26,15 +24,41 @@ const EMPTY_ENTITLEMENT: EntitlementResult = {
   upgradeTarget: null,
 };
 
-async function resolveRestaurantId(
-  searchParams: KioskScanPageProps["searchParams"],
-) {
-  const params = await searchParams;
-  const requestedRestaurantId =
-    params?.restaurant_id ?? params?.restaurantId ?? null;
+function KioskAccessError() {
+  return (
+    <div className="grid min-h-dvh place-items-center px-6 text-center">
+      <section className="max-w-[560px] rounded-3xl border border-[var(--rule)] bg-[var(--paper)] p-10">
+        <p className="m-0 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.1em] text-[var(--accent)]">
+          HaresvaMi
+        </p>
+        <h1 className="mt-3 mb-4 font-[var(--f-display)] text-[48px] font-normal leading-none text-[var(--ink)]">
+          Таблетът не е свързан.
+        </h1>
+        <p className="m-0 text-[18px] leading-[1.55] text-[var(--ink-2)]">
+          Отвори връзката за таблет от dashboard-а.
+        </p>
+      </section>
+    </div>
+  );
+}
 
-  if (requestedRestaurantId) {
-    return requestedRestaurantId;
+async function resolveRestaurantId() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(KIOSK_SESSION_COOKIE)?.value;
+
+  if (token) {
+    try {
+      const verification = await verifyKioskToken(token);
+
+      return verification.valid ? verification.session.restaurant_id : null;
+    } catch (error) {
+      console.error("Unable to verify kiosk session:", error);
+      return null;
+    }
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return null;
   }
 
   const { restaurant } = await getCurrentOwnerState();
@@ -80,28 +104,11 @@ async function loadKioskMenu(restaurantId: string) {
   })) satisfies KioskMenuItem[];
 }
 
-export default async function KioskScanPage({
-  searchParams,
-}: KioskScanPageProps) {
-  const t = await getTranslations("kiosk.scan");
-  const restaurantId = await resolveRestaurantId(searchParams);
+export default async function KioskScanPage() {
+  const restaurantId = await resolveRestaurantId();
 
   if (!restaurantId) {
-    return (
-      <div className="grid min-h-dvh place-items-center px-6 text-center">
-        <section className="max-w-[560px] rounded-3xl border border-[var(--rule)] bg-[var(--paper)] p-10">
-          <p className="m-0 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.1em] text-[var(--accent)]">
-            HaresvaMi
-          </p>
-          <h1 className="mt-3 mb-4 font-[var(--f-display)] text-[48px] font-normal leading-none text-[var(--ink)]">
-            {t("missingRestaurantTitle")}
-          </h1>
-          <p className="m-0 text-[18px] leading-[1.55] text-[var(--ink-2)]">
-            {t("missingRestaurantBody")}
-          </p>
-        </section>
-      </div>
-    );
+    return <KioskAccessError />;
   }
 
   const [restaurant, entitlement, menuItems] = await Promise.all([
@@ -111,19 +118,10 @@ export default async function KioskScanPage({
   ]);
 
   if (!restaurant) {
-    return (
-      <div className="grid min-h-dvh place-items-center px-6 text-center">
-        <section className="max-w-[560px] rounded-3xl border border-[var(--rule)] bg-[var(--paper)] p-10">
-          <h1 className="m-0 font-[var(--f-display)] text-[48px] font-normal leading-none text-[var(--ink)]">
-            {t("missingRestaurantTitle")}
-          </h1>
-          <p className="mt-4 mb-0 text-[18px] leading-[1.55] text-[var(--ink-2)]">
-            {t("missingRestaurantBody")}
-          </p>
-        </section>
-      </div>
-    );
+    return <KioskAccessError />;
   }
+
+  const t = await getTranslations("kiosk.scan");
 
   return (
     <KioskScanScreen

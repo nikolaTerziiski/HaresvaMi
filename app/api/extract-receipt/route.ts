@@ -6,23 +6,27 @@ import {
   receiptRateLimitExceededResponse,
 } from "@/lib/api/extract-receipt-request";
 import { extractReceipt } from "@/lib/ai/extract-receipt";
+import { authorizeKioskOrOwnerRestaurant } from "@/lib/kiosk/authorization";
 
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await readReceiptExtractionRequest(request);
+    const authorization = await authorizeKioskOrOwnerRestaurant(
+      request,
+      payload.restaurantId,
+    );
 
-    if (!payload.restaurantId) {
-      return NextResponse.json(
-        { error: "restaurant_id is required" },
-        { status: 400 },
-      );
+    if (!authorization.ok) {
+      return NextResponse.json(authorization.body, {
+        status: authorization.status,
+      });
     }
 
     const rateLimit = checkReceiptExtractionRateLimit(
       request,
-      payload.restaurantId,
+      authorization.restaurantId,
     );
 
     if (!rateLimit.allowed) {
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await extractReceipt({
-      restaurantId: payload.restaurantId,
+      restaurantId: authorization.restaurantId,
       imagePath: payload.imagePath,
       imageBuffer: payload.imageBuffer,
       mimeType: payload.mimeType,

@@ -334,6 +334,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      kiosk_sessions: {
+        Row: {
+          id: string;
+          restaurant_id: string;
+          token_hash: string;
+          label: string | null;
+          status: "active" | "revoked";
+          expires_at: string;
+          last_used_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          restaurant_id: string;
+          token_hash: string;
+          label?: string | null;
+          status?: "active" | "revoked";
+          expires_at: string;
+          last_used_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          restaurant_id?: string;
+          token_hash?: string;
+          label?: string | null;
+          status?: "active" | "revoked";
+          expires_at?: string;
+          last_used_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

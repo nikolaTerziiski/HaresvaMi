@@ -7,11 +7,26 @@ import {
   FeedbackSubmitError,
 } from "@/lib/feedback/submit-feedback";
 import { feedbackSubmissionSchema } from "@/lib/feedback/schema";
+import { authorizeKioskOrOwnerRestaurant } from "@/lib/kiosk/authorization";
 
 export async function POST(request: NextRequest) {
   try {
     const payload = feedbackSubmissionSchema.parse(await request.json());
-    const result = await submitFeedback(payload);
+    const authorization = await authorizeKioskOrOwnerRestaurant(
+      request,
+      payload.restaurantId,
+    );
+
+    if (!authorization.ok) {
+      return NextResponse.json(authorization.body, {
+        status: authorization.status,
+      });
+    }
+
+    const result = await submitFeedback({
+      ...payload,
+      restaurantId: authorization.restaurantId,
+    });
 
     return NextResponse.json(result);
   } catch (error) {
