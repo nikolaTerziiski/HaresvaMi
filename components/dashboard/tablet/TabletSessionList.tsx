@@ -24,9 +24,9 @@ export function isExpired(session: KioskSession) {
 }
 
 function sessionStateLabel(session: KioskSession) {
-  if (session.status === "revoked") return "Отменена";
+  if (session.status === "revoked") return "Достъпът е отменен";
   if (isExpired(session)) return "Изтекла";
-  return "Активна";
+  return "Таблетът е свързан";
 }
 
 export function TabletSessionList({
@@ -70,14 +70,18 @@ export function TabletSessionList({
                     disabled={revokingId === session.id}
                     className="rounded-md border border-[var(--rule)] px-3 py-2 text-[12px] font-medium text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {revokingId === session.id ? "Отменяме..." : "Отмени"}
+                    {revokingId === session.id
+                      ? "Отменяме достъпа..."
+                      : "Отмени достъпа"}
                   </button>
                 ) : null}
               </div>
 
               <dl className="mt-3 grid gap-1 text-[12px] text-[var(--ink-2)]">
                 <div>
-                  <dt className="inline text-[var(--ink-mute)]">Създадена: </dt>
+                  <dt className="inline text-[var(--ink-mute)]">
+                    Създадена връзка:{" "}
+                  </dt>
                   <dd className="inline">
                     {dateFormatter.format(new Date(session.created_at))}
                   </dd>

@@ -36,7 +36,7 @@ export function TabletSetupActions({
         </h2>
         <p className="mt-3 mb-4 text-[14px] leading-[1.55] text-[var(--ink-2)]">
           Връзката се показва само веднъж. След като я отвориш на таблета,
-          устройството ще запомни защитена сесия чрез HttpOnly cookie.
+          устройството ще остане свързано, докато връзката е валидна.
         </p>
 
         <label className="grid gap-2 text-[13px] font-medium text-[var(--ink)]">
@@ -71,8 +71,8 @@ export function TabletSetupActions({
         </div>
 
         <p className="mt-3 mb-0 text-[12px] leading-[1.5] text-[var(--ink-mute)]">
-          При старт на това устройство ще излезеш от dashboard сесията в този
-          браузър и ще бъдеш прехвърлен към режима за таблет.
+          При старт на това устройство ще излезеш от таблото в този браузър и ще
+          бъдеш прехвърлен към режима за таблет.
         </p>
 
         {setupUrl ? (
@@ -107,8 +107,8 @@ export function TabletSetupActions({
       </section>
 
       <TabletSessionList
-        title="Активни таблети"
-        emptyText="Няма активни таблети."
+        title="Свързани устройства"
+        emptyText="Няма свързани устройства."
         sessions={activeSessions}
         revokingId={revokingId}
         onRevoke={handleRevokeSession}
@@ -116,7 +116,7 @@ export function TabletSetupActions({
 
       <TabletSessionList
         title="История"
-        emptyText="Няма отменени или изтекли сесии."
+        emptyText="Няма отменени или изтекли връзки."
         sessions={inactiveSessions}
         revokingId={revokingId}
         onRevoke={handleRevokeSession}

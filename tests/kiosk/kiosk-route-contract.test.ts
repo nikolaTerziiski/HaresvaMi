@@ -10,6 +10,23 @@ function source(path: string) {
 const connectRouteSource = source("app/kiosk/connect/route.ts");
 const feedbackRouteSource = source("app/api/feedback/route.ts");
 const extractReceiptRouteSource = source("app/api/extract-receipt/route.ts");
+const authorizationSource = source("lib/kiosk/authorization.ts");
+
+function assertSourceOrder(fileSource: string, snippets: string[]) {
+  let previousIndex = -1;
+
+  for (const snippet of snippets) {
+    const nextIndex = fileSource.indexOf(snippet, previousIndex + 1);
+
+    assert.notEqual(nextIndex, -1, `Missing source snippet: ${snippet}`);
+    assert.ok(
+      nextIndex > previousIndex,
+      `Expected snippet to appear later: ${snippet}`,
+    );
+
+    previousIndex = nextIndex;
+  }
+}
 
 test("/kiosk/connect sets the kiosk cookie for all app routes", () => {
   assert.match(connectRouteSource, /path:\s*"\/"/);
@@ -27,27 +44,58 @@ test("/kiosk/connect only sets secure cookies in production", () => {
 });
 
 test("/api/feedback authorizes kiosk or owner before submitting feedback", () => {
-  const authorizationIndex = feedbackRouteSource.indexOf(
+  assertSourceOrder(feedbackRouteSource, [
     "const authorization = await authorizeKioskOrOwnerRestaurant",
-  );
-  const submitIndex = feedbackRouteSource.indexOf(
     "const result = await submitFeedback",
-  );
+  ]);
+});
 
-  assert.notEqual(authorizationIndex, -1);
-  assert.notEqual(submitIndex, -1);
-  assert.ok(authorizationIndex < submitIndex);
+test("/api/feedback returns failed authorization before submitting feedback", () => {
+  assertSourceOrder(feedbackRouteSource, [
+    "const authorization = await authorizeKioskOrOwnerRestaurant",
+    "if (!authorization.ok)",
+    "return NextResponse.json(authorization.body",
+    "const result = await submitFeedback",
+  ]);
+});
+
+test("/api/feedback overwrites payload restaurant id with authorized restaurant id", () => {
+  assert.match(
+    feedbackRouteSource,
+    /submitFeedback\(\s*\{[\s\S]*\.\.\.payload,[\s\S]*restaurantId:\s*authorization\.restaurantId,[\s\S]*\}\s*\)/,
+  );
 });
 
 test("/api/extract-receipt authorizes kiosk or owner before extracting receipt", () => {
-  const authorizationIndex = extractReceiptRouteSource.indexOf(
+  assertSourceOrder(extractReceiptRouteSource, [
     "const authorization = await authorizeKioskOrOwnerRestaurant",
-  );
-  const extractIndex = extractReceiptRouteSource.indexOf(
     "const result = await extractReceipt",
-  );
+  ]);
+});
 
-  assert.notEqual(authorizationIndex, -1);
-  assert.notEqual(extractIndex, -1);
-  assert.ok(authorizationIndex < extractIndex);
+test("/api/extract-receipt uses authorized restaurant id for rate limiting", () => {
+  assert.match(
+    extractReceiptRouteSource,
+    /checkReceiptExtractionRateLimit\(\s*request,\s*authorization\.restaurantId,\s*\)/,
+  );
+});
+
+test("/api/extract-receipt uses authorized restaurant id in extraction payload", () => {
+  assert.match(
+    extractReceiptRouteSource,
+    /extractReceipt\(\s*\{[\s\S]*restaurantId:\s*authorization\.restaurantId,/,
+  );
+});
+
+test("kiosk authorization accepts cookie, x-kiosk-token header, and bearer token", () => {
+  assert.match(
+    authorizationSource,
+    /request\.cookies\.get\(KIOSK_SESSION_COOKIE\)\?\.value/,
+  );
+  assert.match(authorizationSource, /request\.headers\.get\("x-kiosk-token"\)/);
+  assert.match(authorizationSource, /bearerToken\(request\)/);
+  assert.match(
+    authorizationSource,
+    /scheme\?\.toLowerCase\(\)\s*===\s*"bearer"\s*\?\s*token\s*:\s*null/,
+  );
 });

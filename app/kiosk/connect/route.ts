@@ -16,7 +16,7 @@ const INVALID_TOKEN_HTML = `<!doctype html>
     <main style="max-width:560px;padding:32px;text-align:center;">
       <p style="margin:0 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#C24D2C;">HaresvaMi</p>
       <h1 style="margin:0;font-size:36px;line-height:1.05;font-weight:500;">Връзката за таблета е невалидна или изтекла.</h1>
-      <p style="margin:18px 0 0;font-size:18px;line-height:1.55;color:#6B5A52;">Отвори таблета отново от dashboard-а.</p>
+      <p style="margin:18px 0 0;font-size:18px;line-height:1.55;color:#6B5A52;">Отвори нова връзка за таблет от таблото.</p>
     </main>
   </body>
 </html>`;

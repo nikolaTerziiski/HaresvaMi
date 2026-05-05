@@ -155,19 +155,19 @@ export function useTabletSetup(initialSessions: KioskSession[]) {
         const session = (payload as { session?: KioskSession }).session;
 
         if (!session) {
-          throw new Error("Не успяхме да отменим сесията.");
+          throw new Error("Не успяхме да отменим достъпа.");
         }
 
         setSessions((current) =>
           current.map((item) => (item.id === session.id ? session : item)),
         );
-        setMessage("Сесията е отменена.");
+        setMessage("Достъпът е отменен.");
       })
       .catch((error) => {
         setMessage(
           error instanceof Error
             ? error.message
-            : "Не успяхме да отменим сесията.",
+            : "Не успяхме да отменим достъпа.",
         );
       })
       .finally(() => setRevokingId(null));

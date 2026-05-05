@@ -35,7 +35,7 @@ function KioskAccessError() {
           Таблетът не е свързан.
         </h1>
         <p className="m-0 text-[18px] leading-[1.55] text-[var(--ink-2)]">
-          Отвори връзката за таблет от dashboard-а.
+          Отвори връзката за таблет от таблото.
         </p>
       </section>
     </div>
