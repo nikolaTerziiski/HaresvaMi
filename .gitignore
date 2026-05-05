@@ -58,5 +58,10 @@ dashboard-*.png
 build.stdout.log
 build.stderr.log
 
+# Codex helper artifacts
+.codex-*.log
+.codex-screenshots/
+.codex-screenshots-final/
+
 # OS
 Thumbs.db

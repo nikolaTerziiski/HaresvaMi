@@ -1,0 +1,15 @@
+# Normalize all text files to LF in the repo.
+# Windows checkouts still get CRLF on disk via core.autocrlf, but the
+# repo content stays LF — eliminates spurious "modified" status from
+# line-ending churn.
+* text=auto eol=lf
+
+# Always treat these as binary so Git never touches their bytes.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
