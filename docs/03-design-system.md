@@ -15,69 +15,67 @@ Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary. Gradient-heav
 
 ## Color system
 
-### Primary palette
+### Source of truth
+
+`app/globals.css` is the only source of truth for brand and Tailwind v4 tokens. New page-level work should use the mehana CSS variables first. Do not hard-code brand hex values in components.
 
 ```css
-/* Coral — the brand color, used sparingly for emphasis */
---color-coral-50: #fff4f4;
---color-coral-100: #ffe5e6;
---color-coral-200: #ffcbcd;
---color-coral-300: #ffa0a4;
---color-coral-400: #ff7a80;
---color-coral-500: #ff5a5f; /* PRIMARY BRAND */
---color-coral-600: #ed3f45;
---color-coral-700: #c82f35;
---color-coral-800: #a02227;
---color-coral-900: #7a1b1f;
+/* Mehana page tokens */
+--bg: #f6f1e8;
+--bg-2: #ede4d3;
+--paper: #fdf9f1;
+--ink: #1a1512;
+--ink-2: #4a3f35;
+--ink-mute: #8a7a68;
+--rule: #d9cebb;
+--accent: #c24d2c; /* PRIMARY BRAND: terracotta */
+--accent-2: #e89a3c;
+--plum: #5b2a2a;
+--good: #6b8f5a;
+--bad: #c24d2c;
 
-/* Warm neutrals — for everything else */
---color-cream-50: #fbfaf7; /* Page background */
---color-cream-100: #f5f2ec;
---color-cream-200: #ebe6dc;
-
---color-ink-900: #1a1814; /* Primary text */
---color-ink-700: #4a4640; /* Secondary text */
---color-ink-500: #8a857c; /* Muted text */
---color-ink-300: #c4bfb5; /* Borders */
---color-ink-100: #e8e4dc; /* Subtle dividers */
-
-/* Functional colors — used very sparingly */
---color-success: #2d8659; /* Pickle green, not Apple green */
---color-warning: #d9883b; /* Mustard, not safety orange */
---color-error: #c82f35; /* Coral-700, same family as brand */
+/* Tailwind/shadcn support tokens also live in app/globals.css */
+--color-cream-50: #fbfaf7;
+--color-ink-900: #1a1814;
+--color-success: #2d8659;
+--color-warning: #d9883b;
+--color-error: #c82f35;
 ```
+
+The older `--color-coral-*` Tailwind palette is still available for shared shadcn-style utility components, but it is not the brand source of truth. For new marketing, auth, dashboard, and kiosk surfaces, use `var(--accent)` for the brand action color.
 
 ### Color rules
 
-1. **Coral is for one thing per screen.** A primary CTA, a key metric, a notification dot. Never two coral elements competing for attention.
-2. **Backgrounds are cream, not white.** Pure white feels sterile and SaaS-y. `#FBFAF7` is warmer and more restaurant-like.
-3. **Text is ink, not pure black.** `#1A1814` has warmth.
+1. **Terracotta is for one thing per screen.** A primary CTA, a key metric, a notification dot. Never let multiple terracotta elements compete.
+2. **Backgrounds are warm, not white.** Use `--bg` / `--paper` or the cream Tailwind tokens.
+3. **Text is ink, not pure black.** Use `--ink` / `--ink-2` or the ink Tailwind tokens.
 4. **No gradients.** Anywhere. Solid colors only.
-5. **No shadows for "depth."** Use borders (`1px solid var(--color-ink-100)`) for separation.
+5. **No shadows for "depth."** Use borders (`1px solid var(--rule)`) for separation.
 6. **No glassmorphism, no blur effects.**
 
 ## Typography
 
 ### Font
 
-**Manrope** — single family, three weights.
+The current app registers three `next/font` families in `app/layout.tsx` and exposes them through variables in `app/globals.css`.
 
 ```css
-font-family: "Manrope", system-ui, sans-serif;
+--f-display: var(--font-instrument-serif), "Cormorant Garamond", Georgia, serif;
+--f-ui: var(--font-inter), system-ui, sans-serif;
+--f-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 ```
 
-Weights used:
+Use them like this:
 
-- `400` — body text
-- `500` — labels, secondary headings
-- `700` — primary headings, emphasis
+- **Instrument Serif** (`--f-display`) — brand moments, large marketing headings, expressive numbers.
+- **Inter** (`--f-ui`) — all Bulgarian UI, dashboard, forms, kiosk instructions, buttons.
+- **JetBrains Mono** (`--f-mono`) — technical IDs, receipt/debug metadata, never body copy.
 
-Why Manrope:
+Cyrillic guidance:
 
-- Excellent Cyrillic glyphs (most fonts have weak BG support)
-- Slightly geometric but warm
-- Free, open source
-- Loads fast
+- Bulgarian UI must render through Inter or another tested Cyrillic-capable fallback.
+- Instrument Serif is display flavor, not the default Bulgarian reading face. Avoid long Cyrillic paragraphs in it.
+- When touching `next/font` setup, keep Cyrillic coverage for UI text and verify real Bulgarian strings on Windows and Android.
 
 ### Type scale
 
@@ -96,7 +94,7 @@ Why Manrope:
 
 1. **Maximum 3 sizes per screen.** No tiny captions next to giant headings next to medium body. Restraint.
 2. **Line height 1.5 for body, 1.2 for headings.**
-3. **Never use `font-weight: 600`.** Jumps to 700.
+3. **Use weight sparingly.** `400` for body, `500` for labels, `600` only where the UI system already uses it, `700` for strong emphasis.
 4. **No uppercase by default.** Bulgarian doesn't read well in all-caps.
 5. **Numbers in stats use weight 500, not 700.** Avoids "loud dashboard" feel.
 
@@ -132,26 +130,26 @@ Avoid `gap-3`, `gap-5`, `gap-7` — these are reach values that often signal ind
 
 Three variants, no more.
 
-**Primary** — coral background, cream text. One per screen.
+**Primary** — terracotta background, paper text. One per screen.
 
 ```tsx
-<button className="bg-coral-500 hover:bg-coral-600 text-cream-50 font-medium px-6 py-3 rounded-md transition-colors">
+<button className="rounded-md bg-[var(--accent)] px-6 py-3 font-medium text-[var(--paper)] transition-colors hover:bg-[var(--ink)]">
   Запази
 </button>
 ```
 
-**Secondary** — ink-100 background, ink-900 text. The default action.
+**Secondary** — paper background, ink text, rule border. The default action.
 
 ```tsx
-<button className="bg-ink-100 hover:bg-ink-200 text-ink-900 font-medium px-6 py-3 rounded-md transition-colors">
+<button className="rounded-md border border-[var(--rule)] bg-[var(--paper)] px-6 py-3 font-medium text-[var(--ink)] transition-colors hover:bg-[var(--bg-2)]">
   Откажи
 </button>
 ```
 
-**Ghost** — transparent, ink-700 text. For tertiary actions.
+**Ghost** — transparent, muted ink text. For tertiary actions.
 
 ```tsx
-<button className="text-ink-700 hover:text-ink-900 hover:bg-ink-100 font-medium px-6 py-3 rounded-md transition-colors">
+<button className="rounded-md px-6 py-3 font-medium text-[var(--ink-2)] transition-colors hover:bg-[var(--bg-2)] hover:text-[var(--ink)]">
   Изтрий
 </button>
 ```
@@ -166,7 +164,7 @@ Three variants, no more.
 ### Cards
 
 ```tsx
-<div className="bg-cream-50 border border-ink-100 rounded-lg p-6">
+<div className="rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-6">
   {/* Card content */}
 </div>
 ```
@@ -174,19 +172,19 @@ Three variants, no more.
 Rules:
 
 - No drop shadows by default
-- Border on cream-50 background uses `border-ink-100`
+- Border on warm paper/background uses `var(--rule)`
 - Card padding is `p-6` (24px) standard, `p-8` for hero cards
 - No nested cards. If you need a "card inside a card," it's a section, not a card.
 
 ### Inputs
 
 ```tsx
-<input className="w-full bg-cream-50 border border-ink-300 focus:border-coral-500 focus:ring-2 focus:ring-coral-200 rounded-md px-4 py-3 text-base text-ink-900 placeholder:text-ink-500" />
+<input className="w-full rounded-md border border-[var(--rule)] bg-[var(--paper)] px-4 py-3 text-base text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:border-[var(--accent)] focus:outline-none" />
 ```
 
 - Always show labels above inputs, never placeholder-as-label
 - Error states use `border-error` and a small message below
-- Required fields marked with a tiny coral dot, not asterisk
+- Required fields marked with a tiny terracotta dot, not asterisk
 
 ### Forms
 
@@ -248,10 +246,13 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 1. **Fullscreen always.** No headers, no chrome, no navigation.
 2. **Landscape orientation by default.** Most tablets stand horizontally at checkout.
 3. **Large touch targets.** Minimum 64px height for any tappable element.
-4. **High contrast.** Restaurants are often dimly lit. Cream background, ink-900 text, coral CTAs.
+4. **High contrast.** Restaurants are often dimly lit. Warm background, ink text, terracotta CTAs.
 5. **Animations are slow and confident.** 300ms transitions, ease-out curves. Never bouncy or playful.
 6. **One action per screen.** Standby → tap to scan. Scan → take photo. Rate → tap rating. Done. No multi-step forms on one screen.
 7. **Restaurant logo prominently displayed.** Reinforces this is THEIR experience, not ours.
+8. **Manual fallback stays visible.** When AI scans are exhausted, unavailable, or unclear, the waiter can still select items manually.
+9. **Tablet-first, mobile-safe.** Optimize for a 10-inch Android tablet in landscape, but keep every kiosk state usable on narrow phones and portrait tablets. The current scan layout collapses below roughly 900px.
+10. **Bulgarian text must wrap cleanly.** No fixed-width labels that clip long Cyrillic words; buttons can grow taller before text overflows.
 
 ### Kiosk standby screen example
 
@@ -262,7 +263,7 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 │                                                │
 │              "Как беше всичко?"                │
 │                                                │
-│         [Голям coral бутон: Сканирай бона]    │
+│      [Голям terracotta бутон: Сканирай бона]  │
 │                                                │
 │                                                │
 │                         haresva.mi (tiny, bottom-right)
@@ -287,54 +288,33 @@ This is part of design. Words matter as much as visuals.
 1. **Translation, not transcreation.** EN is for foreign tourists in BG restaurants and the rare English-speaking owner. Keep it simple, direct, no idioms.
 2. **Same informal tone as BG.** "How was everything?" not "How was your dining experience?"
 
-## Tailwind config
+## Tailwind v4 Tokens
 
-```ts
-// tailwind.config.ts
-import type { Config } from "tailwindcss";
+There is no `tailwind.config.ts` in the current app. Tailwind v4 reads project tokens from `app/globals.css`.
 
-export default {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
-  theme: {
-    extend: {
-      colors: {
-        coral: {
-          50: "#FFF4F4",
-          100: "#FFE5E6",
-          200: "#FFCBCD",
-          300: "#FFA0A4",
-          400: "#FF7A80",
-          500: "#FF5A5F",
-          600: "#ED3F45",
-          700: "#C82F35",
-          800: "#A02227",
-          900: "#7A1B1F",
-        },
-        cream: {
-          50: "#FBFAF7",
-          100: "#F5F2EC",
-          200: "#EBE6DC",
-        },
-        ink: {
-          900: "#1A1814",
-          700: "#4A4640",
-          500: "#8A857C",
-          300: "#C4BFB5",
-          100: "#E8E4DC",
-        },
-      },
-      fontFamily: {
-        sans: ["Manrope", "system-ui", "sans-serif"],
-      },
-      fontSize: {
-        "4xl": ["3.5rem", { lineHeight: "1.1" }],
-      },
-      borderRadius: {
-        xl: "24px",
-      },
-    },
-  },
-} satisfies Config;
+```css
+@theme {
+  --font-display:
+    var(--font-instrument-serif), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+  --text-4xl: 3.5rem;
+}
+
+:root {
+  --accent: #c24d2c;
+  --bg: #f6f1e8;
+  --paper: #fdf9f1;
+  --ink: #1a1512;
+}
 ```
 
 ## Design system enforcement checklist
@@ -342,12 +322,14 @@ export default {
 Before merging any UI code, verify:
 
 - [ ] No purple, blue, or green gradients anywhere
-- [ ] At most one coral element per screen as primary
-- [ ] Background is `cream-50`, not pure white
-- [ ] Text is `ink-900`, not pure black
+- [ ] At most one terracotta/accent element per screen as primary
+- [ ] Background is `--bg`, `--paper`, or a cream token, not pure white
+- [ ] Text is `--ink` or an ink token, not pure black
 - [ ] Maximum 3 font sizes on screen
 - [ ] Empty states have human-written copy, not "No data"
 - [ ] Buttons follow primary/secondary/ghost variants
 - [ ] No drop shadows used for depth
 - [ ] Bulgarian copy uses informal "ти"
 - [ ] Touch targets in kiosk mode are 64px+ tall
+- [ ] Kiosk scan failure and AI-limit states preserve manual item selection
+- [ ] Kiosk screens wrap Bulgarian text cleanly on tablet landscape, tablet portrait, and narrow mobile

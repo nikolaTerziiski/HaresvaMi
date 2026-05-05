@@ -68,29 +68,44 @@ Owner sees in dashboard:
 **Free (forever):**
 
 - 1 location
-- Manual item selection only (no receipt scanning)
-- Up to 50 feedback responses per month
+- Up to 50 completed feedback sessions per month
+- Up to 5 successful AI receipt scans per month
+- Manual item selection remains available when AI scans are exhausted
 - Basic dashboard
 - Bulgarian only
 
-**Pro — €10/month** (with 14-day trial of all Pro features):
+**Starter**:
 
 - 1 location
-- AI receipt scanning (unlimited)
-- Unlimited feedback responses
+- Up to 500 completed feedback sessions per month
+- Up to 150 successful AI receipt scans per month
+- Manual item selection remains available when AI scans are exhausted
+- Useful for restaurants that scan regularly but do not need the full Pro quota
+
+**Pro — €10/month** (with 14-day Pro preview):
+
+- 1 location
+- Up to 10000 completed feedback sessions per month
+- Up to 1000 successful AI receipt scans per month
 - Item-level analytics with trends
 - Plain-Bulgarian weekly insights
 - BG + EN customer interface
 - Push notifications
 
-**Restaurant Group — €40/month** (post-MVP):
+**14-day Pro trial:**
+
+- 100 successful AI receipt scans total during the trial
+- No credit card required upfront
+- After trial: features lock back to Free unless they subscribe
+
+**Restaurant Group** (post-MVP):
 
 - Multiple locations
 - Cross-location comparisons
 - Staff performance per location
-- API access
+- Explicit contractual limits; never market AI scans as unlimited
 
-### Why €10 (not €7, not €15)
+### Why €10 for Pro (not €7, not €15)
 
 - €7 doesn't cover Gemini API costs at high volume + Supabase + Stripe fees
 - €15 is the price ceiling for a small Bulgarian mehana — beyond it, sales conversion drops sharply

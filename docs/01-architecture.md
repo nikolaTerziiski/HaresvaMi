@@ -41,7 +41,7 @@ Familiar to the developer (KoiRaboti uses it). App Router gives us server compon
 
 ```
 haresvami/
-├── CLAUDE.md
+├── AGENTS.md
 ├── docs/
 │   ├── 00-product.md
 │   ├── 01-architecture.md
@@ -150,7 +150,6 @@ haresvami/
 │   └── images/
 ├── middleware.ts                   # Next.js middleware (auth)
 ├── next.config.ts
-├── tailwind.config.ts
 ├── tsconfig.json
 ├── package.json
 ├── .env.example
@@ -164,17 +163,20 @@ haresvami/
 2. Waiter taps "Сканирай бона"
 3. /kiosk/scan → camera opens
 4. Photo captured → POST /api/extract-receipt
-   - Server: upload image to Supabase Storage
+   - Server: authorize owner/kiosk session
+   - Server: check scan entitlement before loading the image or calling Gemini
    - Server: call Gemini with image + restaurant menu + alias dictionary
+   - Server: consume one AI scan only after successful extraction
    - Server: return {items: [{menu_item_id, name, quantity}], unknown_aliases: [...]}
-5. If unknown_aliases: prompt waiter to map them (one-time per alias per restaurant)
-6. Customer hands tablet → /kiosk/rate
+5. If scan entitlement is exhausted, extraction fails, or no usable items are found: keep the kiosk in manual item selection.
+6. If unknown_aliases: prompt waiter to map them (one-time per alias per restaurant)
+7. Customer hands tablet → /kiosk/rate
    - Shows each item with 1–10 slider
    - Optional comment per item
-7. Final overall: ❤️ Харесва ми / 💔 Не ми харесва
-8. Submit → POST /api/feedback
+8. Final overall: ❤️ Харесва ми / 💔 Не ми харесва
+9. Submit → POST /api/feedback
    - Creates feedback_session + feedback_ratings rows
-9. /kiosk/thanks → 5 second auto-redirect to /kiosk standby
+10. /kiosk/thanks → 5 second auto-redirect to /kiosk standby
 ```
 
 ## Environment variables
@@ -230,7 +232,7 @@ When Claude Code starts Phase 0, execute in this exact order:
    ```
 
    - Style: New York
-   - Base color: Neutral (we override with our coral)
+   - Base color: Neutral (we map shadcn semantic tokens onto HaresvaMi colors)
    - CSS variables: Yes
 
 4. **Add initial shadcn components**
@@ -252,8 +254,10 @@ When Claude Code starts Phase 0, execute in this exact order:
 7. **Set up middleware** at project root for auth session refresh
 
 8. **Configure design tokens**
-   - Edit `app/globals.css` to add coral color palette + Manrope font
-   - Edit `tailwind.config.ts` to extend theme
+   - Use `app/globals.css` as the source of truth for Tailwind v4 `@theme` tokens, shadcn semantic tokens, and the mehana page tokens (`--bg`, `--paper`, `--ink`, `--accent`)
+   - Keep brand terracotta at `--accent: #c24d2c`; do not introduce a second brand hex in components
+   - Register fonts in `app/layout.tsx` with `next/font`: Instrument Serif for display, Inter for UI, JetBrains Mono for mono
+   - There is no `tailwind.config.ts` in the current Tailwind v4 setup
    - Reference `docs/03-design-system.md` for exact values
 
 9. **Set up i18n**

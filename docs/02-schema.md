@@ -26,8 +26,14 @@ CREATE TABLE restaurants (
   language_default TEXT NOT NULL DEFAULT 'bg' CHECK (language_default IN ('bg', 'en')),
   customer_languages TEXT[] NOT NULL DEFAULT ARRAY['bg'],
   logo_url TEXT,
-  tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'pro', 'group')),
+  tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'starter', 'pro')),
+  subscription_status TEXT NOT NULL DEFAULT 'none' CHECK (
+    subscription_status IN ('none', 'trialing', 'active', 'past_due', 'canceled', 'paused')
+  ),
+  current_period_ends_at TIMESTAMPTZ,
+  trial_started_at TIMESTAMPTZ,
   trial_ends_at TIMESTAMPTZ,
+  trial_used_at TIMESTAMPTZ,
   stripe_customer_id TEXT UNIQUE,
   stripe_subscription_id TEXT UNIQUE,
   onboarding_completed_at TIMESTAMPTZ,
@@ -166,6 +172,78 @@ CREATE TABLE usage_counters (
 CREATE INDEX idx_usage_counters_restaurant ON usage_counters(restaurant_id);
 ```
 
+### `scan_credit_grants`
+
+Tracks trial and promo AI scan credit batches. API code spends credits by increasing `credits_used`; monthly plan limits still come from billing helpers.
+
+```sql
+CREATE TABLE scan_credit_grants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  source TEXT NOT NULL,
+  credits_granted INT NOT NULL CHECK (credits_granted > 0),
+  credits_used INT NOT NULL DEFAULT 0 CHECK (credits_used >= 0),
+  starts_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CHECK (credits_used <= credits_granted),
+  CHECK (expires_at IS NULL OR expires_at > starts_at)
+);
+
+CREATE INDEX idx_scan_credit_grants_restaurant ON scan_credit_grants(restaurant_id, starts_at DESC);
+CREATE INDEX idx_scan_credit_grants_available
+  ON scan_credit_grants(restaurant_id, expires_at)
+  WHERE credits_used < credits_granted;
+```
+
+### `ai_usage_events`
+
+Metadata-only AI cost log. Never store receipt text, receipt images, customer names, review comments, access tokens, API keys, or provider secrets here.
+
+```sql
+CREATE TABLE ai_usage_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INT NOT NULL DEFAULT 0 CHECK (input_tokens >= 0),
+  output_tokens INT NOT NULL DEFAULT 0 CHECK (output_tokens >= 0),
+  total_tokens INT NOT NULL DEFAULT 0 CHECK (total_tokens >= 0),
+  estimated_cost_usd NUMERIC(12, 6) NOT NULL DEFAULT 0 CHECK (estimated_cost_usd >= 0),
+  success BOOLEAN NOT NULL,
+  failure_reason TEXT CHECK (failure_reason IS NULL OR length(failure_reason) <= 500),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  CHECK (total_tokens >= input_tokens + output_tokens)
+);
+
+CREATE INDEX idx_ai_usage_events_restaurant_created ON ai_usage_events(restaurant_id, created_at DESC);
+CREATE INDEX idx_ai_usage_events_restaurant_success ON ai_usage_events(restaurant_id, success, created_at DESC);
+```
+
+### `kiosk_sessions`
+
+Stores hashed kiosk access tokens for tablet/customer flows. Raw `ks_...` tokens are returned only once by server-side creation logic.
+
+```sql
+CREATE TABLE kiosk_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  token_hash TEXT UNIQUE NOT NULL,
+  label TEXT,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
+  expires_at TIMESTAMPTZ NOT NULL,
+  last_used_at TIMESTAMPTZ,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_kiosk_sessions_restaurant_id ON kiosk_sessions(restaurant_id);
+CREATE INDEX idx_kiosk_sessions_token_hash ON kiosk_sessions(token_hash);
+CREATE INDEX idx_kiosk_sessions_status_expires_at ON kiosk_sessions(status, expires_at);
+```
+
 ## Row Level Security policies
 
 Apply to all tables. Enable RLS first:
@@ -177,6 +255,9 @@ ALTER TABLE receipt_aliases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback_ratings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_counters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scan_credit_grants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_usage_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kiosk_sessions ENABLE ROW LEVEL SECURITY;
 ```
 
 ### restaurants policies
@@ -293,6 +374,42 @@ CREATE POLICY "owners_read_usage"
 -- No insert/update policies for normal users
 ```
 
+### scan_credit_grants and ai_usage_events policies
+
+```sql
+CREATE POLICY "owners_read_own_scan_credit_grants"
+  ON scan_credit_grants FOR SELECT
+  USING (
+    restaurant_id IN (
+      SELECT id FROM restaurants WHERE owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "owners_read_own_ai_usage_events"
+  ON ai_usage_events FOR SELECT
+  USING (
+    restaurant_id IN (
+      SELECT id FROM restaurants WHERE owner_id = auth.uid()
+    )
+  );
+
+-- Service role only writes. Admin read policies are added in the roles migration.
+```
+
+### kiosk_sessions policies
+
+```sql
+CREATE POLICY "owners_read_own_kiosk_sessions"
+  ON kiosk_sessions FOR SELECT
+  USING (
+    restaurant_id IN (
+      SELECT id FROM restaurants WHERE owner_id = auth.uid()
+    )
+  );
+
+-- Service role only creates, updates, revokes, and validates kiosk sessions.
+```
+
 ## Triggers
 
 ### Auto-update `updated_at`
@@ -350,11 +467,15 @@ Create these in Supabase dashboard:
 
 ## Migration files
 
-Create these three SQL files in `supabase/migrations/`:
+Current migration set in `supabase/migrations/`:
 
-1. **`0001_initial_schema.sql`** — All `CREATE TABLE` statements
-2. **`0002_rls_policies.sql`** — All `ALTER TABLE ... ENABLE RLS` and `CREATE POLICY` statements
-3. **`0003_indexes_and_triggers.sql`** — All `CREATE INDEX` and `CREATE TRIGGER` statements
+1. **`0001_initial_schema.sql`** — Core restaurant, menu, feedback, and usage tables
+2. **`0002_rls_policies.sql`** — Initial RLS policies
+3. **`0003_indexes_and_triggers.sql`** — Indexes and `updated_at` triggers
+4. **`0004_roles.sql`** — Profiles/admin role helpers and admin read/update policies
+5. **`0005_subscription_scan_credits_ai_usage.sql`** — Subscription state, scan credits, AI usage logs
+6. **`0006_align_restaurant_tiers.sql`** — Aligns tiers to `free`, `starter`, `pro`
+7. **`0007_kiosk_sessions.sql`** — Hashed kiosk tablet sessions
 
 Apply order matters. Run sequentially in Supabase SQL editor.
 
