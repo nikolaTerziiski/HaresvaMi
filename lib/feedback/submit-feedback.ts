@@ -6,24 +6,19 @@ import {
 } from "@/lib/billing/entitlements";
 import type { EntitlementResult } from "@/lib/billing/entitlements-core";
 import type { FeedbackSubmissionInput } from "@/lib/feedback/schema";
+import {
+  assertFeedbackHasContent,
+  assertRatingsBelongToSelectedItems,
+  FeedbackSubmitError,
+} from "@/lib/feedback/validation";
 import type { Json } from "@/lib/supabase/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
-type FeedbackSubmitErrorCode =
-  | "invalid_menu_items"
-  | "empty_feedback"
-  | "feedback_limit_reached";
-
-export class FeedbackSubmitError extends Error {
-  constructor(
-    public readonly code: FeedbackSubmitErrorCode,
-    message: string,
-    public readonly entitlement?: EntitlementResult,
-  ) {
-    super(message);
-    this.name = "FeedbackSubmitError";
-  }
-}
+export {
+  assertFeedbackHasContent,
+  assertRatingsBelongToSelectedItems,
+  FeedbackSubmitError,
+} from "@/lib/feedback/validation";
 
 function normalizeOptionalText(value: string | null | undefined) {
   const trimmed = value?.trim();
@@ -32,33 +27,6 @@ function normalizeOptionalText(value: string | null | undefined) {
 
 function uniqueValues(values: string[]) {
   return Array.from(new Set(values));
-}
-
-function assertFeedbackHasContent(input: FeedbackSubmissionInput) {
-  if (Object.keys(input.ratings).length > 0 || input.overallRating) {
-    return;
-  }
-
-  throw new FeedbackSubmitError(
-    "empty_feedback",
-    "Feedback needs at least one dish rating or an overall rating.",
-  );
-}
-
-function assertRatingsBelongToSelectedItems(input: FeedbackSubmissionInput) {
-  const itemIds = new Set(input.items.map((item) => item.id));
-  const referencedIds = [
-    ...Object.keys(input.ratings),
-    ...Object.keys(input.comments),
-  ];
-  const invalidIds = referencedIds.filter((id) => !itemIds.has(id));
-
-  if (invalidIds.length > 0) {
-    throw new FeedbackSubmitError(
-      "invalid_menu_items",
-      "Feedback references items that are not selected.",
-    );
-  }
 }
 
 async function assertMenuItemsAreActive(input: FeedbackSubmissionInput) {

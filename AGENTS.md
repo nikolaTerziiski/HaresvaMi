@@ -119,6 +119,16 @@ lib/<feature>/
   permissions.ts
 ```
 
+## Quality gates (run before reporting completion)
+
+Every implementation task must include or update tests for changed business logic, security logic, billing logic, or data aggregation. Before declaring a task done, run all three:
+
+- `npm run format:check`
+- `npm run typecheck`
+- `npm test`
+
+If any command fails, fix the failure or explain exactly why it cannot pass. CI runs the same three commands on every PR — failing them locally will fail CI.
+
 ## Refactoring rule for The Agents
 
 Before implementing a task, inspect the files you plan to modify.
@@ -169,7 +179,6 @@ The developer is building solo on a Windows machine. When working on this projec
 
 - Don't add features that aren't in `docs/01-architecture.md` build order without asking
 - Don't add npm packages without justifying why a built-in solution wouldn't work
-- Don't write tests in the MVP phase unless explicitly asked
 - Don't add analytics, error tracking, or monitoring tools until launch
 - Don't write English-first copy and translate to Bulgarian — write Bulgarian first
 - Don't use Lucide icons everywhere by default — they make everything look the same

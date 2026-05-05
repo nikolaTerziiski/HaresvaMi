@@ -3,21 +3,20 @@ import test from "node:test";
 
 import {
   applySuccessfulEntitlementConsumption,
+  getFeedbackEntitlement,
   getScanEntitlement,
+  nextUpgradeTarget,
   shouldConsumeScanCreditGrant,
   type RestaurantEntitlementState,
 } from "@/lib/billing/entitlements-core";
-import { getAiScanLimit } from "@/lib/billing/plans";
+import {
+  getAiScanLimit,
+  getFeedbackLimit,
+  getPlanLimits,
+  type PlanTier,
+} from "@/lib/billing/plans";
 
 const now = new Date("2026-04-25T12:00:00.000Z");
-
-const freeRestaurant: RestaurantEntitlementState = {
-  id: "restaurant-free",
-  tier: "free",
-  subscription_status: "none",
-  current_period_ends_at: null,
-  trial_ends_at: null,
-};
 
 const emptyCredits = {
   granted: 0,
@@ -25,55 +24,193 @@ const emptyCredits = {
   remaining: 0,
 };
 
-function usage(aiScanCount: number) {
+const tierCases = [
+  {
+    tier: "free",
+    feedbackLimit: 50,
+    scanLimit: 5,
+    upgradeTarget: "starter",
+  },
+  {
+    tier: "starter",
+    feedbackLimit: 500,
+    scanLimit: 150,
+    upgradeTarget: "pro",
+  },
+  {
+    tier: "pro",
+    feedbackLimit: 10000,
+    scanLimit: 1000,
+    upgradeTarget: null,
+  },
+] satisfies Array<{
+  tier: PlanTier;
+  feedbackLimit: number;
+  scanLimit: number;
+  upgradeTarget: PlanTier | null;
+}>;
+
+function restaurant(
+  tier: PlanTier,
+  overrides: Partial<RestaurantEntitlementState> = {},
+): RestaurantEntitlementState {
+  const paidTier = tier !== "free";
+
   return {
-    feedbackCount: 0,
+    id: `restaurant-${tier}`,
+    tier,
+    subscription_status: paidTier ? "active" : "none",
+    current_period_ends_at: paidTier ? "2026-05-25T12:00:00.000Z" : null,
+    trial_ends_at: null,
+    ...overrides,
+  };
+}
+
+function usage(feedbackCount = 0, aiScanCount = 0) {
+  return {
+    feedbackCount,
     aiScanCount,
   };
 }
 
-test("free plan has 5 AI scans per month", () => {
-  assert.equal(getAiScanLimit("free"), 5);
-
-  const entitlement = getScanEntitlement({
-    restaurant: freeRestaurant,
-    usage: usage(0),
-    creditSummary: emptyCredits,
-    now,
-  });
-
-  assert.equal(entitlement.allowed, true);
-  assert.equal(entitlement.limit, 5);
-  assert.equal(entitlement.remaining, 5);
+test("plan limits are explicit for Free, Starter, and Pro", () => {
+  for (const { tier, feedbackLimit, scanLimit } of tierCases) {
+    assert.deepEqual(getPlanLimits(tier), {
+      feedbackPerMonth: feedbackLimit,
+      aiScansPerMonth: scanLimit,
+    });
+    assert.equal(getFeedbackLimit(tier), feedbackLimit);
+    assert.equal(getAiScanLimit(tier), scanLimit);
+  }
 });
 
-test("free plan blocks scan number 6", () => {
-  const entitlement = getScanEntitlement({
-    restaurant: freeRestaurant,
-    usage: usage(5),
-    creditSummary: emptyCredits,
-    now,
-  });
+for (const { tier, scanLimit, upgradeTarget } of tierCases) {
+  test(`${tier} scan entitlement allows scan ${scanLimit} and blocks scan ${
+    scanLimit + 1
+  }`, () => {
+    const targetRestaurant = restaurant(tier);
+    const allowed = getScanEntitlement({
+      restaurant: targetRestaurant,
+      usage: usage(0, scanLimit - 1),
+      creditSummary: emptyCredits,
+      now,
+    });
+    const blocked = getScanEntitlement({
+      restaurant: targetRestaurant,
+      usage: usage(0, scanLimit),
+      creditSummary: emptyCredits,
+      now,
+    });
 
-  assert.equal(entitlement.allowed, false);
-  assert.equal(entitlement.reason, "scan_limit_reached");
-  assert.equal(entitlement.limit, 5);
-  assert.equal(entitlement.used, 5);
-  assert.equal(entitlement.remaining, 0);
+    assert.equal(allowed.allowed, true);
+    assert.equal(allowed.reason, "allowed");
+    assert.equal(allowed.limit, scanLimit);
+    assert.equal(allowed.used, scanLimit - 1);
+    assert.equal(allowed.remaining, 1);
+
+    assert.equal(blocked.allowed, false);
+    assert.equal(blocked.reason, "scan_limit_reached");
+    assert.equal(blocked.limit, scanLimit);
+    assert.equal(blocked.used, scanLimit);
+    assert.equal(blocked.remaining, 0);
+    assert.equal(blocked.upgradeTarget, upgradeTarget);
+  });
+}
+
+for (const { tier, feedbackLimit, upgradeTarget } of tierCases) {
+  test(`${tier} feedback entitlement allows response ${feedbackLimit} and blocks response ${
+    feedbackLimit + 1
+  }`, () => {
+    const targetRestaurant = restaurant(tier);
+    const allowed = getFeedbackEntitlement({
+      restaurant: targetRestaurant,
+      usage: usage(feedbackLimit - 1),
+      now,
+    });
+    const blocked = getFeedbackEntitlement({
+      restaurant: targetRestaurant,
+      usage: usage(feedbackLimit),
+      now,
+    });
+
+    assert.equal(allowed.allowed, true);
+    assert.equal(allowed.reason, "allowed");
+    assert.equal(allowed.limit, feedbackLimit);
+    assert.equal(allowed.used, feedbackLimit - 1);
+    assert.equal(allowed.remaining, 1);
+
+    assert.equal(blocked.allowed, false);
+    assert.equal(blocked.reason, "feedback_limit_reached");
+    assert.equal(blocked.limit, feedbackLimit);
+    assert.equal(blocked.used, feedbackLimit);
+    assert.equal(blocked.remaining, 0);
+    assert.equal(blocked.upgradeTarget, upgradeTarget);
+  });
+}
+
+test("upgrade targets progress Free to Starter to Pro", () => {
+  assert.equal(nextUpgradeTarget("free"), "starter");
+  assert.equal(nextUpgradeTarget("starter"), "pro");
+  assert.equal(nextUpgradeTarget("pro"), null);
 });
+
+for (const tier of ["starter", "pro"] satisfies PlanTier[]) {
+  test(`inactive ${tier} subscription falls back to Free effective limits`, () => {
+    const inactivePaidRestaurant = restaurant(tier, {
+      subscription_status: "canceled",
+      current_period_ends_at: null,
+    });
+    const scanAllowed = getScanEntitlement({
+      restaurant: inactivePaidRestaurant,
+      usage: usage(0, 4),
+      creditSummary: emptyCredits,
+      now,
+    });
+    const scanBlocked = getScanEntitlement({
+      restaurant: inactivePaidRestaurant,
+      usage: usage(0, 5),
+      creditSummary: emptyCredits,
+      now,
+    });
+    const feedbackAllowed = getFeedbackEntitlement({
+      restaurant: inactivePaidRestaurant,
+      usage: usage(49),
+      now,
+    });
+    const feedbackBlocked = getFeedbackEntitlement({
+      restaurant: inactivePaidRestaurant,
+      usage: usage(50),
+      now,
+    });
+
+    assert.equal(scanAllowed.allowed, true);
+    assert.equal(scanAllowed.limit, 5);
+    assert.equal(scanAllowed.remaining, 1);
+    assert.equal(scanBlocked.allowed, false);
+    assert.equal(scanBlocked.reason, "subscription_inactive");
+    assert.equal(scanBlocked.limit, 5);
+    assert.equal(scanBlocked.upgradeTarget, "starter");
+
+    assert.equal(feedbackAllowed.allowed, true);
+    assert.equal(feedbackAllowed.limit, 50);
+    assert.equal(feedbackAllowed.remaining, 1);
+    assert.equal(feedbackBlocked.allowed, false);
+    assert.equal(feedbackBlocked.reason, "subscription_inactive");
+    assert.equal(feedbackBlocked.limit, 50);
+    assert.equal(feedbackBlocked.upgradeTarget, "starter");
+  });
+}
 
 test("trial grants 100 scan credits", () => {
-  const trialRestaurant: RestaurantEntitlementState = {
-    id: "restaurant-trial",
-    tier: "pro",
+  const trialRestaurant = restaurant("pro", {
     subscription_status: "trialing",
     current_period_ends_at: null,
     trial_ends_at: "2026-05-09T12:00:00.000Z",
-  };
+  });
 
   const entitlement = getScanEntitlement({
     restaurant: trialRestaurant,
-    usage: usage(0),
+    usage: usage(),
     creditSummary: {
       granted: 100,
       used: 0,
@@ -89,106 +226,67 @@ test("trial grants 100 scan credits", () => {
   assert.equal(
     shouldConsumeScanCreditGrant({
       restaurant: trialRestaurant,
-      usage: usage(0),
+      usage: usage(),
       now,
     }),
     true,
   );
 });
 
-test("expired trial blocks Pro-only scan access unless paid subscription is active", () => {
-  const expiredTrialRestaurant: RestaurantEntitlementState = {
-    id: "restaurant-expired-trial",
-    tier: "pro",
+test("expired trial returns trial_expired once Free fallback limits are exhausted", () => {
+  const expiredTrialRestaurant = restaurant("pro", {
     subscription_status: "trialing",
     current_period_ends_at: null,
     trial_ends_at: "2026-04-20T12:00:00.000Z",
-  };
+  });
 
-  const expiredTrialEntitlement = getScanEntitlement({
+  const scanAllowed = getScanEntitlement({
     restaurant: expiredTrialRestaurant,
-    usage: usage(5),
+    usage: usage(0, 4),
     creditSummary: emptyCredits,
     now,
   });
-
-  assert.equal(expiredTrialEntitlement.allowed, false);
-  assert.equal(expiredTrialEntitlement.reason, "trial_expired");
-  assert.equal(expiredTrialEntitlement.limit, 5);
-
-  const paidRestaurant: RestaurantEntitlementState = {
-    ...expiredTrialRestaurant,
-    subscription_status: "active",
-    current_period_ends_at: "2026-05-25T12:00:00.000Z",
-  };
-
-  const paidEntitlement = getScanEntitlement({
-    restaurant: paidRestaurant,
-    usage: usage(999),
+  const scanBlocked = getScanEntitlement({
+    restaurant: expiredTrialRestaurant,
+    usage: usage(0, 5),
     creditSummary: emptyCredits,
     now,
   });
+  const feedbackAllowed = getFeedbackEntitlement({
+    restaurant: expiredTrialRestaurant,
+    usage: usage(49),
+    now,
+  });
+  const feedbackBlocked = getFeedbackEntitlement({
+    restaurant: expiredTrialRestaurant,
+    usage: usage(50),
+    now,
+  });
 
-  assert.equal(paidEntitlement.allowed, true);
-  assert.equal(paidEntitlement.limit, 1000);
-  assert.equal(paidEntitlement.remaining, 1);
+  assert.equal(scanAllowed.allowed, true);
+  assert.equal(scanAllowed.limit, 5);
+  assert.equal(scanBlocked.allowed, false);
+  assert.equal(scanBlocked.reason, "trial_expired");
+  assert.equal(scanBlocked.limit, 5);
+
+  assert.equal(feedbackAllowed.allowed, true);
+  assert.equal(feedbackAllowed.limit, 50);
+  assert.equal(feedbackBlocked.allowed, false);
+  assert.equal(feedbackBlocked.reason, "trial_expired");
+  assert.equal(feedbackBlocked.limit, 50);
 });
 
-test("failed AI extraction does not consume scan credit", () => {
-  const beforeFailure = getScanEntitlement({
-    restaurant: freeRestaurant,
-    usage: usage(2),
+test("AI scan usage changes only after successful extraction", () => {
+  const beforeExtraction = getScanEntitlement({
+    restaurant: restaurant("free"),
+    usage: usage(0, 2),
     creditSummary: emptyCredits,
     now,
   });
-  const afterFailure = { ...beforeFailure };
+  const afterFailure = { ...beforeExtraction };
+  const afterSuccess = applySuccessfulEntitlementConsumption(beforeExtraction);
 
-  assert.deepEqual(afterFailure, beforeFailure);
-  assert.equal(afterFailure.used, 2);
-  assert.equal(afterFailure.remaining, 3);
-});
-
-test("successful AI extraction consumes exactly one scan credit", () => {
-  const beforeSuccess = getScanEntitlement({
-    restaurant: freeRestaurant,
-    usage: usage(2),
-    creditSummary: emptyCredits,
-    now,
-  });
-  const afterSuccess = applySuccessfulEntitlementConsumption(beforeSuccess);
-
-  assert.equal(afterSuccess.used, beforeSuccess.used + 1);
-  assert.equal(afterSuccess.remaining, beforeSuccess.remaining - 1);
-});
-
-test("pro allows up to 1000 monthly scans", () => {
-  const proRestaurant: RestaurantEntitlementState = {
-    id: "restaurant-pro",
-    tier: "pro",
-    subscription_status: "active",
-    current_period_ends_at: "2026-05-25T12:00:00.000Z",
-    trial_ends_at: null,
-  };
-
-  const scan1000 = getScanEntitlement({
-    restaurant: proRestaurant,
-    usage: usage(999),
-    creditSummary: emptyCredits,
-    now,
-  });
-
-  assert.equal(scan1000.allowed, true);
-  assert.equal(scan1000.limit, 1000);
-  assert.equal(scan1000.remaining, 1);
-
-  const scan1001 = getScanEntitlement({
-    restaurant: proRestaurant,
-    usage: usage(1000),
-    creditSummary: emptyCredits,
-    now,
-  });
-
-  assert.equal(scan1001.allowed, false);
-  assert.equal(scan1001.reason, "scan_limit_reached");
-  assert.equal(scan1001.remaining, 0);
+  assert.deepEqual(afterFailure, beforeExtraction);
+  assert.equal(afterSuccess.used, beforeExtraction.used + 1);
+  assert.equal(afterSuccess.remaining, beforeExtraction.remaining - 1);
 });

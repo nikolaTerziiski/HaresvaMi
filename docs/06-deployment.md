@@ -106,7 +106,6 @@ GOOGLE_GEMINI_API_KEY=AIza...
 ANTHROPIC_API_KEY=sk-ant-...
 
 # Kiosk security
-KIOSK_SECRET=long-random-string-32-chars-min
 EXTRACT_RECEIPT_RATE_LIMIT_PER_MINUTE=20
 
 # App
@@ -224,7 +223,7 @@ These are rough estimates. Update after first month of real data.
 ### If Supabase goes down
 
 - Display maintenance page on kiosk
-- Cache restaurant menu in localStorage on kiosk login (so kiosk can show standby + last known menu)
+- Cache restaurant menu in the browser on the connected tablet (so kiosk can show standby + last known menu)
 - Receipt scans queue locally, sync when back online
 
 ### If Gemini API fails

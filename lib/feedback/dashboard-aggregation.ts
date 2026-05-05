@@ -1,5 +1,6 @@
 import type {
   FeedbackCommentSummary,
+  FeedbackDashboardTotals,
   MenuItemRatingSummary,
   OverallFeedbackRating,
 } from "@/lib/feedback/dashboard-types";
@@ -43,6 +44,21 @@ export function groupRatingsBySession(ratings: FeedbackRatingRow[]) {
   });
 
   return bySession;
+}
+
+export function buildFeedbackTotals(
+  sessions: FeedbackSessionRow[],
+  ratings: FeedbackRatingRow[],
+): FeedbackDashboardTotals {
+  return {
+    completedSessions: sessions.length,
+    overallLike: sessions.filter((session) => session.overall_rating === "like")
+      .length,
+    overallDislike: sessions.filter(
+      (session) => session.overall_rating === "dislike",
+    ).length,
+    itemRatings: ratings.length,
+  };
 }
 
 export function buildMenuItemAverages(

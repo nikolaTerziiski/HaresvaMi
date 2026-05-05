@@ -225,11 +225,22 @@ Overall rating (final screen):
 - Comments are optional everywhere
 - Max comment length: 500 characters
 
-### Anonymous submission
+### Kiosk authorization and submission
 
-The kiosk uses a **restaurant access token** (stored in localStorage when owner logs in to kiosk mode) to call the public API endpoint. This token authenticates the kiosk as belonging to a specific restaurant without exposing the owner's auth session.
+The kiosk uses server-created `ks_...` session tokens stored as hashes in the `kiosk_sessions` table. Raw tokens are returned once to the owner as setup links in this shape:
 
-Token format: `kiosk_{restaurantId}_{signedTimestamp}` — verified server-side using a HMAC with `KIOSK_SECRET` env var.
+```text
+/kiosk/connect?token=ks_...
+```
+
+The connect route verifies the token server-side, updates session usage, and sets the token in an HttpOnly cookie scoped to `/` so kiosk pages and API routes receive it. `/kiosk/scan` reads that cookie server-side before loading the restaurant and menu.
+
+Customer-facing API routes authorize either:
+
+- a valid kiosk cookie, for the tablet flow
+- a valid owner session, for owner-driven testing and authenticated flows
+
+Kiosk writes do not go directly through public Supabase table policies. `/api/feedback` authorizes the kiosk cookie or owner session first, then uses the service role to create `feedback_sessions` and `feedback_ratings`. `/api/extract-receipt` uses the same authorization model before checking scan entitlement and calling Gemini.
 
 ## Insights generation (Phase 3)
 

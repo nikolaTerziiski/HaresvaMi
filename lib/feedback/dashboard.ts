@@ -5,6 +5,7 @@ import { cache } from "react";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import {
   bottomRated,
+  buildFeedbackTotals,
   buildLatestComments,
   buildMenuItemAverages,
   buildRecentSessions,
@@ -46,16 +47,7 @@ export const getFeedbackDashboardData = cache(
     return {
       user,
       restaurant,
-      totals: {
-        completedSessions: sessions.length,
-        overallLike: sessions.filter(
-          (session) => session.overall_rating === "like",
-        ).length,
-        overallDislike: sessions.filter(
-          (session) => session.overall_rating === "dislike",
-        ).length,
-        itemRatings: ratings.length,
-      },
+      totals: buildFeedbackTotals(sessions, ratings),
       recentSessions: buildRecentSessions(sessions, ratingsBySession, menuById),
       menuItemAverages,
       topRatedDishes: topRated(menuItemAverages),

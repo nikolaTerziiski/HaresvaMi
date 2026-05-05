@@ -42,15 +42,17 @@ export type FeedbackCommentSummary =
 export type FeedbackDashboardData = {
   user: User;
   restaurant: OwnerRestaurant;
-  totals: {
-    completedSessions: number;
-    overallLike: number;
-    overallDislike: number;
-    itemRatings: number;
-  };
+  totals: FeedbackDashboardTotals;
   recentSessions: RecentFeedbackSession[];
   menuItemAverages: MenuItemRatingSummary[];
   topRatedDishes: MenuItemRatingSummary[];
   bottomRatedDishes: MenuItemRatingSummary[];
   latestComments: FeedbackCommentSummary[];
+};
+
+export type FeedbackDashboardTotals = {
+  completedSessions: number;
+  overallLike: number;
+  overallDislike: number;
+  itemRatings: number;
 };
