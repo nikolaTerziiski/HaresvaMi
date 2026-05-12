@@ -193,6 +193,16 @@ Rules:
 - Submit button: full-width on mobile, auto-width on desktop
 - Loading states: disable button, show "Запазване..." text, no spinner
 
+### Dashboard setup flows
+
+For owner setup tasks that have to be understood quickly, use a compact step strip above the work area instead of a long explanatory panel.
+
+- Keep it to 3-4 steps with one short verb-led title per step.
+- Use numbered circles; only the current step uses terracotta.
+- Put the actual form/action card immediately below the steps.
+- Use owner-facing Bulgarian like `връзка за таблет`, `свързано устройство`, `отмени достъпа`, and `валидна до`.
+- Avoid implementation terms in UI copy. Owners should not see words like token, cookie, HttpOnly, or authorization.
+
 ## Iconography
 
 ### Rules
@@ -269,6 +279,16 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 │                         haresva.mi (tiny, bottom-right)
 └────────────────────────────────────────────────┘
 ```
+
+### Customer rating screen density
+
+On 10-inch landscape tablets, the customer rating screen should keep the submit footer visible while the dish list scrolls internally.
+
+- Optimize first for `1280x800`, `1024x768`, and `1366x768`.
+- Aim for 7-8 visible dish rows at `1280x800` when dish names are typical length.
+- Dish rows may be compact, but keep dish names at least 17px and star buttons about 44px square.
+- Keep the optional overall `Харесва ми / Не ми харесва` choice visually secondary to per-dish stars and the primary submit button.
+- The footer submit button must remain visible without scrolling the whole page.
 
 ## Voice & copy
 

@@ -33,6 +33,30 @@ test("CustomerPanel rating rows use dish descriptions", () => {
   assert.match(dishRatingRowSource, /item\.description/);
 });
 
+test("CustomerPanel keeps customer rating footer visible while dish list scrolls", () => {
+  assert.match(customerPanelSource, /h-full min-h-0 flex-col overflow-hidden/);
+  assert.match(customerPanelSource, /min-h-0 flex-1 overflow-auto/);
+  assert.match(customerPanelSource, /<footer/);
+  assert.match(kioskScanScreenSource, /<main className="min-h-0 flex-1">/);
+});
+
+test("CustomerPanel keeps overall rating secondary in the footer", () => {
+  assert.match(customerPanelSource, /<footer[\s\S]*copy\.overallTitle/);
+
+  const scrollListSource =
+    customerPanelSource
+      .split('<div className="min-h-0 flex-1 overflow-auto')[1]
+      ?.split("<footer")[0] ?? "";
+
+  assert.doesNotMatch(scrollListSource, /copy\.overallTitle/);
+});
+
+test("CustomerPanel rows stay compact but touch-friendly for landscape tablets", () => {
+  assert.match(dishRatingRowSource, /min-h-16/);
+  assert.match(dishRatingRowSource, /text-\[17px\]/);
+  assert.match(starRatingSource, /size-11/);
+});
+
 test("KioskScanScreen does not render ReceiptPreview during customer or thanks modes", () => {
   assert.match(
     kioskScanScreenSource,

@@ -95,7 +95,7 @@ export function useTabletSetup(initialSessions: KioskSession[]) {
 
       try {
         await createSession();
-        setMessage("Връзката е създадена. Копирай я или я отвори на таблета.");
+        setMessage("Връзката е готова. Копирай я или я отвори на таблета.");
       } catch (error) {
         setMessage(
           error instanceof Error
@@ -129,10 +129,10 @@ export function useTabletSetup(initialSessions: KioskSession[]) {
 
     try {
       await navigator.clipboard.writeText(setupUrl);
-      setMessage("Връзката е копирана.");
+      setMessage("Връзката за таблет е копирана.");
     } catch {
       setMessage(
-        "Не успяхме да копираме автоматично. Маркирай връзката ръчно.",
+        "Не успяхме да копираме автоматично. Маркирай връзката и я копирай ръчно.",
       );
     }
   }

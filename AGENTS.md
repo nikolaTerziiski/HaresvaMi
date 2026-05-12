@@ -129,6 +129,26 @@ Every implementation task must include or update tests for changed business logi
 
 If any command fails, fix the failure or explain exactly why it cannot pass. CI runs the same three commands on every PR — failing them locally will fail CI.
 
+## Documentation update rule
+
+Every implementation task must check whether docs need updates. If a change affects product behavior, UX flow, database schema, billing rules, security rules, testing steps, deployment, or architecture, update the relevant docs in the same task.
+
+Use this mapping:
+
+- Product behavior or user flow → `docs/00-product.md` and `docs/04-business-logic.md`
+- Architecture or file structure → `docs/01-architecture.md`
+- Database schema, migrations, or RLS → `docs/02-schema.md`
+- Visual design, spacing, components, or copy tone → `docs/03-design-system.md`
+- i18n keys or translation strategy → `docs/05-i18n.md`
+- Environment variables or hosting → `docs/06-deployment.md`
+- Local/manual testing flow → `docs/LOCAL-TESTING.md`
+- Agent rules or repeated workflow constraints → `AGENTS.md`
+
+Final reports must include one of:
+
+- docs updated
+- docs intentionally not updated, with reason
+
 ## Refactoring rule for The Agents
 
 Before implementing a task, inspect the files you plan to modify.

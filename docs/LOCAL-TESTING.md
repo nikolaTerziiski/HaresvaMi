@@ -101,9 +101,11 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
 5. Add menu items. For the manual path, use `Въведи ръчно`, add at least the required menu items, then `Запази менюто`.
 6. Open Dashboard -> `Таблет`.
 7. Create a tablet session:
-   - optionally enter `Име на устройството`, for example `Таблет на бара`
-   - click `Създай връзка`
-   - use `Копирай` or `Отвори`
+   - check that the top of the page shows the setup steps: name device, create link, open on tablet, connected
+   - enter `Име на устройството`, for example `Таблет на бара`
+   - click `Създай връзка за таблет`
+   - use `Копирай връзката` or `Отвори връзката`
+   - optionally test `Стартирай на това устройство`; it should sign out this browser and open tablet mode here
 8. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
 9. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
 10. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
@@ -113,6 +115,7 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - click `Продължи с избраните`
     - click `Започни оценяване`
     - verify the customer rating screen uses compact full-width rows with image/fallback, description when available, quantity when > 1, and 1-5 star buttons
+    - on tablet landscape sizes `1280x800`, `1024x768`, and `1366x768`, verify the dish list scrolls internally, the `Готово` footer button stays visible, and about 7-8 rows fit at `1280x800` when the menu has enough selected items
     - rate at least one item from 1 to 5 stars, or choose the secondary `Харесва ми` / `Не ми харесва`
     - click `Готово`
     - verify the thank-you screen auto-resets back to the staff preparation screen
@@ -120,7 +123,7 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
 13. Verify the new feedback appears in the dashboard after refresh if needed.
 14. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
 15. Return to Dashboard -> `Таблет`.
-16. In `Активни таблети`, revoke the session with `Отмени`.
+16. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
 17. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
 18. Verify revoked access fails:
     - `/kiosk/scan` should show `Таблетът не е свързан.`

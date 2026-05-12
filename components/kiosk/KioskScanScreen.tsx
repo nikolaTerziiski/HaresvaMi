@@ -39,7 +39,7 @@ export function KioskScanScreen({
       />
 
       {isCustomerFacing ? (
-        <main className="flex-1">
+        <main className="min-h-0 flex-1">
           {flow.mode === "customer" ? (
             <CustomerPanel
               copy={copy}

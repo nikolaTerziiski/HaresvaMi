@@ -14,6 +14,13 @@ const authorizationSource = source("lib/kiosk/authorization.ts");
 const tabletPageSource = source(
   "app/(dashboard)/dashboard/(shell)/tablet/page.tsx",
 );
+const tabletSetupActionsSource = source(
+  "components/dashboard/tablet/TabletSetupActions.tsx",
+);
+const tabletSessionListSource = source(
+  "components/dashboard/tablet/TabletSessionList.tsx",
+);
+const tabletSetupHookSource = source("hooks/useTabletSetup.ts");
 
 function assertSourceOrder(fileSource: string, snippets: string[]) {
   let previousIndex = -1;
@@ -29,6 +36,13 @@ function assertSourceOrder(fileSource: string, snippets: string[]) {
 
     previousIndex = nextIndex;
   }
+}
+
+function withoutImports(fileSource: string) {
+  return fileSource
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("import "))
+    .join("\n");
 }
 
 test("/kiosk/connect sets the kiosk cookie for all app routes", () => {
@@ -110,4 +124,40 @@ test("dashboard tablet page does not crash when kiosk sessions fail to load", ()
     "} catch (error) {",
     "initialLoadError={error}",
   ]);
+});
+
+test("dashboard tablet setup uses owner-friendly Bulgarian labels", () => {
+  for (const snippet of [
+    "връзка за таблет",
+    "Свързани устройства",
+    "Отмени достъпа",
+    "Валидна до",
+    "Таблетът е свързан",
+  ]) {
+    assert.ok(
+      [
+        tabletPageSource,
+        tabletSetupActionsSource,
+        tabletSessionListSource,
+        tabletSetupHookSource,
+      ].some((fileSource) => fileSource.includes(snippet)),
+      `Missing owner-friendly tablet setup copy: ${snippet}`,
+    );
+  }
+});
+
+test("dashboard tablet setup UI copy avoids implementation terms", () => {
+  const uiSource = [
+    tabletPageSource,
+    tabletSetupActionsSource,
+    tabletSessionListSource,
+    tabletSetupHookSource,
+  ]
+    .map(withoutImports)
+    .join("\n");
+
+  assert.doesNotMatch(uiSource, /\btoken\b/i);
+  assert.doesNotMatch(uiSource, /\bcookie\b/i);
+  assert.doesNotMatch(uiSource, /\bHttpOnly\b/i);
+  assert.doesNotMatch(uiSource, /\bauthorization\b/i);
 });
