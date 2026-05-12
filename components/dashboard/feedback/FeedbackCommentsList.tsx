@@ -22,7 +22,7 @@ function commentMeta(comment: FeedbackCommentSummary) {
     return "Общ коментар";
   }
 
-  return `${comment.itemName} · ${comment.rating}/10`;
+  return `${comment.itemName} · ${comment.rating}/5`;
 }
 
 export function FeedbackCommentsList({ comments }: FeedbackCommentsListProps) {

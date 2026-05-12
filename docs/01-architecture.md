@@ -171,7 +171,7 @@ haresvami/
 5. If scan entitlement is exhausted, extraction fails, or no usable items are found: keep the kiosk in manual item selection.
 6. If unknown_aliases: prompt waiter to map them (one-time per alias per restaurant)
 7. Customer hands tablet → /kiosk/rate
-   - Shows each item with 1–10 slider
+   - Shows each item with a 1–5 star rating control
    - Optional comment per item
 8. Final overall: ❤️ Харесва ми / 💔 Не ми харесва
 9. Submit → POST /api/feedback

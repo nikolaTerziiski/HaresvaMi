@@ -6,6 +6,7 @@ import {
   filterMenuItems,
   getManualSelectedItems,
   mapReceiptItems,
+  toFeedbackItems,
 } from "@/lib/kiosk/selection";
 import type {
   EntitlementResult,
@@ -193,6 +194,9 @@ export function useKioskScanFlow({
     setStatusMessage(copy.savingFeedback);
 
     try {
+      const feedbackItems = toFeedbackItems(selectedItems);
+      const feedbackExtractedItems = toFeedbackItems(extractedItems);
+
       const response = await fetch("/api/feedback", {
         method: "POST",
         headers: {
@@ -200,13 +204,13 @@ export function useKioskScanFlow({
         },
         body: JSON.stringify({
           restaurantId: restaurant.id,
-          items: selectedItems,
+          items: feedbackItems,
           ratings: itemRatings,
           comments: {},
           overallRating,
           overallComment: null,
           customerLanguage: "bg",
-          extractedItems,
+          extractedItems: feedbackExtractedItems,
         }),
       });
 

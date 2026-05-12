@@ -50,7 +50,7 @@ export function FeedbackDishList({
                 {formatRating(dish.averageRating)}
               </div>
               <div className="font-[var(--f-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--ink-mute)]">
-                /10
+                /5
               </div>
             </div>
           ))}

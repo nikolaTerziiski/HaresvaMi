@@ -37,12 +37,12 @@ test("valid payload with one item rating passes", () => {
   const parsed = feedbackSubmissionSchema.parse(
     payload({
       ratings: {
-        [itemId]: 8,
+        [itemId]: 5,
       },
     }),
   );
 
-  assert.equal(parsed.ratings[itemId], 8);
+  assert.equal(parsed.ratings[itemId], 5);
   assert.equal(parsed.items[0]?.id, itemId);
 });
 
@@ -57,7 +57,7 @@ test("valid payload with only overallRating passes", () => {
   assert.deepEqual(parsed.ratings, {});
 });
 
-test("item rating must be 1-10", () => {
+test("item rating must be 1-5", () => {
   assert.equal(
     feedbackSubmissionSchema.safeParse(
       payload({
@@ -72,7 +72,7 @@ test("item rating must be 1-10", () => {
     feedbackSubmissionSchema.safeParse(
       payload({
         ratings: {
-          [itemId]: 11,
+          [itemId]: 6,
         },
       }),
     ).success,
@@ -159,7 +159,7 @@ test("ratings referencing non-selected items fail", () => {
   const parsed = feedbackSubmissionSchema.parse(
     payload({
       ratings: {
-        [otherItemId]: 7,
+        [otherItemId]: 4,
       },
     }),
   );

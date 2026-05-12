@@ -102,18 +102,18 @@ const sessions = [
 ];
 
 const ratings = [
-  rating("rating-1", "session-1", "item-kebapche", 10, {
+  rating("rating-1", "session-1", "item-kebapche", 5, {
     comment: "Loved it",
     created_at: "2026-04-25T12:01:00.000Z",
   }),
-  rating("rating-2", "session-2", "item-kebapche", 8, {
+  rating("rating-2", "session-2", "item-kebapche", 4, {
     created_at: "2026-04-25T11:01:00.000Z",
   }),
-  rating("rating-3", "session-2", "item-salad", 4, {
+  rating("rating-3", "session-2", "item-salad", 2, {
     comment: "Too salty",
     created_at: "2026-04-25T11:02:00.000Z",
   }),
-  rating("rating-4", "session-3", "item-soup", 7, {
+  rating("rating-4", "session-3", "item-soup", 3, {
     created_at: "2026-04-25T10:01:00.000Z",
   }),
 ];
@@ -132,10 +132,10 @@ test("menu item averages are calculated correctly", () => {
   const kebapche = averages.find((item) => item.menuItemId === "item-kebapche");
   const salad = averages.find((item) => item.menuItemId === "item-salad");
 
-  assert.equal(kebapche?.averageRating, 9);
+  assert.equal(kebapche?.averageRating, 4.5);
   assert.equal(kebapche?.ratingCount, 2);
   assert.equal(kebapche?.latestRatingAt, "2026-04-25T12:01:00.000Z");
-  assert.equal(salad?.averageRating, 4);
+  assert.equal(salad?.averageRating, 2);
   assert.equal(salad?.ratingCount, 1);
 });
 
@@ -179,7 +179,7 @@ test("recent sessions include item summaries", () => {
   const secondSession = recent.find((item) => item.id === "session-2");
 
   assert.equal(secondSession?.itemRatingCount, 2);
-  assert.equal(secondSession?.averageItemRating, 6);
+  assert.equal(secondSession?.averageItemRating, 3);
   assert.deepEqual(secondSession?.itemNames, ["Kebapche", "Shopska salad"]);
 });
 

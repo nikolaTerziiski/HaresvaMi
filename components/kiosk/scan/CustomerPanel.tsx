@@ -41,7 +41,7 @@ export function CustomerPanel({
           >
             <div className="mb-3 text-[20px] font-semibold">{item.name}</div>
             <div className="grid grid-cols-5 gap-2">
-              {Array.from({ length: 10 }, (_, index) => index + 1).map(
+              {Array.from({ length: 5 }, (_, index) => index + 1).map(
                 (score) => {
                   const selected = itemRatings[item.id] === score;
 

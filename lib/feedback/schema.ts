@@ -10,7 +10,7 @@ export const feedbackSubmissionSchema = z.object({
   restaurantId: z.string().uuid(),
   items: z.array(feedbackItemSchema).min(1).max(100),
   ratings: z
-    .record(z.string().uuid(), z.coerce.number().int().min(1).max(10))
+    .record(z.string().uuid(), z.coerce.number().int().min(1).max(5))
     .default({}),
   comments: z.record(z.string().uuid(), z.string().trim().max(500)).default({}),
   overallRating: z.enum(["like", "dislike"]).nullable().optional(),

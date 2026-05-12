@@ -281,7 +281,7 @@ This is part of design. Words matter as much as visuals.
 3. **Short sentences.** Bulgarian sentences are naturally longer than English. Trim aggressively.
 4. **Avoid corporate jargon.** "Управление на менюто" is fine. "Менаджмънт на менюто" is bad.
 5. **Use action verbs in CTAs.** "Сканирай бона" not "Сканиране на бон."
-6. **Insights speak in real numbers and time.** "Кебапчето пада на 5.2/10 от 3 седмици" not "Има отрицателна тенденция в оценките на ястие 'Кебапче'."
+6. **Insights speak in real numbers and time.** "Кебапчето пада на 2.6/5 от 3 седмици" not "Има отрицателна тенденция в оценките на ястие 'Кебапче'."
 
 ### English copy principles
 

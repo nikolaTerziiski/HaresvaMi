@@ -16,7 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat("bg-BG", {
 });
 
 function formatRating(value: number | null) {
-  return value === null ? "няма" : `${value.toFixed(1).replace(".", ",")}/10`;
+  return value === null ? "няма" : `${value.toFixed(1).replace(".", ",")}/5`;
 }
 
 function overallLabel(value: OverallFeedbackRating | null) {

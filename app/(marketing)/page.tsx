@@ -68,7 +68,7 @@ const I18N = {
       {
         n: "Стъпка 03",
         t: "Клиентът оценява",
-        p: "Подаваш таблета. Той вижда точно какво е поръчал, дава оценка на всяко ястие от 1 до 10. Без акаунти, без имейли, без приложение.",
+        p: "Подаваш таблета. Той вижда точно какво е поръчал, дава оценка на всяко ястие от 1 до 5 звезди. Без акаунти, без имейли, без приложение.",
       },
       {
         n: "Стъпка 04",
@@ -162,7 +162,7 @@ const I18N = {
       {
         n: "Step 03",
         t: "Customer rates",
-        p: "You hand the tablet over. They see exactly what they ordered and rate each dish 1–10. No accounts, no emails, no app.",
+        p: "You hand the tablet over. They see exactly what they ordered and rate each dish from 1 to 5 stars. No accounts, no emails, no app.",
       },
       {
         n: "Step 04",
@@ -393,14 +393,14 @@ export default function LandingPage() {
                 <div className={styles.tabletBody}>
                   <div className={styles.tabletQ}>Какво поръча днес?</div>
                   {[
-                    { name: "Шопска салата", s: 9 },
-                    { name: "Кебапче (×2)", s: 5 },
-                    { name: "Пържени картофи", s: 7 },
+                    { name: "Шопска салата", s: 5 },
+                    { name: "Кебапче (×2)", s: 3 },
+                    { name: "Пържени картофи", s: 4 },
                   ].map((d) => (
                     <div key={d.name} className={styles.tabletDish}>
                       <b>{d.name}</b>
                       <div className={styles.tabletScale}>
-                        {Array.from({ length: 10 }, (_, i) => (
+                        {Array.from({ length: 5 }, (_, i) => (
                           <i key={i} className={i < d.s ? styles.on : ""} />
                         ))}
                       </div>
@@ -588,17 +588,17 @@ export default function LandingPage() {
                     <div className={`${styles.scBody} ${styles.scRate}`}>
                       <h4>Какво поръча днес?</h4>
                       {[
-                        { name: "Шопска салата", score: 9 },
-                        { name: "Кебапче ×2", score: 5 },
-                        { name: "Пържени картофи", score: 7 },
+                        { name: "Шопска салата", score: 5 },
+                        { name: "Кебапче ×2", score: 3 },
+                        { name: "Пържени картофи", score: 4 },
                       ].map((d) => (
                         <div key={d.name} className={styles.rateRow}>
                           <div className={styles.rateRowTop}>
                             <b>{d.name}</b>
-                            <span>{d.score} / 10</span>
+                            <span>{d.score} / 5</span>
                           </div>
                           <div className={styles.rateBar}>
-                            {Array.from({ length: 10 }, (_, i) => (
+                            {Array.from({ length: 5 }, (_, i) => (
                               <i
                                 key={i}
                                 className={i < d.score ? styles.on : ""}
@@ -757,7 +757,7 @@ export default function LandingPage() {
                     },
                     {
                       l: "Средна оценка",
-                      n: "7.4/10",
+                      n: "3.7/5",
                       d: "— без промяна",
                       bad: false,
                     },
@@ -856,8 +856,8 @@ export default function LandingPage() {
                     <div className={styles.alert}>
                       <div className={styles.alK}>⚠ Внимание</div>
                       <div className={styles.alT}>
-                        <b>Кебапчето</b> падна на <b>5.2/10</b> — от 7.1 преди 3
-                        седмици. 14 от последните 20 клиента го оценяват под 6.
+                        <b>Кебапчето</b> падна на <b>2.6/5</b> — от 3.6 преди 3
+                        седмици. 14 от последните 20 клиента го оценяват под 3.
                       </div>
                       <a href="#">Виж 8-те коментара →</a>
                     </div>
@@ -873,8 +873,8 @@ export default function LandingPage() {
                         ✓ Добра новина
                       </div>
                       <div className={styles.alT}>
-                        <b>Новият десерт „Тиквеник"</b> дебютира с <b>9.1/10</b>
-                        . 11 отзива. 9 от тях казват „като на баба".
+                        <b>Новият десерт „Тиквеник"</b> дебютира с <b>4.6/5</b>.
+                        11 отзива. 9 от тях казват „като на баба".
                       </div>
                       <a href="#" style={{ color: "#7FC99B" }}>
                         Виж отзивите →

@@ -111,7 +111,7 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - select at least one menu item
     - click `Продължи с избраните`
     - click `Започни оценяване`
-    - rate at least one item from 1 to 10, or choose `Харесва ми` / `Не ми харесва`
+    - rate at least one item from 1 to 5 stars, or choose `Харесва ми` / `Не ми харесва`
     - click `Готово`
     - verify the thank-you screen, `Благодарим ти!`
 11. Return to the owner browser and open Dashboard -> `Отзиви`.

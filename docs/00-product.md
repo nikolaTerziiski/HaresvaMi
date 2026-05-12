@@ -25,14 +25,14 @@ A tablet sits at the checkout. The owner is logged in, kiosk mode is active. Whe
 2. Tablet camera reads the printed receipt
 3. AI extracts the items, matches them to the restaurant's menu (using a learned alias dictionary for abbreviations like "PK" → "Пържени картофи")
 4. Tablet is handed to the customer
-5. Customer sees: "Какво поръча днес?" with each dish, gives 1–10 rating per item (optional comment)
+5. Customer sees: "Какво поръча днес?" with each dish, gives a 1–5 star rating per item (optional comment)
 6. Final screen: big "❤️ Харесва ми" / "💔 Не ми харесва" buttons
 7. Thank you screen, auto-resets to standby
 
 Owner sees in dashboard:
 
 - Per-dish satisfaction trends over time
-- Plain Bulgarian alerts: "Кебапчето пада на 5.2/10 от 3 седмици. Виж отзивите →"
+- Plain Bulgarian alerts: "Кебапчето пада на 2.6/5 от 3 седмици. Виж отзивите →"
 - % "Харесва ми" this week vs last week
 
 ## Target user (primary)
@@ -139,7 +139,7 @@ Break-even on personal time: probably never on this product alone. This is a sta
 - 200 free-tier signups
 - 80 paying restaurants
 - €800 MRR
-- One case study showing "X restaurant improved Y dish from 5/10 to 8/10 after acting on feedback"
+- One case study showing "X restaurant improved Y dish from 2.5/5 to 4/5 after acting on feedback"
 
 ## What we are NOT
 

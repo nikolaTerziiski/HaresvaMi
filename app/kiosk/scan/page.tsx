@@ -85,7 +85,7 @@ async function loadKioskMenu(restaurantId: string) {
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
     .from("menu_items")
-    .select("id, name_bg, category, price")
+    .select("id, name_bg, category, price, image_url, description_bg")
     .eq("restaurant_id", restaurantId)
     .eq("is_active", true)
     .is("deleted_at", null)
@@ -101,6 +101,8 @@ async function loadKioskMenu(restaurantId: string) {
     name: item.name_bg,
     category: item.category,
     price: item.price,
+    imageUrl: item.image_url,
+    description: item.description_bg,
   })) satisfies KioskMenuItem[];
 }
 

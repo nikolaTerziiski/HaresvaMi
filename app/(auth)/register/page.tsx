@@ -480,14 +480,14 @@ export default function RegisterPage() {
                 <div className={styles.tsBody}>
                   <div className={styles.tsQ}>Какво поръча днес?</div>
                   {[
-                    { name: "Шопска салата", score: 9 },
-                    { name: "Кебапче", score: 5 },
-                    { name: "Пържени картофи", score: 7 },
+                    { name: "Шопска салата", score: 5 },
+                    { name: "Кебапче", score: 3 },
+                    { name: "Пържени картофи", score: 4 },
                   ].map((dish) => (
                     <div key={dish.name} className={styles.tsDish}>
                       <b>{dish.name}</b>
                       <div className={styles.tsScale}>
-                        {Array.from({ length: 10 }, (_, index) => (
+                        {Array.from({ length: 5 }, (_, index) => (
                           <i
                             key={index}
                             className={index < dish.score ? styles.on : ""}

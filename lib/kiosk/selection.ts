@@ -5,6 +5,11 @@ import type {
   SelectedItem,
 } from "@/lib/kiosk/types";
 
+export type FeedbackItemPayload = Pick<
+  SelectedItem,
+  "id" | "name" | "quantity"
+>;
+
 export function filterMenuItems(
   menuItems: KioskMenuItem[],
   query: string,
@@ -30,6 +35,8 @@ export function getManualSelectedItems(
       id: item.id,
       name: item.name,
       quantity: 1,
+      imageUrl: item.imageUrl,
+      description: item.description,
     }));
 }
 
@@ -54,8 +61,20 @@ export function mapReceiptItems(
       id: menuItem.id,
       name: menuItem.name,
       quantity: (existing?.quantity ?? 0) + quantity,
+      imageUrl: menuItem.imageUrl,
+      description: menuItem.description,
     });
   });
 
   return Array.from(selectedById.values());
+}
+
+export function toFeedbackItems(
+  selectedItems: SelectedItem[],
+): FeedbackItemPayload[] {
+  return selectedItems.map(({ id, name, quantity }) => ({
+    id,
+    name,
+    quantity,
+  }));
 }

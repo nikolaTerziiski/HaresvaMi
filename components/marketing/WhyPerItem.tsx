@@ -37,9 +37,9 @@ export default function WhyPerItem() {
             </p>
             <ul className="mt-4 flex flex-col gap-2 tabular-nums">
               {[
-                { name: "Шопска салата", score: "9/10" },
-                { name: "Кебапче", score: "7/10" },
-                { name: "Баклава", score: "10/10" },
+                { name: "Шопска салата", score: "5/5" },
+                { name: "Кебапче", score: "3/5" },
+                { name: "Баклава", score: "5/5" },
               ].map((row) => (
                 <li
                   key={row.name}

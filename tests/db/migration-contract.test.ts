@@ -65,6 +65,32 @@ test("kiosk_sessions token_hash is unique", () => {
   assert.ok(hasStatement(allSql, /token_hash\s+TEXT\s+UNIQUE\s+NOT\s+NULL/i));
 });
 
+test("feedback_ratings final rating constraint is 1-5", () => {
+  let ratingConstraint = "unknown";
+
+  for (const migration of migrations) {
+    if (
+      hasStatement(
+        migration.sql,
+        /rating\s+SMALLINT\s+NOT\s+NULL\s+CHECK\s*\(\s*rating\s+BETWEEN\s+1\s+AND\s+10\s*\)/i,
+      )
+    ) {
+      ratingConstraint = "1-10";
+    }
+
+    if (
+      hasStatement(
+        migration.sql,
+        /ADD\s+CONSTRAINT\s+feedback_ratings_rating_check\s+CHECK\s*\(\s*rating\s+BETWEEN\s+1\s+AND\s+5\s*\)/i,
+      )
+    ) {
+      ratingConstraint = "1-5";
+    }
+  }
+
+  assert.equal(ratingConstraint, "1-5");
+});
+
 test("public feedback insert and update policies are absent in final migration state", () => {
   const activePolicies = new Set<string>();
 

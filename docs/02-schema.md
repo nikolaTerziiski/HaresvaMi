@@ -146,7 +146,7 @@ CREATE TABLE feedback_ratings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id UUID NOT NULL REFERENCES feedback_sessions(id) ON DELETE CASCADE,
   menu_item_id UUID NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
-  rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 10),
+  rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

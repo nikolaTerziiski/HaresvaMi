@@ -209,9 +209,9 @@ When AI is uncertain (low confidence fuzzy match), it can return `matched_via: "
 
 Per-item rating:
 
-- 1–10 slider or stepper
+- 1–5 star scale
 - Optional comment field (collapsed by default, "Добави коментар" link)
-- Default value: 7 (so customer must actively move it to leave a low rating)
+- No default selected; the customer actively chooses a star value
 
 Overall rating (final screen):
 
@@ -221,7 +221,7 @@ Overall rating (final screen):
 ### Validation
 
 - All per-item ratings are optional individually, but customer must rate at least 1 item OR submit overall to count as a completed session
-- Overall rating is required to mark session as `completed_at`
+- A completed session needs at least one dish rating or an overall rating
 - Comments are optional everywhere
 - Max comment length: 500 characters
 
@@ -248,9 +248,9 @@ Plain-Bulgarian insights are generated weekly by a cron job.
 
 ### Insight types
 
-1. **Trending down dish:** "Кебапчето пада на 5.2/10 от 3 седмици. Виж 12 отзива →"
-2. **Trending up dish:** "Шопската ти сега е 8.7/10 — най-добрата ти оценка от началото на годината."
-3. **New low:** "Един клиент даде 2/10 на агнешкото вчера и каза: '...'. Виж →"
+1. **Trending down dish:** "Кебапчето пада на 2.6/5 от 3 седмици. Виж 12 отзива →"
+2. **Trending up dish:** "Шопската ти сега е 4.4/5 — най-добрата ти оценка от началото на годината."
+3. **New low:** "Един клиент даде 1/5 на агнешкото вчера и каза: '...'. Виж →"
 4. **Quiet week:** "Тази седмица имаш само 8 отзива. Постави таблета по-видимо на масата за плащане?"
 5. **Milestone:** "100 клиента вече ти дадоха отзив този месец. 78% казаха 'Харесва ми' 🎉"
 
@@ -259,7 +259,7 @@ Plain-Bulgarian insights are generated weekly by a cron job.
 Weekly cron → for each restaurant with Pro tier:
 
 1. Aggregate last 7 days of ratings vs prior 7 days
-2. Identify dishes with significant changes (statistical significance: ≥5 ratings, change ≥1.5 points)
+2. Identify dishes with significant changes (statistical significance: ≥5 ratings, change ≥0.75 points)
 3. Use Claude Sonnet to write the insight in natural Bulgarian
 4. Send push notification to owner's PWA + email
 
@@ -278,9 +278,9 @@ Include the dish name, the rating change, and a clear next action if relevant.
 No corporate language. No "we noticed that..." preambles. Direct and human.
 
 Examples of good insights:
-- "Кебапчето пада на 5.2/10 от 3 седмици. Виж 12 отзива →"
-- "Шопската ти сега е 8.7/10 — най-добрата ти оценка от началото на годината."
-- "Един клиент даде 2/10 на агнешкото вчера. Прочети защо →"
+- "Кебапчето пада на 2.6/5 от 3 седмици. Виж 12 отзива →"
+- "Шопската ти сега е 4.4/5 — най-добрата ти оценка от началото на годината."
+- "Един клиент даде 1/5 на агнешкото вчера. Прочети защо →"
 
 Return only the insight text, no explanation.
 ```

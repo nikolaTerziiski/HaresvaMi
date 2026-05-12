@@ -8,6 +8,8 @@ export type KioskMenuItem = {
   name: string;
   category: string | null;
   price: number | null;
+  imageUrl: string | null;
+  description: string | null;
 };
 
 export type ReceiptItem = {
@@ -21,6 +23,8 @@ export type SelectedItem = {
   id: string;
   name: string;
   quantity: number;
+  imageUrl: string | null;
+  description: string | null;
 };
 
 export type OverallRating = "like" | "dislike";
