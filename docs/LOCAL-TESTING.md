@@ -106,20 +106,23 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
    - use `Копирай` or `Отвори`
 8. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
 9. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
-10. On `/kiosk/scan`, submit manual feedback:
+10. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
+11. On `/kiosk/scan`, submit manual feedback:
     - click `Избери ръчно`
     - select at least one menu item
     - click `Продължи с избраните`
     - click `Започни оценяване`
-    - rate at least one item from 1 to 5 stars, or choose `Харесва ми` / `Не ми харесва`
+    - verify the customer rating screen uses compact full-width rows with image/fallback, description when available, quantity when > 1, and 1-5 star buttons
+    - rate at least one item from 1 to 5 stars, or choose the secondary `Харесва ми` / `Не ми харесва`
     - click `Готово`
-    - verify the thank-you screen, `Благодарим ти!`
-11. Return to the owner browser and open Dashboard -> `Отзиви`.
-12. Verify the new feedback appears in the dashboard after refresh if needed.
-13. Return to Dashboard -> `Таблет`.
-14. In `Активни таблети`, revoke the session with `Отмени`.
-15. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
-16. Verify revoked access fails:
+    - verify the thank-you screen auto-resets back to the staff preparation screen
+12. Return to the owner browser and open Dashboard -> `Отзиви`.
+13. Verify the new feedback appears in the dashboard after refresh if needed.
+14. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
+15. Return to Dashboard -> `Таблет`.
+16. In `Активни таблети`, revoke the session with `Отмени`.
+17. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
+18. Verify revoked access fails:
     - `/kiosk/scan` should show `Таблетът не е свързан.`
     - the old connect link should show the invalid/expired tablet-link page
 

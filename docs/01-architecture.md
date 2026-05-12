@@ -158,26 +158,32 @@ haresvami/
 
 ## Data flow — the kiosk feedback loop
 
-```
-1. Owner → /kiosk → standby screen showing restaurant logo
-2. Waiter taps "Сканирай бона"
-3. /kiosk/scan → camera opens
-4. Photo captured → POST /api/extract-receipt
+```text
+1. Owner opens Dashboard -> Tablet and creates a kiosk session.
+2. The setup link is `/kiosk/connect?token=ks_...`; raw tokens are shown only once.
+3. `/kiosk/connect` verifies the hashed token, stores it in an HttpOnly cookie, and redirects to `/kiosk/scan`.
+4. After a valid kiosk cookie exists, visiting `/` on that device redirects straight to `/kiosk/scan`.
+5. `/kiosk/scan` is the full kiosk flow: staff preparation, customer rating, and thank-you reset.
+6. Waiter taps "Сканирай бона" or chooses dishes manually.
+7. Photo captured -> POST /api/extract-receipt
    - Server: authorize owner/kiosk session
    - Server: check scan entitlement before loading the image or calling Gemini
    - Server: call Gemini with image + restaurant menu + alias dictionary
    - Server: consume one AI scan only after successful extraction
    - Server: return {items: [{menu_item_id, name, quantity}], unknown_aliases: [...]}
-5. If scan entitlement is exhausted, extraction fails, or no usable items are found: keep the kiosk in manual item selection.
-6. If unknown_aliases: prompt waiter to map them (one-time per alias per restaurant)
-7. Customer hands tablet → /kiosk/rate
-   - Shows each item with a 1–5 star rating control
-   - Optional comment per item
-8. Final overall: ❤️ Харесва ми / 💔 Не ми харесва
-9. Submit → POST /api/feedback
+8. If scan entitlement is exhausted, extraction fails, or no usable items are found: keep the kiosk in manual item selection.
+9. Staff confirms selected dishes, then hands the tablet to the customer.
+10. Customer rating mode uses the full tablet width and compact rows:
+   - image or warm fallback on the left
+   - dish name, optional description, quantity when > 1
+   - 1-5 star buttons on the right
+   - optional overall "Харесва ми / Не ми харесва" kept secondary
+11. Submit -> POST /api/feedback
    - Creates feedback_session + feedback_ratings rows
-10. /kiosk/thanks → 5 second auto-redirect to /kiosk standby
+12. Thank-you mode auto-resets back to the staff preparation screen after a short delay.
 ```
+
+The owner dashboard shell redirects `/` to `/dashboard` when an owner session is already active. The kiosk cookie is independent from the owner session so a checkout tablet can stay in kiosk mode without showing the public landing page again.
 
 ## Environment variables
 

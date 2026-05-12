@@ -210,13 +210,17 @@ When AI is uncertain (low confidence fuzzy match), it can return `matched_via: "
 Per-item rating:
 
 - 1–5 star scale
-- Optional comment field (collapsed by default, "Добави коментар" link)
+- Compact full-width dish rows for a 10-inch landscape tablet
+- Image or warm fallback mark on the left
+- Dish name, optional description, and quantity when quantity is greater than 1
+- 1-5 star buttons on the right, with selected and unselected states
 - No default selected; the customer actively chooses a star value
 
-Overall rating (final screen):
+Overall rating:
 
-- Two big buttons: "❤️ Харесва ми" / "💔 Не ми харесва"
-- Optional overall comment
+- Optional and visually secondary
+- Two buttons: "Харесва ми" / "Не ми харесва"
+- Customer can submit with at least one dish rating or an overall rating
 
 ### Validation
 
@@ -234,6 +238,17 @@ The kiosk uses server-created `ks_...` session tokens stored as hashes in the `k
 ```
 
 The connect route verifies the token server-side, updates session usage, and sets the token in an HttpOnly cookie scoped to `/` so kiosk pages and API routes receive it. `/kiosk/scan` reads that cookie server-side before loading the restaurant and menu.
+
+Once a valid kiosk cookie exists on a device, visiting `/` redirects directly to `/kiosk/scan`. Once an owner auth session exists, visiting `/` redirects to `/dashboard`. This keeps a configured tablet out of the public landing/login loop during daily service.
+
+`/kiosk/scan` owns the current kiosk UI states:
+
+- staff scan / manual preparation
+- staff ready handoff
+- customer rating
+- thank-you auto reset
+
+The receipt preview is visible only in staff scan/manual/ready modes. It is hidden during customer rating and thank-you modes so the customer gets the full tablet width.
 
 Customer-facing API routes authorize either:
 

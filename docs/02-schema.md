@@ -476,8 +476,18 @@ Current migration set in `supabase/migrations/`:
 5. **`0005_subscription_scan_credits_ai_usage.sql`** — Subscription state, scan credits, AI usage logs
 6. **`0006_align_restaurant_tiers.sql`** — Aligns tiers to `free`, `starter`, `pro`
 7. **`0007_kiosk_sessions.sql`** — Hashed kiosk tablet sessions
+8. **`0008_drop_public_feedback_write_policies.sql`** — Removes public feedback write policies; server API routes authorize and write with service role
+9. **`0009_feedback_rating_five_star_scale.sql`** — Aligns `feedback_ratings.rating` to the 1-5 star scale
 
 Apply order matters. Run sequentially in Supabase SQL editor.
+
+When applying migrations manually in a hosted Supabase project, run this after schema changes if the API still reports missing columns or tables:
+
+```sql
+notify pgrst, 'reload schema';
+```
+
+If a migration was partially applied, do not blindly rerun a non-idempotent migration file. Repair the missing columns/tables with `IF NOT EXISTS` statements, then reload the PostgREST schema cache.
 
 ## Type generation
 
