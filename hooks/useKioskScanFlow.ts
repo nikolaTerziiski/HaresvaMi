@@ -176,10 +176,23 @@ export function useKioskScanFlow({
   }
 
   function setItemRating(itemId: string, rating: number) {
-    setItemRatings((current) => ({
-      ...current,
-      [itemId]: rating,
-    }));
+    setItemRatings((current) => {
+      if (current[itemId] === rating) {
+        const next = { ...current };
+        delete next[itemId];
+
+        return next;
+      }
+
+      return {
+        ...current,
+        [itemId]: rating,
+      };
+    });
+  }
+
+  function toggleOverallRating(rating: OverallRating) {
+    setOverallRating((current) => (current === rating ? null : rating));
   }
 
   async function submitCustomerFeedback() {
@@ -264,7 +277,7 @@ export function useKioskScanFlow({
     selectedItems,
     setQuery,
     setItemRating,
-    setOverallRating,
+    setOverallRating: toggleOverallRating,
     showCustomerStep: () => setMode("customer"),
     showManualSelection,
     statusMessage,

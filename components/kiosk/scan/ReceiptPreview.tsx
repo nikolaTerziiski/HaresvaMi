@@ -7,10 +7,11 @@ type ReceiptPreviewProps = {
 
 export function ReceiptPreview({ restaurant, subtitle }: ReceiptPreviewProps) {
   return (
-    <aside className="rounded-[24px] border border-[var(--rule)] bg-[var(--paper)] p-6">
-      <div className="mx-auto max-w-[360px] rounded-[18px] border border-[var(--rule)] bg-[var(--bg)] p-5">
-        <div className="mb-4 h-[220px] rounded-[14px] border border-dashed border-[var(--ink-mute)] bg-[linear-gradient(180deg,#FDF9F1,#EDE4D3)] p-5">
-          <div className="mx-auto h-full max-w-[190px] rounded-[10px] bg-white px-4 py-5 text-[12px] text-[var(--ink-2)] shadow-[0_10px_30px_rgba(26,21,18,0.08)]">
+    <aside className="rounded-2xl border border-[var(--rule)] bg-[var(--paper)] p-6">
+      <div className="mx-auto max-w-[360px] rounded-2xl border border-[var(--rule)] bg-[var(--bg)] p-5">
+        <div className="relative mb-4 h-[260px] overflow-hidden rounded-xl border border-dashed border-[var(--ink-mute)] bg-[var(--paper)] p-5">
+          <div className="absolute inset-x-8 top-20 h-0.5 bg-[var(--accent)]" />
+          <div className="mx-auto h-full max-w-[190px] rotate-[-2deg] rounded-lg border border-[var(--rule)] bg-[var(--paper)] px-4 py-5 font-[var(--f-mono)] text-[11px] text-[var(--ink-2)]">
             <div className="mb-4 text-center font-semibold">
               {restaurant.name}
             </div>

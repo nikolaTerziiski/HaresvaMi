@@ -8,6 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
@@ -91,9 +92,12 @@ export async function Sidebar({
         </nav>
       </div>
 
-      <div className="mt-auto flex flex-col gap-4 pt-5">
+      <div className="mt-auto flex flex-col gap-3 pb-8 pt-5">
         <LocaleSwitcher />
-        <div className="flex items-center gap-[10px]">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-[10px] rounded-lg px-2 py-2 transition hover:bg-[var(--paper)]"
+        >
           <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--plum)] font-[var(--f-display)] text-[18px] italic leading-none text-[var(--paper)]">
             {avatarInitial}
           </div>
@@ -105,7 +109,7 @@ export async function Sidebar({
               {shell("role.owner")}
             </div>
           </div>
-        </div>
+        </Link>
         <LogoutButton />
       </div>
     </aside>

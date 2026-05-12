@@ -4,6 +4,32 @@ import { TabletSetupActions } from "@/components/dashboard/tablet/TabletSetupAct
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { listKioskSessions } from "@/lib/kiosk/session-token";
 
+async function loadTabletSessions(restaurantId: string, ownerId: string) {
+  try {
+    const sessions = await listKioskSessions({
+      restaurantId,
+      ownerId,
+    });
+
+    return {
+      sessions,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Unable to load kiosk sessions:", error);
+
+    const message = error instanceof Error ? error.message : "";
+    const isInvalidSupabaseKey = message.includes("Invalid API key");
+
+    return {
+      sessions: [],
+      error: isInvalidSupabaseKey
+        ? "Не успяхме да заредим връзките за таблет. Провери дали SUPABASE_SERVICE_ROLE_KEY е от същия Supabase проект като NEXT_PUBLIC_SUPABASE_URL."
+        : "Не успяхме да заредим връзките за таблет. Провери Supabase настройките и дали миграцията за kiosk_sessions е приложена.",
+    };
+  }
+}
+
 export default async function TabletPage() {
   const { user, restaurant } = await getCurrentOwnerState();
 
@@ -11,10 +37,7 @@ export default async function TabletPage() {
     redirect("/dashboard/onboarding");
   }
 
-  const sessions = await listKioskSessions({
-    restaurantId: restaurant.id,
-    ownerId: user.id,
-  });
+  const { sessions, error } = await loadTabletSessions(restaurant.id, user.id);
 
   return (
     <div className="mx-auto max-w-6xl px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
@@ -52,7 +75,10 @@ export default async function TabletPage() {
           </p>
         </aside>
 
-        <TabletSetupActions initialSessions={sessions} />
+        <TabletSetupActions
+          initialSessions={sessions}
+          initialLoadError={error}
+        />
       </div>
     </div>
   );

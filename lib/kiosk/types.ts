@@ -40,15 +40,18 @@ export type EntitlementResult = {
 
 export type KioskScanCopy = {
   scanEyebrow: string;
+  staffBadge: string;
   title: string;
   subtitle: string;
   remainingScansLabel: string;
   scanButton: string;
+  scanRecommended: string;
   scanAgain: string;
   processing: string;
   exhaustedTitle: string;
   exhaustedBody: string;
   manualButton: string;
+  manualFallbackLabel: string;
   manualTitle: string;
   manualBody: string;
   manualSearch: string;
@@ -68,6 +71,15 @@ export type KioskScanCopy = {
   startCustomerStep: string;
   customerTitle: string;
   customerBody: string;
+  customerProgress: string;
+  customerProgressSuffix: string;
+  anonymousNote: string;
+  ratingFeeling1: string;
+  ratingFeeling2: string;
+  ratingFeeling3: string;
+  ratingFeeling4: string;
+  ratingFeeling5: string;
+  overallTitle: string;
   overallLike: string;
   overallDislike: string;
   chooseOverall: string;
@@ -75,8 +87,12 @@ export type KioskScanCopy = {
   feedbackFailed: string;
   feedbackLimitReached: string;
   finish: string;
+  finishDisabled: string;
   thanksTitle: string;
   thanksBody: string;
+  thanksResettingIn: string;
+  thanksSecondsSuffix: string;
+  thanksNewReviewNow: string;
   reset: string;
   ownerUpgradeHint: string;
 };

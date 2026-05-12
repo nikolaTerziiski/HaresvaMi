@@ -1,3 +1,4 @@
+import { DishMark } from "@/components/kiosk/scan/DishMark";
 import type { SelectedItem } from "@/lib/kiosk/types";
 
 export function ItemList({ items }: { items: SelectedItem[] }) {
@@ -7,9 +8,10 @@ export function ItemList({ items }: { items: SelectedItem[] }) {
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex min-h-14 items-center justify-between rounded-md bg-[var(--bg)] px-4 py-3 text-[18px]"
+            className="flex min-h-16 items-center gap-4 rounded-md bg-[var(--bg)] px-4 py-3 text-[18px]"
           >
-            <span>{item.name}</span>
+            <DishMark imageUrl={item.imageUrl} name={item.name} size="sm" />
+            <span className="min-w-0 flex-1 leading-tight">{item.name}</span>
             <span className="font-[var(--f-mono)] text-[13px] text-[var(--ink-mute)]">
               x{item.quantity}
             </span>

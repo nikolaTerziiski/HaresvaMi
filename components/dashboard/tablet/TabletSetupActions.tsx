@@ -6,10 +6,12 @@ import type { KioskSession } from "@/lib/kiosk/session-types";
 
 type TabletSetupActionsProps = {
   initialSessions: KioskSession[];
+  initialLoadError?: string | null;
 };
 
 export function TabletSetupActions({
   initialSessions,
+  initialLoadError,
 }: TabletSetupActionsProps) {
   const {
     activeSessions,
@@ -30,6 +32,12 @@ export function TabletSetupActions({
 
   return (
     <div className="grid gap-5">
+      {initialLoadError ? (
+        <div className="rounded-xl border border-[var(--accent)] bg-[var(--paper)] p-4 text-[14px] leading-[1.5] text-[var(--ink-2)]">
+          {initialLoadError}
+        </div>
+      ) : null}
+
       <section className="rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-5">
         <h2 className="m-0 font-[var(--f-display)] text-[28px] font-normal leading-tight text-[var(--ink)]">
           Нова връзка за таблет

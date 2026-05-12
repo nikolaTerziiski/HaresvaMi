@@ -1,0 +1,1962 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HaresvaMi — Tablet kiosk flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f6f1e8;
+        --bg-2: #ede4d3;
+        --paper: #fdf9f1;
+        --paper-2: #f9f2e5;
+        --ink: #1a1512;
+        --ink-2: #4a3f35;
+        --ink-mute: #8a7a68;
+        --rule: #d9cebb;
+        --rule-soft: #e6ddcb;
+        --accent: #c24d2c;
+        --accent-soft: #efd6c9;
+        --accent-2: #e89a3c;
+        --plum: #5b2a2a;
+        --ok: #3f6b4e;
+        --olive: #7a8b5a;
+        --f-display: "Instrument Serif", Georgia, serif;
+        --f-ui: "Inter", system-ui, sans-serif;
+        --f-mono: "JetBrains Mono", ui-monospace, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #221b14;
+        color: var(--ink);
+        font-family: var(--f-ui);
+        -webkit-font-smoothing: antialiased;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        color: inherit;
+        padding: 0;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      svg {
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ===== Preview chrome ===== */
+      .chrome {
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        background: #1a1512;
+        border-bottom: 1px solid #2a2218;
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: #d9ceb8;
+      }
+      .chrome .label {
+        font-family: var(--f-mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #8a7a68;
+      }
+      .chrome .btns {
+        display: flex;
+        gap: 6px;
+      }
+      .chrome .btns button {
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid #3a3225;
+        font-family: var(--f-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #d9ceb8;
+      }
+      .chrome .btns button.on {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .chrome .btns button:hover:not(.on) {
+        border-color: #5a4e3a;
+        color: #f6f1e8;
+      }
+      .chrome .sep {
+        width: 1px;
+        height: 18px;
+        background: #3a3225;
+        margin: 0 6px;
+      }
+      .chrome .spacer {
+        flex: 1;
+      }
+      .chrome .back {
+        font-family: var(--f-mono);
+        font-size: 11px;
+        color: #8a7a68;
+      }
+      .chrome .back:hover {
+        color: #d9ceb8;
+      }
+
+      /* ===== Stage (frame holder) ===== */
+      .stage {
+        min-height: calc(100vh - 50px);
+        display: grid;
+        place-items: center;
+        padding: 40px 20px;
+        background:
+          radial-gradient(
+            1200px 600px at 50% -100px,
+            rgba(194, 77, 44, 0.08),
+            transparent 60%
+          ),
+          #221b14;
+      }
+
+      /* ===== Tablet bezel (landscape) ===== */
+      .tablet {
+        width: 1280px;
+        height: 820px;
+        background: #0d0a07;
+        border-radius: 32px;
+        padding: 18px 56px 18px 56px;
+        box-shadow:
+          0 60px 120px -40px rgba(0, 0, 0, 0.7),
+          0 0 0 2px #1f180f inset;
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .tablet::before {
+        /* camera dot */
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2a2218;
+        box-shadow: 0 0 0 2px #0d0a07;
+      }
+      .tablet .screen {
+        flex: 1;
+        height: 100%;
+        background: var(--bg);
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Phone bezel (portrait) */
+      .phone {
+        width: 390px;
+        height: 844px;
+        background: #0d0a07;
+        border-radius: 48px;
+        padding: 12px;
+        box-shadow:
+          0 50px 100px -30px rgba(0, 0, 0, 0.7),
+          0 0 0 2px #1f180f inset;
+        position: relative;
+      }
+      .phone::before {
+        content: "";
+        position: absolute;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 110px;
+        height: 28px;
+        background: #0d0a07;
+        border-radius: 16px;
+        z-index: 2;
+      }
+      .phone .screen {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        border-radius: 36px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* ===== Screen layout common ===== */
+      .screen {
+        font-size: 15px;
+        color: var(--ink);
+        line-height: 1.5;
+      }
+      .screen.s-tablet {
+        font-size: 17px;
+      }
+
+      .kiosk {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        position: relative;
+      }
+
+      /* Top mini bar — context strip, not navigation */
+      .kbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 28px;
+        border-bottom: 1px solid var(--rule-soft);
+        font-family: var(--f-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+      }
+      .kbar .mark {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 13px;
+        line-height: 1;
+      }
+      .kbar .rest {
+        color: var(--ink);
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+        font-family: var(--f-ui);
+        font-size: 13px;
+      }
+      .kbar .sep-dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--rule);
+      }
+      .kbar .spacer {
+        flex: 1;
+      }
+      .kbar .link {
+        font-family: var(--f-mono);
+        font-size: 10px;
+        color: var(--ink-mute);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--rule);
+      }
+      .kbar .link.ok {
+        color: var(--ok);
+        border-color: color-mix(in oklab, var(--ok) 30%, var(--rule));
+      }
+      .kbar .link svg {
+        width: 12px;
+        height: 12px;
+      }
+      .kbar .pulse {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--ok);
+        animation: pulse 2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.35;
+          transform: scale(1.4);
+        }
+      }
+
+      /* Body container */
+      .kbody {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+
+      /* Footer action strip */
+      .kfoot {
+        border-top: 1px solid var(--rule);
+        background: var(--paper);
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .kfoot .meta {
+        flex: 1;
+        font-size: 13px;
+        color: var(--ink-mute);
+      }
+      .kfoot .meta b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      /* ===== Buttons ===== */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px 28px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 500;
+        transition:
+          background 0.15s,
+          transform 0.08s,
+          color 0.15s,
+          border-color 0.15s,
+          box-shadow 0.15s;
+        white-space: nowrap;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 12px 24px -10px rgba(194, 77, 44, 0.55);
+      }
+      .btn-primary:hover {
+        background: var(--plum);
+      }
+      .btn-primary:disabled {
+        background: var(--rule);
+        color: var(--ink-mute);
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: var(--paper);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+      }
+      .btn-secondary:hover {
+        border-color: var(--ink);
+      }
+      .btn-ghost {
+        color: var(--ink-2);
+      }
+      .btn-ghost:hover {
+        color: var(--ink);
+      }
+      .btn-big {
+        padding: 22px 34px;
+        font-size: 18px;
+        border-radius: 14px;
+      }
+      .btn-xl {
+        padding: 26px 40px;
+        font-size: 20px;
+        border-radius: 16px;
+      }
+      .btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ============================================================
+   SCREEN 1 — STAFF (waiter) preparation
+   ============================================================ */
+      .staff {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+      }
+      .staff-left {
+        padding: 36px 40px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--rule-soft);
+        background: var(--paper-2);
+      }
+      .staff h1 {
+        font-family: var(--f-display);
+        font-size: 56px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin: 14px 0 10px;
+        font-weight: 400;
+      }
+      .staff h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .staff .lead {
+        margin: 0;
+        color: var(--ink-2);
+        max-width: 460px;
+        font-size: 16px;
+      }
+
+      .staff .kicker {
+        font-family: var(--f-mono);
+        font-size: 11px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .staff .kicker .badge {
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .method-tabs {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 6px;
+        background: var(--bg-2);
+        border-radius: 14px;
+      }
+      .method-tab {
+        padding: 18px 16px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--ink-2);
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s;
+        text-align: left;
+      }
+      .method-tab:hover {
+        color: var(--ink);
+      }
+      .method-tab.on {
+        background: var(--paper);
+        color: var(--ink);
+        box-shadow: 0 2px 10px -4px rgba(26, 21, 18, 0.15);
+      }
+      .method-tab .gx {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+      .method-tab.on .gx {
+        background: var(--accent);
+        color: var(--paper);
+      }
+      .method-tab svg {
+        width: 18px;
+        height: 18px;
+      }
+      .method-tab .sub {
+        display: block;
+        font-weight: 400;
+        font-size: 12px;
+        color: var(--ink-mute);
+        margin-top: 2px;
+      }
+
+      /* Scan visual */
+      .scan-area {
+        margin-top: 24px;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--paper);
+        border: 1.5px dashed var(--rule);
+        border-radius: 16px;
+        padding: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+      .scan-area .scan-frame {
+        width: 280px;
+        aspect-ratio: 0.72;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.6),
+          rgba(255, 255, 255, 0.95)
+        );
+        border-radius: 6px;
+        box-shadow:
+          0 30px 50px -20px rgba(26, 21, 18, 0.18),
+          0 0 0 1px var(--rule);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 22px 18px;
+        font-family: var(--f-mono);
+        font-size: 10px;
+        color: #4a3f35;
+        transform: rotate(-3deg);
+      }
+      .scan-area .scan-frame::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        top: 30%;
+        box-shadow: 0 0 14px rgba(194, 77, 44, 0.6);
+        animation: scanline 2.4s ease-in-out infinite;
+      }
+      @keyframes scanline {
+        0%,
+        100% {
+          top: 18%;
+          opacity: 0.8;
+        }
+        50% {
+          top: 78%;
+          opacity: 1;
+        }
+      }
+      .scan-area .scan-frame .rh {
+        text-align: center;
+        font-weight: 500;
+        color: var(--ink);
+        margin-bottom: 8px;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+      }
+      .scan-area .scan-frame .rl {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-bottom: 1px dashed #c9c2b1;
+      }
+      .scan-area .scan-frame .rl:last-child {
+        border-bottom: none;
+      }
+      .scan-area .scan-frame .rt {
+        margin-top: auto;
+        text-align: center;
+        font-size: 9px;
+        color: var(--ink-mute);
+      }
+
+      .scan-hint {
+        position: absolute;
+        bottom: 24px;
+        left: 30px;
+        right: 30px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--ink-mute);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .scan-hint .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+
+      /* Right side: detected/selected dishes */
+      .staff-right {
+        padding: 36px 40px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .sr-head {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .sr-head h2 {
+        font-family: var(--f-display);
+        font-size: 28px;
+        margin: 0;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+      }
+      .sr-head .count {
+        font-family: var(--f-mono);
+        font-size: 11px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .dish-list {
+        flex: 1;
+        min-height: 0;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 14px;
+        overflow: auto;
+      }
+      .dish-row {
+        display: grid;
+        grid-template-columns: 48px 1fr auto;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--rule-soft);
+      }
+      .dish-row:last-child {
+        border-bottom: none;
+      }
+      .dish-row .ph {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 24px;
+        line-height: 1;
+        color: var(--paper);
+      }
+      .dish-row .meta b {
+        display: block;
+        font-weight: 500;
+        font-size: 16px;
+        color: var(--ink);
+      }
+      .dish-row .meta span {
+        font-family: var(--f-mono);
+        font-size: 11px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .qty {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .qty button {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        color: var(--ink-2);
+        font-size: 18px;
+      }
+      .qty button:hover {
+        background: var(--bg-2);
+        color: var(--ink);
+      }
+      .qty .n {
+        min-width: 32px;
+        text-align: center;
+        font-family: var(--f-mono);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .qty button svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .dish-empty {
+        padding: 60px 24px;
+        text-align: center;
+        color: var(--ink-mute);
+        font-size: 14px;
+      }
+      .dish-empty .gx {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: var(--bg-2);
+        display: grid;
+        place-items: center;
+        color: var(--ink-mute);
+      }
+
+      /* "Add more" button at bottom of list */
+      .add-more {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 12px;
+        background: transparent;
+        border: 1px dashed var(--rule);
+        font-size: 14px;
+        color: var(--ink-2);
+        font-weight: 500;
+      }
+      .add-more:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .add-more svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Manual selection grid */
+      .manual-grid {
+        margin-top: 18px;
+        flex: 1;
+        min-height: 0;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow: auto;
+      }
+      .cat-chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .cat-chips .cc {
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid var(--rule);
+        color: var(--ink-2);
+      }
+      .cat-chips .cc.on {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+
+      .man-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .man-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        background: var(--bg);
+        text-align: left;
+      }
+      .man-card:hover {
+        border-color: var(--ink);
+      }
+      .man-card.sel {
+        border-color: var(--accent);
+        background: color-mix(in oklab, var(--accent) 6%, var(--paper));
+        box-shadow: 0 0 0 2px var(--accent) inset;
+      }
+      .man-card .ph2 {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 20px;
+        color: var(--paper);
+        flex-shrink: 0;
+      }
+      .man-card .mm {
+        flex: 1;
+        min-width: 0;
+      }
+      .man-card .mm b {
+        display: block;
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--ink);
+      }
+      .man-card .mm span {
+        font-family: var(--f-mono);
+        font-size: 10px;
+        color: var(--ink-mute);
+      }
+      .man-card .check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1.5px solid var(--rule);
+        display: grid;
+        place-items: center;
+        color: transparent;
+        flex-shrink: 0;
+      }
+      .man-card.sel .check {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .man-card .check svg {
+        width: 12px;
+        height: 12px;
+        stroke-width: 3;
+      }
+
+      /* ============================================================
+   SCREEN 2 — Customer rating
+   ============================================================ */
+      .rating-screen {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .rate-head {
+        padding: 32px 40px 20px;
+        text-align: center;
+      }
+      .rate-head h1 {
+        font-family: var(--f-display);
+        font-size: 52px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+        font-weight: 400;
+      }
+      .rate-head h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .rate-head .sub {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 16px;
+      }
+      .rate-head .progress-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 16px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        font-family: var(--f-mono);
+        font-size: 11px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .rate-head .progress-pill b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      .rate-body {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 6px 40px 20px;
+      }
+      .rate-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .r-card {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 16px;
+        align-items: center;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .r-card.rated {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent),
+          0 16px 30px -20px rgba(194, 77, 44, 0.3);
+      }
+      .r-card .photo {
+        width: 96px;
+        height: 96px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 44px;
+        color: var(--paper);
+        position: relative;
+        overflow: hidden;
+      }
+      .r-card .photo::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(255, 255, 255, 0.25),
+          transparent 60%
+        );
+      }
+      .r-card .info b {
+        display: block;
+        font-family: var(--f-display);
+        font-size: 22px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+      .r-card .info p {
+        margin: 0 0 12px;
+        font-size: 13px;
+        color: var(--ink-mute);
+        line-height: 1.4;
+        max-width: 340px;
+      }
+      .r-card .stars {
+        display: flex;
+        gap: 4px;
+      }
+      .r-card .stars button {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        color: var(--rule);
+        transition:
+          color 0.15s,
+          transform 0.12s,
+          background 0.15s;
+      }
+      .r-card .stars button:hover {
+        background: color-mix(in oklab, var(--accent) 8%, transparent);
+        color: var(--accent-2);
+      }
+      .r-card .stars button.on {
+        color: var(--accent-2);
+      }
+      .r-card .stars button.on svg {
+        fill: var(--accent-2);
+      }
+      .r-card .stars button:active {
+        transform: scale(0.92);
+      }
+      .r-card .stars svg {
+        width: 30px;
+        height: 30px;
+        stroke-width: 1.5;
+      }
+      .r-card .label-feeling {
+        font-family: var(--f-mono);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 6px;
+        color: var(--ink-mute);
+        min-height: 14px;
+      }
+      .r-card.rated .label-feeling {
+        color: var(--accent);
+      }
+
+      .overall-row {
+        margin-top: 20px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .overall-row .ot {
+        font-family: var(--f-display);
+        font-size: 26px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+      }
+      .overall-row .spacer {
+        flex: 1;
+      }
+      .overall-btns {
+        display: flex;
+        gap: 8px;
+      }
+      .overall-btns button {
+        padding: 12px 20px;
+        border-radius: 999px;
+        font-size: 15px;
+        font-weight: 500;
+        border: 1px solid var(--rule);
+        background: var(--bg);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .overall-btns button:hover {
+        border-color: var(--ink);
+      }
+      .overall-btns button.on.good {
+        background: var(--ok);
+        color: #fff;
+        border-color: var(--ok);
+      }
+      .overall-btns button.on.bad {
+        background: var(--plum);
+        color: #fff;
+        border-color: var(--plum);
+      }
+      .overall-btns svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* rating footer */
+      .rate-foot {
+        border-top: 1px solid var(--rule);
+        background: color-mix(in oklab, var(--paper) 80%, var(--bg));
+        padding: 16px 40px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .rate-foot .privacy {
+        flex: 1;
+        font-size: 12px;
+        color: var(--ink-mute);
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .rate-foot .privacy svg {
+        width: 14px;
+        height: 14px;
+        color: var(--ink-mute);
+        flex-shrink: 0;
+      }
+
+      /* ============================================================
+   SCREEN 3 — Thank you
+   ============================================================ */
+      .thanks {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 60px 40px;
+        background:
+          radial-gradient(
+            800px 500px at 50% 30%,
+            color-mix(in oklab, var(--accent) 14%, transparent),
+            transparent 70%
+          ),
+          var(--bg);
+        position: relative;
+        overflow: hidden;
+      }
+      .thanks .glyph {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 60px;
+        line-height: 1;
+        box-shadow:
+          0 30px 60px -20px rgba(194, 77, 44, 0.55),
+          0 0 0 14px color-mix(in oklab, var(--accent) 15%, transparent);
+        animation: thanksPop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1);
+      }
+      @keyframes thanksPop {
+        from {
+          transform: scale(0.4);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .thanks h1 {
+        font-family: var(--f-display);
+        font-size: 80px;
+        line-height: 1;
+        letter-spacing: -0.025em;
+        margin: 28px 0 12px;
+        font-weight: 400;
+      }
+      .thanks h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .thanks p {
+        font-size: 19px;
+        color: var(--ink-2);
+        max-width: 580px;
+        line-height: 1.5;
+        margin: 0 auto;
+      }
+      .thanks .countdown {
+        margin-top: 36px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        border-radius: 999px;
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        font-family: var(--f-mono);
+        font-size: 12px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .thanks .countdown .ring {
+        width: 18px;
+        height: 18px;
+        position: relative;
+      }
+      .thanks .countdown .ring svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+        stroke-width: 3;
+      }
+      .thanks .countdown .ring .track {
+        stroke: var(--rule);
+      }
+      .thanks .countdown .ring .fill {
+        stroke: var(--accent);
+        stroke-dasharray: 50;
+        animation: countRing 5s linear forwards;
+      }
+      @keyframes countRing {
+        from {
+          stroke-dashoffset: 0;
+        }
+        to {
+          stroke-dashoffset: 50;
+        }
+      }
+      .thanks .countdown b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .thanks .new-btn {
+        margin-top: 16px;
+        padding: 14px 26px;
+        border-radius: 12px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .thanks .new-btn:hover {
+        background: var(--accent);
+      }
+      .thanks .new-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+      .thanks .signature {
+        position: absolute;
+        bottom: 24px;
+        left: 0;
+        right: 0;
+        font-family: var(--f-mono);
+        font-size: 10px;
+        color: var(--ink-mute);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .thanks .signature .m {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 10px;
+      }
+
+      /* ============================================================
+   Phone overrides
+   ============================================================ */
+      .s-phone .staff {
+        grid-template-columns: 1fr;
+      }
+      .s-phone .staff-left {
+        border-right: none;
+        border-bottom: 1px solid var(--rule-soft);
+        padding: 22px 22px;
+      }
+      .s-phone .staff h1 {
+        font-size: 34px;
+      }
+      .s-phone .staff .lead {
+        font-size: 14px;
+      }
+      .s-phone .staff-right {
+        padding: 22px 22px;
+      }
+      .s-phone .scan-area {
+        padding: 22px;
+      }
+      .s-phone .scan-area .scan-frame {
+        width: 200px;
+      }
+      .s-phone .rate-head {
+        padding: 24px 20px 14px;
+      }
+      .s-phone .rate-head h1 {
+        font-size: 36px;
+      }
+      .s-phone .rate-head .sub {
+        font-size: 14px;
+      }
+      .s-phone .rate-body {
+        padding: 6px 20px 16px;
+      }
+      .s-phone .rate-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .s-phone .r-card {
+        grid-template-columns: 72px 1fr;
+        padding: 14px;
+      }
+      .s-phone .r-card .photo {
+        width: 72px;
+        height: 72px;
+        font-size: 34px;
+      }
+      .s-phone .r-card .info b {
+        font-size: 18px;
+      }
+      .s-phone .r-card .info p {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .s-phone .r-card .stars button {
+        width: 40px;
+        height: 40px;
+      }
+      .s-phone .r-card .stars svg {
+        width: 26px;
+        height: 26px;
+      }
+      .s-phone .overall-row {
+        padding: 14px 18px;
+      }
+      .s-phone .overall-row .ot {
+        font-size: 22px;
+      }
+      .s-phone .rate-foot {
+        padding: 14px 20px;
+        flex-wrap: wrap;
+      }
+      .s-phone .rate-foot .privacy {
+        font-size: 11px;
+      }
+      .s-phone .rate-foot .btn {
+        width: 100%;
+      }
+      .s-phone .thanks {
+        padding: 40px 24px;
+      }
+      .s-phone .thanks .glyph {
+        width: 80px;
+        height: 80px;
+        font-size: 44px;
+      }
+      .s-phone .thanks h1 {
+        font-size: 48px;
+      }
+      .s-phone .thanks p {
+        font-size: 15px;
+      }
+      .s-phone .man-grid {
+        grid-template-columns: 1fr;
+      }
+      .s-phone .kfoot {
+        padding: 14px 20px;
+        flex-wrap: wrap;
+      }
+      .s-phone .kfoot .btn {
+        width: 100%;
+      }
+
+      /* ============================================================
+   View modes (all 3 stacked)
+   ============================================================ */
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        align-items: center;
+        padding: 30px 0;
+      }
+      .stack-label {
+        color: #d9ceb8;
+        font-family: var(--f-mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .stack-label .b {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chrome">
+      <span class="label">/kiosk · screen</span>
+      <div class="btns" id="screenTabs">
+        <button class="on" data-screen="staff">1 · Сервитьор</button>
+        <button data-screen="rate">2 · Гост оценява</button>
+        <button data-screen="thanks">3 · Благодарим</button>
+        <button data-screen="all">Всички</button>
+      </div>
+      <div class="sep"></div>
+      <span class="label">Устройство</span>
+      <div class="btns" id="deviceTabs">
+        <button class="on" data-device="tablet">Таблет 10″</button>
+        <button data-device="phone">Телефон</button>
+      </div>
+      <div class="spacer"></div>
+      <a href="dashboard.html" class="back">← обратно към dashboard</a>
+    </div>
+
+    <div class="stage" id="stage"></div>
+
+    <script>
+      // ============================================================
+      // Data
+      // ============================================================
+      const RESTAURANT = "Механа Къщата";
+
+      const DISH_COLORS = [
+        "#C24D2C",
+        "#5B2A2A",
+        "#7A8B5A",
+        "#D98F3E",
+        "#3F6B4E",
+        "#B88FA0",
+        "#8B6F47",
+      ];
+
+      const ALL_DISHES = [
+        {
+          id: "shop",
+          name: "Шопска салата",
+          cat: "Салати",
+          desc: "Домати, краставица, чушка, лук, сирене",
+          color: 0,
+        },
+        {
+          id: "sach",
+          name: 'Сач „Механата"',
+          cat: "Основни",
+          desc: "Свинско, телешко, пилешко, гъби, лютеница",
+          color: 1,
+        },
+        {
+          id: "keb",
+          name: "Кебапчета",
+          cat: "Основни",
+          desc: "С гарнитура пържени картофки",
+          color: 2,
+        },
+        {
+          id: "tarat",
+          name: "Таратор",
+          cat: "Супи",
+          desc: "Краставица, кисело мляко, чесън, копър",
+          color: 3,
+        },
+        {
+          id: "lim",
+          name: "Домашна лимонада",
+          cat: "Напитки",
+          desc: "Лимон, мента, ленена вода",
+          color: 4,
+        },
+        {
+          id: "banitsa",
+          name: "Баница с орехи",
+          cat: "Десерти",
+          desc: "Топла, с домашен мед",
+          color: 5,
+        },
+        {
+          id: "kashk",
+          name: "Кашкавал пане",
+          cat: "Предястия",
+          desc: "Пържен, с дип",
+          color: 6,
+        },
+      ];
+
+      // dishes the waiter "scanned" for this customer
+      const SELECTED = [
+        { ...ALL_DISHES[0], qty: 1 },
+        { ...ALL_DISHES[1], qty: 1 },
+        { ...ALL_DISHES[2], qty: 1 },
+        { ...ALL_DISHES[3], qty: 1 },
+        { ...ALL_DISHES[4], qty: 2 },
+      ];
+
+      let ratings = {}; // dishId -> 1..5
+      let overall = null; // 'good' | 'bad' | null
+
+      // ============================================================
+      // Icons
+      // ============================================================
+      const I = {
+        scan: '<svg viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 011-1h2M20 7V5a1 1 0 00-1-1h-2M4 17v2a1 1 0 001 1h2M20 17v2a1 1 0 01-1 1h-2"/><path d="M4 12h16"/></svg>',
+        receipt:
+          '<svg viewBox="0 0 24 24"><path d="M6 3v18l2-1.5L10 21l2-1.5L14 21l2-1.5L18 21V3z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+        list: '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+        plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+        minus: '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+        check:
+          '<svg viewBox="0 0 24 24"><polyline points="5 12 10 17 20 7"/></svg>',
+        arrow:
+          '<svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>',
+        star: '<svg viewBox="0 0 24 24"><polygon points="12 3 14.5 9 21 9.5 16 14 17.5 21 12 17.5 6.5 21 8 14 3 9.5 9.5 9"/></svg>',
+        heart:
+          '<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9-9.5C1.5 7 4 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 3 0 5.5 3 4 7.5-2 5-9 9.5-9 9.5z"/></svg>',
+        thumbDown:
+          '<svg viewBox="0 0 24 24"><path d="M17 3v10M3 11l3 9c.5 1.5 1.5 2 3 1.5l1-.5 2-3v-3h6V3H7L4 6"/></svg>',
+        lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+        signal:
+          '<svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0114 0M8.5 16a5 5 0 017 0"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg>',
+        refresh:
+          '<svg viewBox="0 0 24 24"><polyline points="20 4 20 10 14 10"/><path d="M20 10A8 8 0 005 6"/><polyline points="4 20 4 14 10 14"/><path d="M4 14a8 8 0 0015 4"/></svg>',
+        hand: '<svg viewBox="0 0 24 24"><path d="M9 11V4a1.5 1.5 0 013 0v6M12 10V3a1.5 1.5 0 013 0v8M15 11V5a1.5 1.5 0 013 0v9c0 4-3 7-7 7H9c-2 0-3-1-4-2l-3-5 2-1c1 0 2 .5 3 2l1 1V8a1.5 1.5 0 013 0v4"/></svg>',
+      };
+
+      // ============================================================
+      // Renderers
+      // ============================================================
+      function dishPhoto(d, size) {
+        const c = DISH_COLORS[d.color % DISH_COLORS.length];
+        const c2 = DISH_COLORS[(d.color + 2) % DISH_COLORS.length];
+        const initial = d.name.charAt(0);
+        return `<div class="${size === "big" ? "photo" : size === "mid" ? "ph2" : "ph"}"
+            style="background: linear-gradient(135deg, ${c} 0%, ${c2} 100%);">${initial}</div>`;
+      }
+
+      function topbar(extra) {
+        return `<div class="kbar">
+    <span class="mark">h</span>
+    <span class="rest">${RESTAURANT}</span>
+    <span class="sep-dot"></span>
+    <span>Маса 7 · 19:42</span>
+    <span class="spacer"></span>
+    <span class="link ok"><span class="pulse"></span>Свързан с ресторанта</span>
+    ${extra || ""}
+  </div>`;
+      }
+
+      // ----- Screen 1: Staff -----
+      let staffMethod = "scan"; // 'scan' | 'manual'
+      let manualSelected = new Set(["shop", "sach", "keb", "tarat", "lim"]);
+
+      function staffHtml() {
+        const list =
+          staffMethod === "scan"
+            ? SELECTED
+            : ALL_DISHES.filter((d) => manualSelected.has(d.id)).map((d) => ({
+                ...d,
+                qty: 1,
+              }));
+        const totalItems = list.reduce((s, d) => s + (d.qty || 1), 0);
+
+        const rightPanel =
+          staffMethod === "scan"
+            ? `
+    <div class="staff-right">
+      <div class="sr-head">
+        <h2>Разпознати ястия</h2>
+        <span class="count">${totalItems} артикула · от бона</span>
+      </div>
+      <div class="dish-list">
+        ${list
+          .map(
+            (d) => `
+          <div class="dish-row">
+            ${dishPhoto(d, "small")}
+            <div class="meta">
+              <b>${d.name}</b>
+              <span>${d.cat}</span>
+            </div>
+            <div class="qty">
+              <button data-act="dec" data-id="${d.id}">${I.minus}</button>
+              <span class="n">${d.qty}</span>
+              <button data-act="inc" data-id="${d.id}">${I.plus}</button>
+            </div>
+          </div>`,
+          )
+          .join("")}
+      </div>
+      <button class="add-more" id="addMoreBtn">${I.plus} Добави още ястие</button>
+    </div>`
+            : `
+    <div class="staff-right">
+      <div class="sr-head">
+        <h2>Избери ястията</h2>
+        <span class="count">${manualSelected.size} избрани</span>
+      </div>
+      <div class="manual-grid">
+        <div class="cat-chips">
+          <button class="cc on">Всички</button>
+          <button class="cc">Салати</button>
+          <button class="cc">Супи</button>
+          <button class="cc">Предястия</button>
+          <button class="cc">Основни</button>
+          <button class="cc">Десерти</button>
+          <button class="cc">Напитки</button>
+        </div>
+        <div class="man-grid">
+          ${ALL_DISHES.map(
+            (d) => `
+            <button class="man-card ${manualSelected.has(d.id) ? "sel" : ""}" data-act="toggle-man" data-id="${d.id}">
+              ${dishPhoto(d, "mid")}
+              <div class="mm"><b>${d.name}</b><span>${d.cat}</span></div>
+              <div class="check">${I.check}</div>
+            </button>`,
+          ).join("")}
+        </div>
+      </div>
+    </div>`;
+
+        return `
+  <div class="kiosk">
+    ${topbar()}
+    <div class="kbody">
+      <div class="staff">
+        <div class="staff-left">
+          <span class="kicker"><span class="badge">за сервитьора</span></span>
+          <h1>Какво <em>яде</em> този гост?</h1>
+          <p class="lead">Сканирай касовата бележка или избери ястията ръчно. След това подай таблета — тя ще оцени всяко поотделно.</p>
+
+          <div class="method-tabs">
+            <button class="method-tab ${staffMethod === "scan" ? "on" : ""}" data-method="scan">
+              <span class="gx">${I.receipt}</span>
+              <span>Сканирай бона<span class="sub">Препоръчано · 5 секунди</span></span>
+            </button>
+            <button class="method-tab ${staffMethod === "manual" ? "on" : ""}" data-method="manual">
+              <span class="gx">${I.list}</span>
+              <span>Избери ръчно<span class="sub">От менюто</span></span>
+            </button>
+          </div>
+
+          ${
+            staffMethod === "scan"
+              ? `
+          <div class="scan-area">
+            <div class="scan-frame">
+              <div class="rh">МЕХАНА КЪЩАТА</div>
+              <div class="rh" style="font-size:8px;color:var(--ink-mute);margin-bottom:10px">пл. Възраждане 4, Пловдив</div>
+              <div class="rl"><span>Шопска салата</span><span>6,90</span></div>
+              <div class="rl"><span>Сач Механата</span><span>28,00</span></div>
+              <div class="rl"><span>Кебапчета</span><span>11,90</span></div>
+              <div class="rl"><span>Таратор</span><span>4,50</span></div>
+              <div class="rl"><span>Лимонада x2</span><span>7,00</span></div>
+              <div class="rt">───── ОБЩО 58,30 ─────</div>
+            </div>
+            <div class="scan-hint"><span class="dot"></span>Насочи камерата към бона</div>
+          </div>
+          `
+              : ""
+          }
+        </div>
+        ${rightPanel}
+      </div>
+    </div>
+    <div class="kfoot">
+      <div class="meta">
+        ${
+          list.length > 0
+            ? `Подай таблета на госта. Той ще оцени <b>${list.length} ${list.length === 1 ? "ястие" : "ястия"}</b>.`
+            : `Все още няма избрани ястия.`
+        }
+      </div>
+      <button class="btn btn-secondary" data-act="reset">${I.refresh} Започни наново</button>
+      <button class="btn btn-primary btn-big" data-act="give" ${list.length === 0 ? "disabled" : ""}>
+        ${I.hand} Дай на госта
+      </button>
+    </div>
+  </div>`;
+      }
+
+      // ----- Screen 2: Rating -----
+      function rateHtml() {
+        const rated = Object.keys(ratings).length;
+        const total = SELECTED.length;
+
+        const feelingLabel = (v) => {
+          if (!v) return "&nbsp;";
+          return ["Никак", "Не много", "Окей", "Добре", "Страхотно"][v - 1];
+        };
+
+        return `
+  <div class="kiosk">
+    <div class="rating-screen">
+      <div class="rate-head">
+        <h1>Как ти беше <em>днес</em>?</h1>
+        <p class="sub">Докосни звезди за всяко ястие. Без имена, без телефони — само мнение.</p>
+        <div class="progress-pill">
+          <b>${rated}</b> от ${total} оценени
+        </div>
+      </div>
+      <div class="rate-body">
+        <div class="rate-grid">
+          ${SELECTED.map((d) => {
+            const v = ratings[d.id] || 0;
+            return `
+              <div class="r-card ${v > 0 ? "rated" : ""}">
+                ${dishPhoto(d, "big")}
+                <div class="info">
+                  <b>${d.name}</b>
+                  <p>${d.desc || ""}</p>
+                  <div class="stars" data-dish="${d.id}">
+                    ${[1, 2, 3, 4, 5].map((n) => `<button class="${n <= v ? "on" : ""}" data-act="star" data-dish="${d.id}" data-n="${n}">${I.star}</button>`).join("")}
+                  </div>
+                  <div class="label-feeling">${feelingLabel(v)}</div>
+                </div>
+              </div>`;
+          }).join("")}
+        </div>
+
+        <div class="overall-row">
+          <span class="ot">Като цяло?</span>
+          <span class="spacer"></span>
+          <div class="overall-btns">
+            <button class="${overall === "good" ? "on good" : ""}" data-act="overall" data-v="good">${I.heart} Харесва ми</button>
+            <button class="${overall === "bad" ? "on bad" : ""}" data-act="overall" data-v="bad">${I.thumbDown} Не ми харесва</button>
+          </div>
+        </div>
+      </div>
+      <div class="rate-foot">
+        <div class="privacy">${I.lock} Анонимно е. Само ${RESTAURANT} вижда мнението ти.</div>
+        <button class="btn btn-primary btn-big" data-act="submit" ${rated === 0 ? "disabled" : ""}>
+          ${rated === 0 ? "Първо оцени поне едно" : "Готово, изпрати"} ${I.arrow}
+        </button>
+      </div>
+    </div>
+  </div>`;
+      }
+
+      // ----- Screen 3: Thanks -----
+      function thanksHtml() {
+        return `
+  <div class="kiosk">
+    <div class="thanks">
+      <div class="glyph">♥</div>
+      <h1>Благодарим, <em>наистина</em>.</h1>
+      <p>Твоето мнение помага на ${RESTAURANT} да стане по-добра. Готвачът ще го види утре сутрин — обещаваме.</p>
+      <div class="countdown">
+        <span class="ring">
+          <svg viewBox="0 0 20 20"><circle class="track" cx="10" cy="10" r="8" fill="none"/><circle class="fill" cx="10" cy="10" r="8" fill="none"/></svg>
+        </span>
+        Връщаме се след <b id="cdNum">5</b> сек.
+      </div>
+      <button class="new-btn" data-act="newReview">${I.refresh} Нов отзив сега</button>
+      <div class="signature"><span class="m">h</span>HaresvaMi · версия 1.4</div>
+    </div>
+  </div>`;
+      }
+
+      // ============================================================
+      // Mount & state
+      // ============================================================
+      let currentScreen = "staff";
+      let currentDevice = "tablet";
+      let cdTimer = null;
+      let cdInterval = null;
+
+      function frameHtml(screenHtml) {
+        const cls =
+          "screen " + (currentDevice === "tablet" ? "s-tablet" : "s-phone");
+        if (currentDevice === "tablet") {
+          return `<div class="tablet"><div class="${cls}">${screenHtml}</div></div>`;
+        }
+        return `<div class="phone"><div class="${cls}">${screenHtml}</div></div>`;
+      }
+
+      function htmlForScreen(s) {
+        if (s === "staff") return staffHtml();
+        if (s === "rate") return rateHtml();
+        if (s === "thanks") return thanksHtml();
+        return "";
+      }
+
+      function render() {
+        clearTimeout(cdTimer);
+        clearInterval(cdInterval);
+        const stage = document.getElementById("stage");
+
+        if (currentScreen === "all") {
+          stage.innerHTML = `
+      <div class="stack">
+        <div class="stack-label"><span class="b">1</span>Сервитьорски екран — подготовка</div>
+        ${frameHtml(staffHtml())}
+        <div class="stack-label"><span class="b">2</span>Гост — оценка на ястия</div>
+        ${frameHtml(rateHtml())}
+        <div class="stack-label"><span class="b">3</span>Благодарим — авто-връщане 5 сек</div>
+        ${frameHtml(thanksHtml())}
+      </div>`;
+        } else {
+          stage.innerHTML = frameHtml(htmlForScreen(currentScreen));
+
+          if (currentScreen === "thanks") {
+            // 5-second countdown
+            let n = 5;
+            cdInterval = setInterval(() => {
+              n -= 1;
+              const el = document.getElementById("cdNum");
+              if (el) el.textContent = n;
+              if (n <= 0) {
+                clearInterval(cdInterval);
+              }
+            }, 1000);
+            cdTimer = setTimeout(() => {
+              // reset session and return to staff screen
+              ratings = {};
+              overall = null;
+              currentScreen = "staff";
+              document
+                .querySelectorAll("#screenTabs button")
+                .forEach((b) =>
+                  b.classList.toggle("on", b.dataset.screen === "staff"),
+                );
+              render();
+            }, 5200);
+          }
+        }
+
+        bindStage();
+        window.scrollTo({ top: 0 });
+      }
+
+      function bindStage() {
+        document.querySelectorAll("[data-method]").forEach((b) => {
+          b.addEventListener("click", () => {
+            staffMethod = b.dataset.method;
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="toggle-man"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            const id = b.dataset.id;
+            if (manualSelected.has(id)) manualSelected.delete(id);
+            else manualSelected.add(id);
+            render();
+          });
+        });
+        document
+          .querySelectorAll('[data-act="inc"],[data-act="dec"]')
+          .forEach((b) => {
+            b.addEventListener("click", () => {
+              const id = b.dataset.id;
+              const d = SELECTED.find((x) => x.id === id);
+              if (!d) return;
+              d.qty += b.dataset.act === "inc" ? 1 : -1;
+              if (d.qty < 1) d.qty = 1;
+              render();
+            });
+          });
+        document.querySelectorAll('[data-act="give"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            ratings = {};
+            overall = null;
+            currentScreen = "rate";
+            document
+              .querySelectorAll("#screenTabs button")
+              .forEach((x) =>
+                x.classList.toggle("on", x.dataset.screen === "rate"),
+              );
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="reset"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            staffMethod = "scan";
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="star"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            const id = b.dataset.dish;
+            const n = parseInt(b.dataset.n, 10);
+            if (ratings[id] === n) delete ratings[id];
+            else ratings[id] = n;
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="overall"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            const v = b.dataset.v;
+            overall = overall === v ? null : v;
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="submit"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            if (Object.keys(ratings).length === 0) return;
+            currentScreen = "thanks";
+            document
+              .querySelectorAll("#screenTabs button")
+              .forEach((x) =>
+                x.classList.toggle("on", x.dataset.screen === "thanks"),
+              );
+            render();
+          });
+        });
+        document.querySelectorAll('[data-act="newReview"]').forEach((b) => {
+          b.addEventListener("click", () => {
+            ratings = {};
+            overall = null;
+            currentScreen = "staff";
+            document
+              .querySelectorAll("#screenTabs button")
+              .forEach((x) =>
+                x.classList.toggle("on", x.dataset.screen === "staff"),
+              );
+            render();
+          });
+        });
+      }
+
+      document.querySelectorAll("#screenTabs button").forEach((b) => {
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll("#screenTabs button")
+            .forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          currentScreen = b.dataset.screen;
+          if (currentScreen === "rate") {
+            ratings = {};
+            overall = null;
+          }
+          render();
+        });
+      });
+      document.querySelectorAll("#deviceTabs button").forEach((b) => {
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll("#deviceTabs button")
+            .forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          currentDevice = b.dataset.device;
+          render();
+        });
+      });
+
+      render();
+    </script>
+  </body>
+</html>

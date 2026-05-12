@@ -12,8 +12,8 @@ export function FeedbackOverview({ data }: FeedbackOverviewProps) {
   const hasFeedback = data.totals.completedSessions > 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
-      <section className="max-w-[640px]">
+    <div className="w-full px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
+      <section className="max-w-[820px]">
         <p className="mb-3 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
           Отзиви от клиенти
         </p>

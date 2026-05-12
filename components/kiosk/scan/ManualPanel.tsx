@@ -1,5 +1,9 @@
+import { Check } from "lucide-react";
+
+import { DishMark } from "@/components/kiosk/scan/DishMark";
 import { formatMenuItemMeta } from "@/lib/kiosk/format";
 import type { KioskMenuItem, KioskScanCopy } from "@/lib/kiosk/types";
+import { cn } from "@/lib/utils/cn";
 
 type ManualPanelProps = {
   copy: KioskScanCopy;
@@ -65,19 +69,32 @@ export function ManualPanel({
               <button
                 key={item.id}
                 type="button"
-                className={[
-                  "min-h-16 rounded-lg border px-4 py-3 text-left transition",
+                className={cn(
+                  "flex min-h-20 items-center gap-3 rounded-lg border px-3 py-3 text-left transition",
                   selected
-                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
+                    ? "border-[var(--accent)] bg-[var(--paper)] text-[var(--ink)]"
                     : "border-[var(--rule)] bg-[var(--bg)] text-[var(--ink)] hover:border-[var(--accent)]",
-                ].join(" ")}
+                )}
                 onClick={() => toggleMenuItem(item.id)}
               >
-                <span className="block text-[18px] font-semibold leading-tight">
-                  {item.name}
+                <DishMark imageUrl={item.imageUrl} name={item.name} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[18px] font-semibold leading-tight">
+                    {item.name}
+                  </span>
+                  <span className="mt-1 block text-[13px] text-[var(--ink-mute)]">
+                    {formatMenuItemMeta(item)}
+                  </span>
                 </span>
-                <span className="mt-1 block text-[13px] opacity-80">
-                  {formatMenuItemMeta(item)}
+                <span
+                  className={cn(
+                    "grid size-6 shrink-0 place-items-center rounded-full border",
+                    selected
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]"
+                      : "border-[var(--rule)] text-transparent",
+                  )}
+                >
+                  <Check aria-hidden="true" size={14} strokeWidth={2.5} />
                 </span>
               </button>
             );

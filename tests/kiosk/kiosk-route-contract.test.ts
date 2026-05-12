@@ -11,6 +11,9 @@ const connectRouteSource = source("app/kiosk/connect/route.ts");
 const feedbackRouteSource = source("app/api/feedback/route.ts");
 const extractReceiptRouteSource = source("app/api/extract-receipt/route.ts");
 const authorizationSource = source("lib/kiosk/authorization.ts");
+const tabletPageSource = source(
+  "app/(dashboard)/dashboard/(shell)/tablet/page.tsx",
+);
 
 function assertSourceOrder(fileSource: string, snippets: string[]) {
   let previousIndex = -1;
@@ -98,4 +101,13 @@ test("kiosk authorization accepts cookie, x-kiosk-token header, and bearer token
     authorizationSource,
     /scheme\?\.toLowerCase\(\)\s*===\s*"bearer"\s*\?\s*token\s*:\s*null/,
   );
+});
+
+test("dashboard tablet page does not crash when kiosk sessions fail to load", () => {
+  assertSourceOrder(tabletPageSource, [
+    "try {",
+    "const sessions = await listKioskSessions",
+    "} catch (error) {",
+    "initialLoadError={error}",
+  ]);
 });

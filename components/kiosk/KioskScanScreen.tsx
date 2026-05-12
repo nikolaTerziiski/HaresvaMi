@@ -26,9 +26,10 @@ export function KioskScanScreen({
     copy,
   });
   const remainingText = `${flow.entitlement.remaining} / ${flow.entitlement.limit} ${copy.remainingScansLabel}`;
+  const isCustomerFacing = flow.mode === "customer" || flow.mode === "thanks";
 
   return (
-    <div className="flex min-h-dvh flex-col px-8 py-7 text-[var(--ink)] max-md:px-5">
+    <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--ink)]">
       <ScanHeader
         entitlement={flow.entitlement}
         exhaustedTitle={copy.exhaustedTitle}
@@ -37,56 +38,8 @@ export function KioskScanScreen({
         scanEyebrow={copy.scanEyebrow}
       />
 
-      <section className="grid flex-1 grid-cols-[1.05fr_0.95fr] items-center gap-8 py-10 max-[900px]:grid-cols-1">
-        <div>
-          {flow.mode === "scan" ? (
-            <ScanPanel
-              canScan={flow.canScan}
-              copy={copy}
-              isProcessing={flow.isProcessing}
-              remainingText={remainingText}
-              onManual={flow.showManualSelection}
-              onScan={flow.openCamera}
-            />
-          ) : null}
-
-          {flow.mode === "manual" ? (
-            <>
-              {flow.entitlement.remaining <= 0 ? (
-                <ExhaustedNotice copy={copy} />
-              ) : null}
-              <ManualPanel
-                copy={copy}
-                filteredMenuItems={flow.filteredMenuItems}
-                menuItems={menuItems}
-                query={flow.query}
-                selectedCount={flow.manualSelectedItems.length}
-                selectedIds={flow.selectedIds}
-                setQuery={flow.setQuery}
-                toggleMenuItem={flow.toggleMenuItem}
-                onContinue={flow.continueWithManualSelection}
-              />
-            </>
-          ) : null}
-
-          {flow.mode === "review" ? (
-            <ReviewPanel
-              copy={copy}
-              items={flow.extractedItems}
-              onManual={flow.showManualSelection}
-              onUseExtracted={flow.continueWithExtractedItems}
-            />
-          ) : null}
-
-          {flow.mode === "ready" ? (
-            <ReadyPanel
-              copy={copy}
-              items={flow.selectedItems}
-              onEdit={flow.showManualSelection}
-              onStartCustomerStep={flow.showCustomerStep}
-            />
-          ) : null}
-
+      {isCustomerFacing ? (
+        <main className="flex-1">
           {flow.mode === "customer" ? (
             <CustomerPanel
               copy={copy}
@@ -94,6 +47,7 @@ export function KioskScanScreen({
               items={flow.selectedItems}
               itemRatings={flow.itemRatings}
               overallRating={flow.overallRating}
+              statusMessage={flow.statusMessage}
               onFinish={flow.submitCustomerFeedback}
               onItemRatingChange={flow.setItemRating}
               onOverallRatingChange={flow.setOverallRating}
@@ -103,19 +57,73 @@ export function KioskScanScreen({
           {flow.mode === "thanks" ? (
             <ThanksPanel copy={copy} onReset={flow.resetFlow} />
           ) : null}
+        </main>
+      ) : (
+        <main className="grid flex-1 grid-cols-[1.05fr_0.95fr] items-stretch gap-0 max-[900px]:grid-cols-1">
+          <section className="flex flex-col justify-center border-r border-[var(--rule)] bg-[var(--paper)] px-10 py-10 max-md:px-5">
+            {flow.mode === "scan" ? (
+              <ScanPanel
+                canScan={flow.canScan}
+                copy={copy}
+                isProcessing={flow.isProcessing}
+                remainingText={remainingText}
+                onManual={flow.showManualSelection}
+                onScan={flow.openCamera}
+              />
+            ) : null}
 
-          <StatusMessage message={flow.statusMessage} />
-        </div>
+            {flow.mode === "manual" ? (
+              <>
+                {flow.entitlement.remaining <= 0 ? (
+                  <ExhaustedNotice copy={copy} />
+                ) : null}
+                <ManualPanel
+                  copy={copy}
+                  filteredMenuItems={flow.filteredMenuItems}
+                  menuItems={menuItems}
+                  query={flow.query}
+                  selectedCount={flow.manualSelectedItems.length}
+                  selectedIds={flow.selectedIds}
+                  setQuery={flow.setQuery}
+                  toggleMenuItem={flow.toggleMenuItem}
+                  onContinue={flow.continueWithManualSelection}
+                />
+              </>
+            ) : null}
 
-        <ReceiptPreview
-          restaurant={restaurant}
-          subtitle={
-            flow.entitlement.remaining > 0
-              ? copy.subtitle
-              : copy.ownerUpgradeHint
-          }
-        />
-      </section>
+            {flow.mode === "review" ? (
+              <ReviewPanel
+                copy={copy}
+                items={flow.extractedItems}
+                onManual={flow.showManualSelection}
+                onUseExtracted={flow.continueWithExtractedItems}
+              />
+            ) : null}
+
+            {flow.mode === "ready" ? (
+              <ReadyPanel
+                copy={copy}
+                items={flow.selectedItems}
+                onEdit={flow.showManualSelection}
+                onStartCustomerStep={flow.showCustomerStep}
+              />
+            ) : null}
+
+            <StatusMessage message={flow.statusMessage} />
+          </section>
+
+          <section className="flex items-center justify-center px-10 py-10 max-md:px-5">
+            <ReceiptPreview
+              restaurant={restaurant}
+              subtitle={
+                flow.entitlement.remaining > 0
+                  ? copy.subtitle
+                  : copy.ownerUpgradeHint
+              }
+            />
+          </section>
+        </main>
+      )}
 
       <input
         ref={flow.fileInputRef}
