@@ -139,9 +139,16 @@ Only run this if `GOOGLE_GEMINI_API_KEY` is configured in `.env.local`.
 4. Click `Сканирай бона`.
 5. Allow camera access if the browser asks.
 6. Take or upload a clear receipt photo.
-7. If Gemini extracts menu items, review them and continue with `Продължи с тях`.
-8. If extraction fails, verify the fallback path still lets you use `Избери ръчно`.
-9. Finish feedback and verify it appears in Dashboard -> `Отзиви`.
+7. If Gemini extracts menu items, verify the staff review screen before continuing:
+   - each extracted row shows raw receipt text, quantity, matched menu item, and `alias` / `fuzzy` / `unknown`
+   - matched rows can be kept as-is or changed to another active menu item
+   - unknown rows can be assigned to an active menu item or ignored
+   - to test alias learning, change one non-alias row or assign one unknown row to an active menu item before continuing
+   - if alias saving fails, the customer rating handoff should still continue and only show a small staff warning
+   - in Supabase, verify the learned `receipt_aliases` row is uppercase/collapsed, has `confidence = manual`, increments `times_seen` on repeat learning, and is not created for unchanged rows originally matched via `alias`
+8. Continue with `Продължи с тях` and verify ignored rows do not appear on the customer rating screen.
+9. If extraction fails, verify the fallback path still lets you use `Избери ръчно`.
+10. Finish feedback and verify it appears in Dashboard -> `Отзиви`.
 
 Successful receipt extraction consumes one AI scan credit. Failed extraction should not consume credit.
 

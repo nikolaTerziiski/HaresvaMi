@@ -2,11 +2,17 @@
 
 import { useMemo, useRef, useState, type ChangeEvent } from "react";
 
+import { useKioskFeedbackSubmit } from "@/hooks/useKioskFeedbackSubmit";
+import { useKioskReceiptReview } from "@/hooks/useKioskReceiptReview";
+import {
+  extractReceiptForKiosk,
+  learnReceiptAliasesForKiosk,
+} from "@/lib/kiosk/client-api";
 import {
   filterMenuItems,
   getManualSelectedItems,
-  mapReceiptItems,
-  toFeedbackItems,
+  mapApiReceiptItemsToReceiptMatches,
+  mapReceiptMatchesToSelectedItems,
 } from "@/lib/kiosk/selection";
 import type {
   EntitlementResult,
@@ -45,7 +51,6 @@ export function useKioskScanFlow({
   );
   const [query, setQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const canScan = entitlement.remaining > 0 && menuItems.length > 0;
@@ -57,10 +62,17 @@ export function useKioskScanFlow({
     () => getManualSelectedItems(menuItems, selectedIds),
     [menuItems, selectedIds],
   );
-
-  function showManualSelection() {
-    setMode("manual");
-  }
+  const receiptReview = useKioskReceiptReview({ menuItems });
+  const { isSavingFeedback, submitCustomerFeedback } = useKioskFeedbackSubmit({
+    copy,
+    restaurantId: restaurant.id,
+    selectedItems,
+    extractedItems,
+    itemRatings,
+    overallRating,
+    setMode,
+    setStatusMessage,
+  });
 
   function openCamera() {
     if (!canScan || isProcessing) {
@@ -81,17 +93,12 @@ export function useKioskScanFlow({
     setStatusMessage(copy.processing);
 
     try {
-      const formData = new FormData();
-      formData.append("restaurant_id", restaurant.id);
-      formData.append("file", file);
+      const { ok, payload, status } = await extractReceiptForKiosk(
+        restaurant.id,
+        file,
+      );
 
-      const response = await fetch("/api/extract-receipt", {
-        method: "POST",
-        body: formData,
-      });
-      const payload = await response.json().catch(() => ({}));
-
-      if (response.status === 402) {
+      if (status === 402) {
         setEntitlement({
           allowed: false,
           reason: payload.reason ?? "scan_limit_reached",
@@ -105,13 +112,19 @@ export function useKioskScanFlow({
         return;
       }
 
-      if (!response.ok || !Array.isArray(payload.items)) {
+      if (!ok || !Array.isArray(payload.items)) {
         setStatusMessage(copy.scanFailed);
         setMode("manual");
         return;
       }
 
-      const nextExtractedItems = mapReceiptItems(payload.items, menuItems);
+      const nextReceiptMatches = mapApiReceiptItemsToReceiptMatches(
+        payload.items,
+      );
+      const nextExtractedItems = mapReceiptMatchesToSelectedItems(
+        nextReceiptMatches,
+        menuItems,
+      );
 
       if (payload.usage) {
         setEntitlement((current) => ({
@@ -122,12 +135,14 @@ export function useKioskScanFlow({
         }));
       }
 
-      if (nextExtractedItems.length === 0) {
+      if (nextReceiptMatches.length === 0) {
+        receiptReview.setReviewMatches(nextReceiptMatches);
         setStatusMessage(copy.scanFailed);
         setMode("manual");
         return;
       }
 
+      receiptReview.setReviewMatches(nextReceiptMatches);
       setExtractedItems(nextExtractedItems);
       setStatusMessage(null);
       setMode("review");
@@ -166,12 +181,38 @@ export function useKioskScanFlow({
     setMode("ready");
   }
 
-  function continueWithExtractedItems() {
-    setSelectedItems(extractedItems);
+  async function continueWithExtractedItems() {
+    const confirmedItems = receiptReview.getConfirmedItems();
+
+    if (confirmedItems.length === 0) {
+      setStatusMessage(copy.chooseAtLeastOne);
+      return;
+    }
+
+    let nextStatusMessage: string | null = null;
+    const learnableAliases = receiptReview.getLearnableAliases();
+
+    if (learnableAliases.length > 0) {
+      try {
+        const response = await learnReceiptAliasesForKiosk(learnableAliases);
+
+        if (!response.ok) {
+          nextStatusMessage =
+            "Не успяхме да запазим някои съкращения. Оценяването може да продължи.";
+        }
+      } catch {
+        nextStatusMessage =
+          "Не успяхме да запазим някои съкращения. Оценяването може да продължи.";
+      }
+    }
+
+    setSelectedItems(confirmedItems);
+    setExtractedItems(confirmedItems);
     setItemRatings({});
     setOverallRating(null);
     setSelectedIds(new Set());
-    setStatusMessage(null);
+    receiptReview.clearReceiptReview();
+    setStatusMessage(nextStatusMessage);
     setMode("ready");
   }
 
@@ -195,61 +236,11 @@ export function useKioskScanFlow({
     setOverallRating((current) => (current === rating ? null : rating));
   }
 
-  async function submitCustomerFeedback() {
-    const hasItemRating = Object.keys(itemRatings).length > 0;
-
-    if (!hasItemRating && !overallRating) {
-      setStatusMessage(copy.chooseOverall);
-      return;
-    }
-
-    setIsSavingFeedback(true);
-    setStatusMessage(copy.savingFeedback);
-
-    try {
-      const feedbackItems = toFeedbackItems(selectedItems);
-      const feedbackExtractedItems = toFeedbackItems(extractedItems);
-
-      const response = await fetch("/api/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          restaurantId: restaurant.id,
-          items: feedbackItems,
-          ratings: itemRatings,
-          comments: {},
-          overallRating,
-          overallComment: null,
-          customerLanguage: "bg",
-          extractedItems: feedbackExtractedItems,
-        }),
-      });
-
-      if (response.status === 402) {
-        setStatusMessage(copy.feedbackLimitReached);
-        return;
-      }
-
-      if (!response.ok) {
-        setStatusMessage(copy.feedbackFailed);
-        return;
-      }
-
-      setStatusMessage(null);
-      setMode("thanks");
-    } catch {
-      setStatusMessage(copy.feedbackFailed);
-    } finally {
-      setIsSavingFeedback(false);
-    }
-  }
-
   function resetFlow() {
     setSelectedIds(new Set());
     setSelectedItems([]);
     setExtractedItems([]);
+    receiptReview.clearReceiptReview();
     setItemRatings({});
     setOverallRating(null);
     setQuery("");
@@ -272,6 +263,8 @@ export function useKioskScanFlow({
     openCamera,
     overallRating,
     query,
+    receiptMatches: receiptReview.receiptMatches,
+    receiptReviewDecisions: receiptReview.receiptReviewDecisions,
     resetFlow,
     selectedIds,
     selectedItems,
@@ -279,11 +272,13 @@ export function useKioskScanFlow({
     setItemRating,
     setOverallRating: toggleOverallRating,
     showCustomerStep: () => setMode("customer"),
-    showManualSelection,
+    showManualSelection: () => setMode("manual"),
     statusMessage,
     submitCustomerFeedback,
     toggleMenuItem,
     continueWithExtractedItems,
     continueWithManualSelection,
+    ignoreReceiptReviewRow: receiptReview.ignoreReceiptReviewRow,
+    setReceiptReviewMenuItem: receiptReview.setReceiptReviewMenuItem,
   };
 }

@@ -94,8 +94,12 @@ export function KioskScanScreen({
             {flow.mode === "review" ? (
               <ReviewPanel
                 copy={copy}
-                items={flow.extractedItems}
+                decisions={flow.receiptReviewDecisions}
+                menuItems={menuItems}
+                receiptMatches={flow.receiptMatches}
+                onIgnoreRow={flow.ignoreReceiptReviewRow}
                 onManual={flow.showManualSelection}
+                onMenuItemChange={flow.setReceiptReviewMenuItem}
                 onUseExtracted={flow.continueWithExtractedItems}
               />
             ) : null}

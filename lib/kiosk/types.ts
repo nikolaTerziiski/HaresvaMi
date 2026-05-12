@@ -17,6 +17,22 @@ export type ReceiptItem = {
   menu_item_id: string | null;
   menu_item_name: string | null;
   quantity: number;
+  matched_via?: ReceiptMatch["matchedVia"];
+};
+
+export type ReceiptMatch = {
+  rawText: string;
+  menuItemId: string | null;
+  menuItemName: string | null;
+  quantity: number;
+  matchedVia: "alias" | "fuzzy_match" | "unknown";
+};
+
+export type ReceiptReviewDecision = {
+  rowIndex: number;
+  menuItemId: string | null;
+  ignored: boolean;
+  learnable: boolean;
 };
 
 export type SelectedItem = {

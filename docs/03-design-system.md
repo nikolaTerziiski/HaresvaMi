@@ -264,6 +264,15 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 9. **Tablet-first, mobile-safe.** Optimize for a 10-inch Android tablet in landscape, but keep every kiosk state usable on narrow phones and portrait tablets. The current scan layout collapses below roughly 900px.
 10. **Bulgarian text must wrap cleanly.** No fixed-width labels that clip long Cyrillic words; buttons can grow taller before text overflows.
 
+### Staff receipt review
+
+The receipt review state is staff-facing, not customer-facing. It can be denser than the customer rating screen, but still needs touch-friendly controls because it runs on the same tablet.
+
+- Show receipt rows as compact correction rows: raw receipt text, quantity, match source pill (`alias`, `fuzzy`, `unknown`), current menu match, and a menu selector.
+- Confident matches should feel pre-approved. The waiter only acts when a row is wrong or unknown.
+- Unknown rows may expose an ignore action, but ignored rows must look secondary and should not compete with the primary continue button.
+- Keep the primary continue button large and terracotta; manual selection stays as the secondary escape hatch.
+
 ### Kiosk standby screen example
 
 ```

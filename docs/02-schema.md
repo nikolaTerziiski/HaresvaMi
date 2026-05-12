@@ -93,6 +93,15 @@ CREATE INDEX idx_receipt_aliases_restaurant_id ON receipt_aliases(restaurant_id)
 CREATE INDEX idx_receipt_aliases_lookup ON receipt_aliases(restaurant_id, alias);
 ```
 
+Aliases are learned through `POST /api/receipt-aliases/learn` after kiosk or owner authorization. The API stores only the normalized alias text and the selected menu item id; it does not store customer comments, receipt images, or full receipt payloads. Before writing, the API verifies that the menu item belongs to the authorized restaurant and is active with `deleted_at IS NULL`.
+
+Alias normalization:
+
+- trim leading/trailing whitespace
+- collapse internal whitespace to one space
+- uppercase Bulgarian and Latin text
+- cap the stored alias at 120 characters
+
 ### `feedback_sessions`
 
 One scan = one session. Anonymous customer interaction.

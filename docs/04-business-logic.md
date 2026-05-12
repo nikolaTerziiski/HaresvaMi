@@ -98,8 +98,12 @@ export async function getMonthlyUsage(
    - The restaurant's `receipt_aliases`
 6. Server calls Gemini 2.5 Flash Lite first, then retries with Gemini 2.5 Flash on low confidence.
 7. Server returns `{items, confidence, model, retryCount, usage}`.
-8. If extraction fails or returns no usable items, kiosk falls back to manual item selection.
-9. Customer proceeds to rating screen after the waiter confirms extracted or manually selected items.
+8. Kiosk maps each API item into a receipt match with `rawText`, `menuItemId`, `menuItemName`, `quantity`, and `matchedVia`.
+9. The waiter sees a staff-facing review screen before the customer rating step. Each receipt row shows the raw receipt text, quantity, matched menu item, and match source (`alias`, `fuzzy`, or `unknown`).
+10. Matched rows are preselected and require no extra work unless the waiter changes the menu item. Unknown rows default to ignored, but the waiter can select an active menu item when the row is real.
+11. Continuing from review converts only confirmed, non-ignored rows into `SelectedItem` values for the customer rating screen. Ignored rows remain out of feedback submission.
+12. If extraction fails or returns no extracted receipt rows, kiosk falls back to manual item selection.
+13. Customer proceeds to rating screen after the waiter confirms extracted or manually selected items.
 
 ### Gemini prompt template
 
@@ -187,7 +191,27 @@ Store metadata in `ai_usage_events` for cost monitoring per restaurant. Never st
 
 The first 1–2 weeks of a restaurant's usage are "training" the system on their receipt format.
 
-### Flow
+### Implemented API
+
+`POST /api/receipt-aliases/learn` stores waiter-confirmed receipt shortcuts. The route:
+
+1. Accepts `aliases: [{ rawText, menuItemId }]`.
+2. Authorizes the request with `authorizeKioskOrOwnerRestaurant`, accepting either a connected kiosk tablet or the owner session.
+3. Normalizes `rawText` by trimming, collapsing whitespace, uppercasing Bulgarian/Latin text, and limiting the alias to 120 characters.
+4. Verifies `menuItemId` belongs to the authorized restaurant and is active/non-deleted.
+5. Writes only `restaurant_id`, normalized `alias`, `menu_item_id`, `confidence`, `times_seen`, and timestamps. It does not store customer comments, receipt images, or full receipt payloads.
+6. If the alias already exists for the restaurant, updates `menu_item_id`, sets `confidence = 'manual'`, increments `times_seen`, and updates `last_seen_at`.
+7. If the alias is new, inserts it with `confidence = 'manual'` and `times_seen = 1`.
+8. Returns a learned alias summary for the caller.
+
+### Product flow
+
+1. Receipt scanned. AI returns rows with `matched_via: "alias"`, `"fuzzy_match"`, or `"unknown"`.
+2. Waiter reviews raw receipt rows before the customer rating step.
+3. When a waiter corrects or confirms a real receipt shortcut, the UI can call the learning API with the raw receipt text and chosen active menu item.
+4. Next time that normalized receipt text appears, Gemini receives it in the restaurant alias list and can match it via `matched_via: "alias"`.
+
+### Future UI flow
 
 1. Receipt scanned. AI returns 6 items, 4 matched, 2 with `matched_via: "unknown"`.
 2. Kiosk shows: "Нови продукти открити. Помогни ни да ги разпознаем за следващия път:"
