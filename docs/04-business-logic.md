@@ -99,9 +99,9 @@ export async function getMonthlyUsage(
 6. Server calls Gemini 2.5 Flash Lite first, then retries with Gemini 2.5 Flash on low confidence.
 7. Server returns `{items, confidence, model, retryCount, usage}`.
 8. Kiosk maps each API item into a receipt match with `rawText`, `menuItemId`, `menuItemName`, `quantity`, and `matchedVia`.
-9. The waiter sees a staff-facing review screen before the customer rating step. Each receipt row shows the raw receipt text, quantity, matched menu item, and match source (`alias`, `fuzzy`, or `unknown`).
-10. Matched rows are preselected and require no extra work unless the waiter changes the menu item. Unknown rows default to ignored, but the waiter can select an active menu item when the row is real.
-11. Continuing from review converts only confirmed, non-ignored rows into `SelectedItem` values for the customer rating screen. Ignored rows remain out of feedback submission.
+9. The waiter sees a staff-facing review screen before the customer rating step. Each receipt row shows the raw receipt text, quantity, matched menu item, and a Bulgarian match source label (`съкращение`, `вероятно съвпадение`, or `неразпознато`).
+10. Matched rows are preselected and require no extra work unless the waiter changes the menu item or ignores the row. Unknown rows default to ignored, but the waiter can select an active menu item when the row is real.
+11. Continuing from review converts only confirmed, non-ignored rows into `SelectedItem` values for the customer rating screen. Ignored rows from any match source remain out of feedback submission.
 12. If extraction fails or returns no extracted receipt rows, kiosk falls back to manual item selection.
 13. Customer proceeds to rating screen after the waiter confirms extracted or manually selected items.
 

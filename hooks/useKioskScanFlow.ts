@@ -273,6 +273,7 @@ export function useKioskScanFlow({
     setOverallRating: toggleOverallRating,
     showCustomerStep: () => setMode("customer"),
     showManualSelection: () => setMode("manual"),
+    showScanSelection: () => setMode("scan"),
     statusMessage,
     submitCustomerFeedback,
     toggleMenuItem,

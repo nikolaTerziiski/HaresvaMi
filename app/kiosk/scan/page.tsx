@@ -144,6 +144,7 @@ export default async function KioskScanPage() {
         exhaustedBody: t("exhaustedBody"),
         manualButton: t("manualButton"),
         manualFallbackLabel: t("manualFallbackLabel"),
+        backToScan: t("backToScan"),
         manualTitle: t("manualTitle"),
         manualBody: t("manualBody"),
         manualSearch: t("manualSearch"),

@@ -68,6 +68,7 @@ export type KioskScanCopy = {
   exhaustedBody: string;
   manualButton: string;
   manualFallbackLabel: string;
+  backToScan: string;
   manualTitle: string;
   manualBody: string;
   manualSearch: string;

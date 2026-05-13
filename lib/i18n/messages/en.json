@@ -25,6 +25,7 @@
       "exhaustedBody": "This month's AI scans are used up. Select the dishes manually so the feedback can continue.",
       "manualButton": "Select manually",
       "manualFallbackLabel": "From the menu",
+      "backToScan": "Back to scanning",
       "manualTitle": "Select dishes from the menu",
       "manualBody": "Mark what the customer ordered. The flow continues even without AI scanning.",
       "manualSearch": "Search dish or category",

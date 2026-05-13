@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 
 import { DishMark } from "@/components/kiosk/scan/DishMark";
 import { formatMenuItemMeta } from "@/lib/kiosk/format";
@@ -14,8 +14,22 @@ type ManualPanelProps = {
   selectedIds: Set<string>;
   setQuery: (value: string) => void;
   toggleMenuItem: (itemId: string) => void;
+  onBack?: () => void;
   onContinue: () => void;
 };
+
+function BackButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mb-5 inline-flex items-center gap-2 rounded-md px-2 py-1 text-[14px] text-[var(--ink-2)] transition hover:bg-[var(--paper)] hover:text-[var(--ink)]"
+    >
+      <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+      {label}
+    </button>
+  );
+}
 
 export function ManualPanel({
   copy,
@@ -26,12 +40,14 @@ export function ManualPanel({
   selectedIds,
   setQuery,
   toggleMenuItem,
+  onBack,
   onContinue,
 }: ManualPanelProps) {
   if (menuItems.length === 0) {
     return (
       <div className="max-w-[620px]">
-        <h2 className="m-0 font-[var(--f-display)] text-[56px] font-normal leading-none">
+        {onBack ? <BackButton label={copy.backToScan} onClick={onBack} /> : null}
+        <h2 className="m-0 font-[var(--f-display)] text-[56px] font-normal leading-none max-md:text-[38px]">
           {copy.noMenuTitle}
         </h2>
         <p className="mt-5 text-[20px] leading-[1.55] text-[var(--ink-2)]">
@@ -43,6 +59,7 @@ export function ManualPanel({
 
   return (
     <div className="max-w-[760px]">
+      {onBack ? <BackButton label={copy.backToScan} onClick={onBack} /> : null}
       <h2 className="m-0 font-[var(--f-display)] text-[54px] font-normal leading-none max-md:text-[38px]">
         {copy.manualTitle}
       </h2>

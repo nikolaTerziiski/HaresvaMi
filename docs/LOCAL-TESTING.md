@@ -140,9 +140,10 @@ Only run this if `GOOGLE_GEMINI_API_KEY` is configured in `.env.local`.
 5. Allow camera access if the browser asks.
 6. Take or upload a clear receipt photo.
 7. If Gemini extracts menu items, verify the staff review screen before continuing:
-   - each extracted row shows raw receipt text, quantity, matched menu item, and `alias` / `fuzzy` / `unknown`
+   - each extracted row shows raw receipt text, quantity, matched menu item, and `съкращение` / `вероятно съвпадение` / `неразпознато`
    - matched rows can be kept as-is or changed to another active menu item
-   - unknown rows can be assigned to an active menu item or ignored
+   - any row can be ignored, including rows that were matched by abbreviation or likely match
+   - unknown rows can be assigned to an active menu item or left ignored
    - to test alias learning, change one non-alias row or assign one unknown row to an active menu item before continuing
    - if alias saving fails, the customer rating handoff should still continue and only show a small staff warning
    - in Supabase, verify the learned `receipt_aliases` row is uppercase/collapsed, has `confidence = manual`, increments `times_seen` on repeat learning, and is not created for unchanged rows originally matched via `alias`

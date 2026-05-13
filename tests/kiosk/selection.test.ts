@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createReceiptReviewDecisions,
   getManualSelectedItems,
+  ignoreReceiptReviewDecision,
   mapApiReceiptItemsToReceiptMatches,
   mapReceiptMatchesToSelectedItems,
   mapReceiptReviewDecisionsToSelectedItems,
@@ -217,6 +218,27 @@ test("receipt review can change a matched row before customer rating", () => {
         description: null,
       },
     ],
+  );
+});
+
+test("receipt review can ignore a matched row before customer rating", () => {
+  const matches = mapApiReceiptItemsToReceiptMatches([
+    {
+      raw_text: "SHOP",
+      menu_item_id: "dish-salad",
+      menu_item_name: "Shopska salata",
+      quantity: 2,
+      matched_via: "alias",
+    },
+  ]);
+  const decisions = ignoreReceiptReviewDecision(
+    createReceiptReviewDecisions(matches),
+    0,
+  );
+
+  assert.deepEqual(
+    mapReceiptReviewDecisionsToSelectedItems(matches, decisions, menuItems),
+    [],
   );
 });
 

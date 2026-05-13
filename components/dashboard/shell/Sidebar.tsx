@@ -8,34 +8,25 @@ import {
   UserRound,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 
-import { LocaleSwitcher } from "./LocaleSwitcher";
-import { LogoutButton } from "./LogoutButton";
 import { NavLink } from "./NavLink";
 
 type SidebarProps = {
   restaurantName: string;
-  ownerFirstName: string;
 };
 
 const ICON_PROPS = { className: "h-4 w-4", strokeWidth: 1.75 } as const;
 
-export async function Sidebar({
-  restaurantName,
-  ownerFirstName,
-}: SidebarProps) {
+export async function Sidebar({ restaurantName }: SidebarProps) {
   const [nav, shell] = await Promise.all([
     getTranslations("dashboard.nav"),
     getTranslations("dashboard.shell"),
   ]);
 
-  const avatarInitial = ownerFirstName ? ownerFirstName.charAt(0) : "?";
-
   return (
     <aside
       aria-label="Dashboard navigation"
-      className="sticky top-0 flex h-dvh w-[240px] shrink-0 flex-col border-r border-[var(--rule)] bg-[var(--bg)] px-4 pb-4 pt-5"
+      className="sticky top-0 flex h-dvh w-[240px] shrink-0 flex-col border-r border-[var(--rule)] bg-[var(--bg)] px-4 pb-4 pt-5 max-md:hidden"
     >
       <div className="px-2 font-[var(--f-display)] text-[22px] leading-[1.05] tracking-[-0.01em] text-[var(--ink)]">
         {restaurantName}
@@ -92,26 +83,6 @@ export async function Sidebar({
         </nav>
       </div>
 
-      <div className="mt-auto flex flex-col gap-3 pb-8 pt-5">
-        <LocaleSwitcher />
-        <Link
-          href="/dashboard/profile"
-          className="flex items-center gap-[10px] rounded-lg px-2 py-2 transition hover:bg-[var(--paper)]"
-        >
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--plum)] font-[var(--f-display)] text-[18px] italic leading-none text-[var(--paper)]">
-            {avatarInitial}
-          </div>
-          <div className="text-[13px]">
-            <div className="font-medium text-[var(--ink)]">
-              {ownerFirstName}
-            </div>
-            <div className="font-[var(--f-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--ink-mute)]">
-              {shell("role.owner")}
-            </div>
-          </div>
-        </Link>
-        <LogoutButton />
-      </div>
     </aside>
   );
 }

@@ -268,10 +268,11 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 
 The receipt review state is staff-facing, not customer-facing. It can be denser than the customer rating screen, but still needs touch-friendly controls because it runs on the same tablet.
 
-- Show receipt rows as compact correction rows: raw receipt text, quantity, match source pill (`alias`, `fuzzy`, `unknown`), current menu match, and a menu selector.
-- Confident matches should feel pre-approved. The waiter only acts when a row is wrong or unknown.
-- Unknown rows may expose an ignore action, but ignored rows must look secondary and should not compete with the primary continue button.
+- Show receipt rows as compact correction rows: raw receipt text, quantity, match source pill, current menu match, and a menu selector. The source pills use staff-facing Bulgarian labels: `съкращение`, `вероятно съвпадение`, and `неразпознато`.
+- Confident matches should feel pre-approved. The waiter only acts when a row is wrong, irrelevant, or unknown.
+- Every receipt row may expose an ignore action, because even confident matches can be receipt metadata or an accidental AI match. Ignored rows must look secondary and should not compete with the primary continue button.
 - Keep the primary continue button large and terracotta; manual selection stays as the secondary escape hatch.
+- Staff-facing states should keep the split preparation layout and operational controls visible. Customer-facing states should switch to a calmer full-width surface without staff-only scan counters or receipt preview.
 
 ### Kiosk standby screen example
 

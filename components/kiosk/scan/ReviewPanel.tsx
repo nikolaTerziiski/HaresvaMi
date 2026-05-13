@@ -4,6 +4,7 @@ import type {
   ReceiptMatch,
   ReceiptReviewDecision,
 } from "@/lib/kiosk/types";
+import { cn } from "@/lib/utils/cn";
 
 type ReviewPanelProps = {
   copy: KioskScanCopy;
@@ -17,9 +18,15 @@ type ReviewPanelProps = {
 };
 
 const matchedViaLabels: Record<ReceiptMatch["matchedVia"], string> = {
-  alias: "alias",
-  fuzzy_match: "fuzzy",
-  unknown: "unknown",
+  alias: "съкращение",
+  fuzzy_match: "вероятно съвпадение",
+  unknown: "неразпознато",
+};
+
+const matchedViaClasses: Record<ReceiptMatch["matchedVia"], string> = {
+  alias: "border-[var(--good)] text-[var(--ink-2)]",
+  fuzzy_match: "border-[var(--accent-2)] text-[var(--ink-2)]",
+  unknown: "border-[var(--accent)] text-[var(--accent)]",
 };
 
 export function ReviewPanel({
@@ -56,15 +63,20 @@ export function ReviewPanel({
             const decision = decisionByRow.get(index);
             const selectedMenuItemId = decision?.menuItemId ?? "";
             const selectedMenuItem = menuById.get(selectedMenuItemId);
-            const isUnknown = match.matchedVia === "unknown";
             const isIgnored = decision?.ignored ?? false;
-            const displayName =
-              selectedMenuItem?.name ?? match.menuItemName ?? "Няма съвпадение";
+            const displayName = isIgnored
+              ? "Няма да се показва на клиента"
+              : (selectedMenuItem?.name ??
+                match.menuItemName ??
+                "Няма съвпадение");
 
             return (
               <div
                 key={`${match.rawText}-${index}`}
-                className="rounded-md bg-[var(--bg)] px-4 py-3"
+                className={cn(
+                  "rounded-md border border-transparent bg-[var(--bg)] px-4 py-3 transition",
+                  isIgnored && "border-[var(--rule)] opacity-70",
+                )}
               >
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1">
@@ -72,7 +84,12 @@ export function ReviewPanel({
                       <span className="font-[var(--f-mono)] text-[13px] text-[var(--ink-mute)]">
                         x{match.quantity > 0 ? match.quantity : 1}
                       </span>
-                      <span className="rounded-full border border-[var(--rule)] px-2.5 py-1 font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+                      <span
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-[12px] font-medium",
+                          matchedViaClasses[match.matchedVia],
+                        )}
+                      >
                         {matchedViaLabels[match.matchedVia]}
                       </span>
                       {isIgnored ? (
@@ -104,7 +121,7 @@ export function ReviewPanel({
                         onMenuItemChange(index, event.target.value || null)
                       }
                     >
-                      {isUnknown || !selectedMenuItemId ? (
+                      {!selectedMenuItemId ? (
                         <option value="">Избери продукт</option>
                       ) : null}
                       {selectedMenuItemId && !selectedMenuItem ? (
@@ -119,7 +136,7 @@ export function ReviewPanel({
                       ))}
                     </select>
 
-                    {isUnknown ? (
+                    {!isIgnored ? (
                       <button
                         type="button"
                         className="mt-2 min-h-10 rounded-md border border-[var(--rule)] px-4 text-[14px] font-semibold text-[var(--ink-2)]"

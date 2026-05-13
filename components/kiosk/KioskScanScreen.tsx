@@ -3,6 +3,7 @@
 import { CustomerPanel } from "@/components/kiosk/scan/CustomerPanel";
 import { ExhaustedNotice } from "@/components/kiosk/scan/ExhaustedNotice";
 import { ManualPanel } from "@/components/kiosk/scan/ManualPanel";
+import { ProcessingOverlay } from "@/components/kiosk/scan/ProcessingOverlay";
 import { ReadyPanel } from "@/components/kiosk/scan/ReadyPanel";
 import { ReceiptPreview } from "@/components/kiosk/scan/ReceiptPreview";
 import { ReviewPanel } from "@/components/kiosk/scan/ReviewPanel";
@@ -12,6 +13,7 @@ import { StatusMessage } from "@/components/kiosk/scan/StatusMessage";
 import { ThanksPanel } from "@/components/kiosk/scan/ThanksPanel";
 import { useKioskScanFlow } from "@/hooks/useKioskScanFlow";
 import type { KioskScanScreenProps } from "@/lib/kiosk/types";
+import { cn } from "@/lib/utils/cn";
 
 export function KioskScanScreen({
   restaurant,
@@ -27,10 +29,22 @@ export function KioskScanScreen({
   });
   const remainingText = `${flow.entitlement.remaining} / ${flow.entitlement.limit} ${copy.remainingScansLabel}`;
   const isCustomerFacing = flow.mode === "customer" || flow.mode === "thanks";
+  const audience: "staff" | "customer" | "thanks" =
+    flow.mode === "customer"
+      ? "customer"
+      : flow.mode === "thanks"
+        ? "thanks"
+        : "staff";
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--ink)]">
+    <div
+      className={cn(
+        "flex min-h-dvh flex-col text-[var(--ink)]",
+        isCustomerFacing ? "bg-[var(--paper)]" : "bg-[var(--bg)]",
+      )}
+    >
       <ScanHeader
+        audience={audience}
         entitlement={flow.entitlement}
         exhaustedTitle={copy.exhaustedTitle}
         remainingLabel={copy.remainingScansLabel}
@@ -39,7 +53,7 @@ export function KioskScanScreen({
       />
 
       {isCustomerFacing ? (
-        <main className="min-h-0 flex-1">
+        <main className="min-h-0 flex-1 bg-[var(--paper)]">
           {flow.mode === "customer" ? (
             <CustomerPanel
               copy={copy}
@@ -61,6 +75,8 @@ export function KioskScanScreen({
       ) : (
         <main className="grid flex-1 grid-cols-[1.05fr_0.95fr] items-stretch gap-0 max-[900px]:grid-cols-1">
           <section className="flex flex-col justify-center border-r border-[var(--rule)] bg-[var(--paper)] px-10 py-10 max-md:px-5">
+            <StatusMessage message={flow.statusMessage} />
+
             {flow.mode === "scan" ? (
               <ScanPanel
                 canScan={flow.canScan}
@@ -86,6 +102,7 @@ export function KioskScanScreen({
                   selectedIds={flow.selectedIds}
                   setQuery={flow.setQuery}
                   toggleMenuItem={flow.toggleMenuItem}
+                  onBack={flow.canScan ? flow.showScanSelection : undefined}
                   onContinue={flow.continueWithManualSelection}
                 />
               </>
@@ -112,11 +129,9 @@ export function KioskScanScreen({
                 onStartCustomerStep={flow.showCustomerStep}
               />
             ) : null}
-
-            <StatusMessage message={flow.statusMessage} />
           </section>
 
-          <section className="flex items-center justify-center px-10 py-10 max-md:px-5">
+          <section className="flex items-center justify-center px-10 py-10 max-md:hidden">
             <ReceiptPreview
               restaurant={restaurant}
               subtitle={
@@ -137,6 +152,10 @@ export function KioskScanScreen({
         className="hidden"
         onChange={flow.handleFileChange}
       />
+
+      {flow.isProcessing ? (
+        <ProcessingOverlay message={copy.processing} />
+      ) : null}
     </div>
   );
 }
