@@ -1448,3 +1448,137 @@ ON CONFLICT (restaurant_id, period) DO UPDATE
 SET
   feedback_count      = EXCLUDED.feedback_count,
   receipt_scans_count = EXCLUDED.receipt_scans_count;
+
+-- ============================================================================
+-- TEST ACCOUNT — test@test.bg
+-- Finds the existing user + their existing restaurant by owner_id.
+-- Everything runs inside one DO block so all inserts use the real UUIDs.
+-- Safe to re-run: all writes use ON CONFLICT DO UPDATE.
+--
+-- Insight triggers on the test restaurant:
+--   093 Мешана скара:    current avg 4.8 / 5 ratings                → TOP PERFORMER
+--   094 Гювеч с кълцано: current avg 2.4 / 5 ratings, delta –1.93  → WATCH DISH
+--   095 Домашна баница:  current avg 4.33 / 3 ratings, delta +1.33  → IMPROVED DISH
+--   TC1 comment on 093                                               → COMMENT OF THE WEEK
+-- ============================================================================
+DO $$
+DECLARE
+  v_uid UUID;
+  v_rid UUID;
+BEGIN
+  -- ── locate user ───────────────────────────────────────────────────────────
+  SELECT id INTO v_uid FROM auth.users WHERE email = 'test@test.bg' LIMIT 1;
+  IF v_uid IS NULL THEN
+    RAISE NOTICE 'test@test.bg not found — skipping Механа Тест seed. Sign in once via the app first.';
+    RETURN;
+  END IF;
+
+  -- ── locate or create restaurant ───────────────────────────────────────────
+  SELECT id INTO v_rid FROM public.restaurants WHERE owner_id = v_uid LIMIT 1;
+  IF v_rid IS NULL THEN
+    v_rid := gen_random_uuid();
+    INSERT INTO public.restaurants (
+      id, owner_id, name, slug, city, language_default, customer_languages,
+      tier, trial_ends_at, onboarding_completed_at
+    ) VALUES (
+      v_rid, v_uid, 'Механа Тест', 'mehana-test-dev', 'Пловдив', 'bg',
+      ARRAY['bg','en'], 'pro', NOW()+INTERVAL '14 days', NOW()-INTERVAL '30 days'
+    );
+  ELSE
+    UPDATE public.restaurants
+    SET tier = 'pro',
+        trial_ends_at = NOW() + INTERVAL '14 days',
+        onboarding_completed_at = COALESCE(onboarding_completed_at, NOW() - INTERVAL '30 days')
+    WHERE id = v_rid;
+  END IF;
+
+  -- ── profile ───────────────────────────────────────────────────────────────
+  INSERT INTO public.profiles (id, role) VALUES (v_uid, 'owner')
+  ON CONFLICT (id) DO UPDATE SET role = 'owner';
+
+  -- ── menu items ────────────────────────────────────────────────────────────
+  INSERT INTO public.menu_items (id, restaurant_id, name_bg, name_en, category, price, sort_order, is_active)
+  VALUES
+    ('30000000-0000-4000-8000-000000000091', v_rid, 'Шопска салата',   'Shopska Salad',   'Салати',      8.90,  1, TRUE),
+    ('30000000-0000-4000-8000-000000000092', v_rid, 'Кебапче',         'Kebapche',        'Основни',     3.90,  2, TRUE),
+    ('30000000-0000-4000-8000-000000000093', v_rid, 'Мешана скара',    'Mixed Grill',     'Скара',      22.50,  3, TRUE),
+    ('30000000-0000-4000-8000-000000000094', v_rid, 'Гювеч с кълцано', 'Gyuvech',         'Традиционни',12.00,  4, TRUE),
+    ('30000000-0000-4000-8000-000000000095', v_rid, 'Домашна баница',  'Homemade Banitsa','Закуски',     5.80,  5, TRUE)
+  ON CONFLICT (id) DO UPDATE SET
+    restaurant_id = v_rid,
+    name_bg    = EXCLUDED.name_bg,
+    category   = EXCLUDED.category,
+    price      = EXCLUDED.price,
+    sort_order = EXCLUDED.sort_order,
+    is_active  = EXCLUDED.is_active;
+
+  -- ── feedback sessions (current window: TC1–TC5, previous: TP1–TP4) ────────
+  INSERT INTO public.feedback_sessions (
+    id, restaurant_id, table_number, extracted_items,
+    customer_language, overall_rating, overall_comment, started_at, completed_at
+  ) VALUES
+    ('50000000-0000-4000-8000-000000000091', v_rid, '4',  '[]'::jsonb, 'bg', 'like',   'Мешаната скара е топ! Ще ви препоръчаме на всички приятели.', NOW()-INTERVAL '6 days',  NOW()-INTERVAL '6 days' +INTERVAL '5 minutes'),
+    ('50000000-0000-4000-8000-000000000092', v_rid, '11', '[]'::jsonb, 'bg', 'like',   NULL,                                                          NOW()-INTERVAL '5 days',  NOW()-INTERVAL '5 days' +INTERVAL '6 minutes'),
+    ('50000000-0000-4000-8000-000000000093', v_rid, '2',  '[]'::jsonb, 'bg', 'like',   'Кебапчетата бяха перфектни.',                                 NOW()-INTERVAL '4 days',  NOW()-INTERVAL '4 days' +INTERVAL '7 minutes'),
+    ('50000000-0000-4000-8000-000000000094', v_rid, '9',  '[]'::jsonb, 'bg', 'dislike','Гювечът беше студен и безвкусен.',                            NOW()-INTERVAL '2 days',  NOW()-INTERVAL '2 days' +INTERVAL '5 minutes'),
+    ('50000000-0000-4000-8000-000000000095', v_rid, '6',  '[]'::jsonb, 'bg', 'like',   NULL,                                                          NOW()-INTERVAL '1 day',   NOW()-INTERVAL '1 day'  +INTERVAL '8 minutes'),
+    ('50000000-0000-4000-8000-000000000096', v_rid, '3',  '[]'::jsonb, 'bg', 'like',   NULL,                                                          NOW()-INTERVAL '13 days', NOW()-INTERVAL '13 days'+INTERVAL '6 minutes'),
+    ('50000000-0000-4000-8000-000000000097', v_rid, '8',  '[]'::jsonb, 'bg', 'like',   NULL,                                                          NOW()-INTERVAL '12 days', NOW()-INTERVAL '12 days'+INTERVAL '5 minutes'),
+    ('50000000-0000-4000-8000-000000000098', v_rid, '5',  '[]'::jsonb, 'bg', 'like',   NULL,                                                          NOW()-INTERVAL '10 days', NOW()-INTERVAL '10 days'+INTERVAL '4 minutes'),
+    ('50000000-0000-4000-8000-000000000099', v_rid, '1',  '[]'::jsonb, 'bg', 'like',   'Баницата може да е малко по-гореща.',                         NOW()-INTERVAL '8 days',  NOW()-INTERVAL '8 days' +INTERVAL '7 minutes')
+  ON CONFLICT (id) DO UPDATE SET
+    restaurant_id   = v_rid,
+    overall_rating  = EXCLUDED.overall_rating,
+    overall_comment = EXCLUDED.overall_comment,
+    started_at      = EXCLUDED.started_at,
+    completed_at    = EXCLUDED.completed_at;
+
+  -- ── feedback ratings ──────────────────────────────────────────────────────
+  INSERT INTO public.feedback_ratings (id, session_id, menu_item_id, rating, comment)
+  VALUES
+    ('60000000-0000-4000-8000-000000000091','50000000-0000-4000-8000-000000000091','30000000-0000-4000-8000-000000000093',5,'Скарата беше страхотна! Ще ви препоръчаме на всички приятели!'),
+    ('60000000-0000-4000-8000-000000000092','50000000-0000-4000-8000-000000000091','30000000-0000-4000-8000-000000000091',4,NULL),
+    ('60000000-0000-4000-8000-000000000093','50000000-0000-4000-8000-000000000091','30000000-0000-4000-8000-000000000094',2,'Малко безвкусен за мен.'),
+    ('60000000-0000-4000-8000-000000000094','50000000-0000-4000-8000-000000000092','30000000-0000-4000-8000-000000000093',5,NULL),
+    ('60000000-0000-4000-8000-000000000095','50000000-0000-4000-8000-000000000092','30000000-0000-4000-8000-000000000094',3,NULL),
+    ('60000000-0000-4000-8000-000000000096','50000000-0000-4000-8000-000000000092','30000000-0000-4000-8000-000000000095',4,NULL),
+    ('60000000-0000-4000-8000-000000000097','50000000-0000-4000-8000-000000000093','30000000-0000-4000-8000-000000000093',5,NULL),
+    ('60000000-0000-4000-8000-000000000098','50000000-0000-4000-8000-000000000093','30000000-0000-4000-8000-000000000092',5,NULL),
+    ('60000000-0000-4000-8000-000000000099','50000000-0000-4000-8000-000000000093','30000000-0000-4000-8000-000000000094',2,'Гювечът беше студен.'),
+    ('60000000-0000-4000-8000-000000000100','50000000-0000-4000-8000-000000000093','30000000-0000-4000-8000-000000000095',5,NULL),
+    ('60000000-0000-4000-8000-000000000101','50000000-0000-4000-8000-000000000094','30000000-0000-4000-8000-000000000093',4,NULL),
+    ('60000000-0000-4000-8000-000000000102','50000000-0000-4000-8000-000000000094','30000000-0000-4000-8000-000000000094',3,NULL),
+    ('60000000-0000-4000-8000-000000000103','50000000-0000-4000-8000-000000000094','30000000-0000-4000-8000-000000000091',5,NULL),
+    ('60000000-0000-4000-8000-000000000104','50000000-0000-4000-8000-000000000095','30000000-0000-4000-8000-000000000093',5,NULL),
+    ('60000000-0000-4000-8000-000000000105','50000000-0000-4000-8000-000000000095','30000000-0000-4000-8000-000000000092',4,NULL),
+    ('60000000-0000-4000-8000-000000000106','50000000-0000-4000-8000-000000000095','30000000-0000-4000-8000-000000000094',2,NULL),
+    ('60000000-0000-4000-8000-000000000107','50000000-0000-4000-8000-000000000095','30000000-0000-4000-8000-000000000091',4,NULL),
+    ('60000000-0000-4000-8000-000000000108','50000000-0000-4000-8000-000000000095','30000000-0000-4000-8000-000000000095',4,NULL),
+    ('60000000-0000-4000-8000-000000000109','50000000-0000-4000-8000-000000000096','30000000-0000-4000-8000-000000000093',4,NULL),
+    ('60000000-0000-4000-8000-000000000110','50000000-0000-4000-8000-000000000096','30000000-0000-4000-8000-000000000094',4,NULL),
+    ('60000000-0000-4000-8000-000000000111','50000000-0000-4000-8000-000000000096','30000000-0000-4000-8000-000000000095',3,NULL),
+    ('60000000-0000-4000-8000-000000000112','50000000-0000-4000-8000-000000000097','30000000-0000-4000-8000-000000000093',4,NULL),
+    ('60000000-0000-4000-8000-000000000113','50000000-0000-4000-8000-000000000097','30000000-0000-4000-8000-000000000094',5,'Вкусен гювеч, доста сочен.'),
+    ('60000000-0000-4000-8000-000000000114','50000000-0000-4000-8000-000000000097','30000000-0000-4000-8000-000000000091',5,NULL),
+    ('60000000-0000-4000-8000-000000000115','50000000-0000-4000-8000-000000000098','30000000-0000-4000-8000-000000000093',3,NULL),
+    ('60000000-0000-4000-8000-000000000116','50000000-0000-4000-8000-000000000098','30000000-0000-4000-8000-000000000094',4,NULL),
+    ('60000000-0000-4000-8000-000000000117','50000000-0000-4000-8000-000000000098','30000000-0000-4000-8000-000000000095',3,NULL),
+    ('60000000-0000-4000-8000-000000000118','50000000-0000-4000-8000-000000000099','30000000-0000-4000-8000-000000000095',3,NULL),
+    ('60000000-0000-4000-8000-000000000119','50000000-0000-4000-8000-000000000099','30000000-0000-4000-8000-000000000091',4,NULL),
+    ('60000000-0000-4000-8000-000000000120','50000000-0000-4000-8000-000000000099','30000000-0000-4000-8000-000000000092',3,NULL)
+  ON CONFLICT (id) DO UPDATE SET
+    session_id   = EXCLUDED.session_id,
+    menu_item_id = EXCLUDED.menu_item_id,
+    rating       = EXCLUDED.rating,
+    comment      = EXCLUDED.comment;
+
+  -- ── usage counter ─────────────────────────────────────────────────────────
+  INSERT INTO public.usage_counters (restaurant_id, period, feedback_count, receipt_scans_count)
+  VALUES (v_rid, TO_CHAR(NOW(), 'YYYY-MM'), 9, 0)
+  ON CONFLICT (restaurant_id, period) DO UPDATE SET
+    feedback_count      = EXCLUDED.feedback_count,
+    receipt_scans_count = EXCLUDED.receipt_scans_count;
+
+  RAISE NOTICE 'Механа Тест seeded — user %, restaurant %', v_uid, v_rid;
+END;
+$$;
