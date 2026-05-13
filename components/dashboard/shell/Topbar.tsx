@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
@@ -29,18 +28,14 @@ export async function Topbar({ ownerFirstName, greetingKey }: TopbarProps) {
 
         <div className="flex items-center gap-5">
           <LocaleSwitcher />
+          <div className="h-5 w-px bg-[var(--rule)]" aria-hidden="true" />
           <div
-            className="h-5 w-px bg-[var(--rule)]"
-            aria-hidden="true"
-          />
-          <Link
-            href="/dashboard/profile"
             aria-label={shell("role.owner")}
             title={shell("role.owner")}
             className="grid h-9 w-9 place-items-center rounded-full bg-[var(--plum)] font-[var(--f-display)] text-[18px] italic leading-none text-[var(--paper)] transition hover:opacity-90"
           >
             {avatarInitial}
-          </Link>
+          </div>
           <LogoutButton />
         </div>
       </div>

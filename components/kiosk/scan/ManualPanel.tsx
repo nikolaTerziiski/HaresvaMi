@@ -18,7 +18,13 @@ type ManualPanelProps = {
   onContinue: () => void;
 };
 
-function BackButton({ label, onClick }: { label: string; onClick: () => void }) {
+function BackButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -46,7 +52,9 @@ export function ManualPanel({
   if (menuItems.length === 0) {
     return (
       <div className="max-w-[620px]">
-        {onBack ? <BackButton label={copy.backToScan} onClick={onBack} /> : null}
+        {onBack ? (
+          <BackButton label={copy.backToScan} onClick={onBack} />
+        ) : null}
         <h2 className="m-0 font-[var(--f-display)] text-[56px] font-normal leading-none max-md:text-[38px]">
           {copy.noMenuTitle}
         </h2>

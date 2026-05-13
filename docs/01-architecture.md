@@ -64,6 +64,7 @@ haresvami/
 │   ├── (dashboard)/
 │   │   ├── layout.tsx              # Sidebar + main, owner-only
 │   │   ├── page.tsx                # Dashboard home (insights)
+│   │   ├── insights/page.tsx       # Deterministic weekly owner insights
 │   │   ├── menu/
 │   │   │   ├── page.tsx            # Menu list + abbreviation aliases
 │   │   │   └── [id]/page.tsx       # Edit single menu item

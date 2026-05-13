@@ -1,11 +1,10 @@
 import {
+  ChartNoAxesColumnIncreasing,
   Home,
   MessageSquare,
   Utensils,
   Tablet,
-  Users,
   Settings,
-  UserRound,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -46,6 +45,12 @@ export async function Sidebar({ restaurantName }: SidebarProps) {
             {nav("home")}
           </NavLink>
           <NavLink
+            href="/dashboard/insights"
+            icon={<ChartNoAxesColumnIncreasing {...ICON_PROPS} />}
+          >
+            {nav("insights")}
+          </NavLink>
+          <NavLink
             href="/dashboard/feedback"
             icon={<MessageSquare {...ICON_PROPS} />}
           >
@@ -65,24 +70,14 @@ export async function Sidebar({ restaurantName }: SidebarProps) {
           {nav("groups.account")}
         </div>
         <nav className="flex flex-col gap-[2px]">
-          <NavLink href="/dashboard/staff" icon={<Users {...ICON_PROPS} />}>
-            {nav("team")}
-          </NavLink>
           <NavLink
             href="/dashboard/settings"
             icon={<Settings {...ICON_PROPS} />}
           >
             {nav("settings")}
           </NavLink>
-          <NavLink
-            href="/dashboard/profile"
-            icon={<UserRound {...ICON_PROPS} />}
-          >
-            {nav("profile")}
-          </NavLink>
         </nav>
       </div>
-
     </aside>
   );
 }

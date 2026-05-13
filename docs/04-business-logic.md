@@ -281,7 +281,34 @@ Customer-facing API routes authorize either:
 
 Kiosk writes do not go directly through public Supabase table policies. `/api/feedback` authorizes the kiosk cookie or owner session first, then uses the service role to create `feedback_sessions` and `feedback_ratings`. `/api/extract-receipt` uses the same authorization model before checking scan entitlement and calling Gemini.
 
-## Insights generation (Phase 3)
+## Insights generation
+
+### v0.1 deterministic owner insights
+
+The owner-facing `/dashboard/insights` page is the primary dashboard surface for
+the MVP. It does not call Claude, Gemini, Stripe, or push notification services.
+It computes deterministic weekly insights server-side from existing
+`feedback_sessions`, `feedback_ratings`, `menu_items`, and `restaurants` data.
+
+The page compares:
+
+- current rolling 7-day window
+- previous rolling 7-day window
+- completed feedback sessions only
+- item ratings attached to those completed session ids
+- menu item names, including the deleted-item historical fallback
+
+The v0.1 rules are intentionally conservative:
+
+- Top performer requires at least 3 current ratings for the dish.
+- Watch dish requires at least 3 current ratings and either current average
+  `<= 3.2`, or a drop of `<= -0.5` where the previous window also has at least
+  3 ratings.
+- Improved dish requires at least 3 previous ratings, at least 3 current
+  ratings, a delta of `>= 0.5`, and current average `>= 4.0`.
+- A single bad rating must not create a watch insight.
+- If there is no previous-week data, the UI explains that comparison starts
+  after more data instead of showing fake zeroes or `NaN`.
 
 Plain-Bulgarian insights are generated weekly by a cron job.
 

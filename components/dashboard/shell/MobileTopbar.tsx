@@ -1,18 +1,16 @@
 "use client";
 
 import {
+  ChartNoAxesColumnIncreasing,
   Home,
   Menu,
   MessageSquare,
   Settings,
   Tablet,
-  Users,
-  UserRound,
   Utensils,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -64,13 +62,12 @@ export function MobileTopbar({
         <div className="min-w-0 flex-1 truncate text-center font-[var(--f-display)] text-[18px] leading-none tracking-[-0.01em] text-[var(--ink)]">
           {restaurantName}
         </div>
-        <Link
-          href="/dashboard/profile"
+        <div
           aria-label={shell("role.owner")}
           className="grid h-9 w-9 place-items-center rounded-full bg-[var(--plum)] font-[var(--f-display)] text-[16px] italic leading-none text-[var(--paper)] transition hover:opacity-90"
         >
           {avatarInitial}
-        </Link>
+        </div>
       </div>
 
       {open ? (
@@ -112,6 +109,12 @@ export function MobileTopbar({
                   {nav("home")}
                 </NavLink>
                 <NavLink
+                  href="/dashboard/insights"
+                  icon={<ChartNoAxesColumnIncreasing {...ICON_PROPS} />}
+                >
+                  {nav("insights")}
+                </NavLink>
+                <NavLink
                   href="/dashboard/feedback"
                   icon={<MessageSquare {...ICON_PROPS} />}
                 >
@@ -137,20 +140,11 @@ export function MobileTopbar({
                 {nav("groups.account")}
               </div>
               <nav className="flex flex-col gap-[2px]">
-                <NavLink href="/dashboard/staff" icon={<Users {...ICON_PROPS} />}>
-                  {nav("team")}
-                </NavLink>
                 <NavLink
                   href="/dashboard/settings"
                   icon={<Settings {...ICON_PROPS} />}
                 >
                   {nav("settings")}
-                </NavLink>
-                <NavLink
-                  href="/dashboard/profile"
-                  icon={<UserRound {...ICON_PROPS} />}
-                >
-                  {nav("profile")}
                 </NavLink>
               </nav>
             </div>
