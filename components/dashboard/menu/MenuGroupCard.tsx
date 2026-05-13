@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { MenuItemEditorRow } from "@/components/dashboard/menu/MenuItemEditorRow";
 import type {
   CategoryGroup,
+  MenuItemAlias,
   MenuItemField,
   ValidationResult,
 } from "@/lib/menu/types";
@@ -13,17 +14,21 @@ import type {
 type MenuGroupCardProps = {
   group: CategoryGroup;
   validation: ValidationResult;
+  aliasesByMenuItem: Map<string, MenuItemAlias[]>;
   onAddItemInCategory: (categoryName: string) => void;
   onItemChange: (id: string, field: MenuItemField, value: string) => void;
   onRemoveItem: (id: string) => void;
+  onAddAliasClick: (menuItemId?: string) => void;
 };
 
 export function MenuGroupCard({
   group,
   validation,
+  aliasesByMenuItem,
   onAddItemInCategory,
   onItemChange,
   onRemoveItem,
+  onAddAliasClick,
 }: MenuGroupCardProps) {
   const t = useTranslations("dashboard.menu");
   const groupLabel = group.displayName || t("uncategorized");
@@ -57,8 +62,14 @@ export function MenuGroupCard({
             key={item.id}
             item={item}
             rowErrors={validation.rowErrors[item.id] || {}}
+            aliases={
+              item.persistedId
+                ? (aliasesByMenuItem.get(item.persistedId) ?? [])
+                : []
+            }
             onItemChange={onItemChange}
             onRemoveItem={onRemoveItem}
+            onAddAliasClick={() => onAddAliasClick(item.persistedId)}
           />
         ))}
 

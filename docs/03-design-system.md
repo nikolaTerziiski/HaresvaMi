@@ -186,6 +186,24 @@ Rules:
 - Error states use `border-error` and a small message below
 - Required fields marked with a tiny terracotta dot, not asterisk
 
+### Owner menu alias chips
+
+In the Menu editor, receipt aliases are secondary metadata for a dish. Show them as small JetBrains Mono chips stacked under the dish name, not as a separate analytics surface.
+
+- Chips use `--bg-2` with ink text and a small `rounded-md` radius.
+- Empty dishes show a subtle dashed `+ псевдоним` action under the dish name.
+- If a dish has many aliases, show only the first 2-3 chips and a compact `+ още` count.
+- The owner-facing title is `Псевдоними на ястия`; do not use `Речник на бона`.
+
+### Side panels
+
+Use a right-side panel for compact owner tasks that are connected to the current dashboard page, such as adding menu aliases. Panels should use `--paper`, a `--rule` left border, no decorative shadow, and a muted full-screen backdrop.
+
+- Keep the title short and Bulgarian-first.
+- Put the action form immediately below the header.
+- Use labels above fields; placeholders are examples, not labels.
+- Keep optional lists inside the panel simple and grouped by the thing the owner recognizes first, usually the dish name.
+
 ### Forms
 
 - Labels: `text-sm font-medium text-ink-700`
@@ -268,7 +286,7 @@ The kiosk screen is what customers see. It's the most important UI in the produc
 
 The receipt review state is staff-facing, not customer-facing. It can be denser than the customer rating screen, but still needs touch-friendly controls because it runs on the same tablet.
 
-- Show receipt rows as compact correction rows: raw receipt text, quantity, match source pill (`alias`, `fuzzy`, `unknown`), current menu match, and a menu selector.
+- Show receipt rows as compact correction rows: raw receipt text, quantity, a Bulgarian match hint (`разпознато`, `провери`, `неясно`), current menu match, and a menu selector.
 - Confident matches should feel pre-approved. The waiter only acts when a row is wrong or unknown.
 - Unknown rows may expose an ignore action, but ignored rows must look secondary and should not compete with the primary continue button.
 - Keep the primary continue button large and terracotta; manual selection stays as the secondary escape hatch.
@@ -293,6 +311,8 @@ The receipt review state is staff-facing, not customer-facing. It can be denser 
 
 On 10-inch landscape tablets, the customer rating screen should keep the submit footer visible while the dish list scrolls internally.
 
+- Customer rating and thank-you states are customer-facing and must be fullscreen: no top app header, no AI scan count, no staff badge, no setup labels, no receipt preview.
+- The customer footer should stay quiet: optional `Харесва ми / Не ми харесва` buttons plus one terracotta `Готово` action. Avoid progress pills, lock/anonymity notes, and explanatory labels around the overall buttons.
 - Optimize first for `1280x800`, `1024x768`, and `1366x768`.
 - Aim for 7-8 visible dish rows at `1280x800` when dish names are typical length.
 - Dish rows may be compact, but keep dish names at least 17px and star buttons about 44px square.

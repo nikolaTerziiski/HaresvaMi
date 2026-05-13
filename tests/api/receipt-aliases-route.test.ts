@@ -45,11 +45,25 @@ test("/api/receipt-aliases/learn authorizes before writing", () => {
   ]);
 });
 
+test("/api/receipt-aliases/learn keeps owner-session access enabled", () => {
+  assert.match(routeSource, /authorizeKioskOrOwnerRestaurant/);
+  assert.doesNotMatch(routeSource, /verifyKioskToken/);
+});
+
 test("/api/receipt-aliases/learn uses authorized restaurant id", () => {
   assert.match(
     routeSource,
     /learnReceiptAliases\(\s*\{[\s\S]*restaurantId:\s*authorization\.restaurantId,[\s\S]*aliases:\s*payload\.aliases,/,
   );
+});
+
+test("receipt alias learning returns saved alias identity for owner UI", () => {
+  assertSourceOrder(learnSource, [
+    ".upsert(",
+    '.select("id, confidence")',
+    "learnedAliases.push({",
+    "id: writtenAlias.id",
+  ]);
 });
 
 test("receipt alias learning verifies active restaurant menu items before alias writes", () => {

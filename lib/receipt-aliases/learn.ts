@@ -22,9 +22,11 @@ type ReceiptAliasLearnInput = {
 };
 
 export type LearnedReceiptAlias = {
+  id: string;
   alias: string;
   rawText: string;
   menuItemId: string;
+  confidence: "manual" | "ai_suggested";
   timesSeen: number;
 };
 
@@ -119,26 +121,35 @@ export async function learnReceiptAliases({
     }
 
     const nextTimesSeen = (existing?.times_seen ?? 0) + 1;
-    const { error: writeError } = await supabase.from("receipt_aliases").upsert(
-      {
-        restaurant_id: restaurantId,
-        alias: item.alias,
-        menu_item_id: item.menuItemId,
-        confidence: "manual",
-        times_seen: nextTimesSeen,
-        last_seen_at: new Date().toISOString(),
-      },
-      { onConflict: "restaurant_id,alias" },
-    );
+    const { data: writtenAlias, error: writeError } = await supabase
+      .from("receipt_aliases")
+      .upsert(
+        {
+          restaurant_id: restaurantId,
+          alias: item.alias,
+          menu_item_id: item.menuItemId,
+          confidence: "manual",
+          times_seen: nextTimesSeen,
+          last_seen_at: new Date().toISOString(),
+        },
+        { onConflict: "restaurant_id,alias" },
+      )
+      .select("id, confidence")
+      .single();
 
-    if (writeError) {
-      throw new ReceiptAliasLearningError("write_failed", writeError.message);
+    if (writeError || !writtenAlias) {
+      throw new ReceiptAliasLearningError(
+        "write_failed",
+        writeError?.message ?? "Receipt alias was not returned after writing.",
+      );
     }
 
     learnedAliases.push({
+      id: writtenAlias.id,
       alias: item.alias,
       rawText: item.rawText,
       menuItemId: item.menuItemId,
+      confidence: writtenAlias.confidence as LearnedReceiptAlias["confidence"],
       timesSeen: nextTimesSeen,
     });
   }

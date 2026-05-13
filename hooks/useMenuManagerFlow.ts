@@ -21,6 +21,7 @@ import {
 import { buildCategoryFilters, buildGroupedItems } from "@/lib/menu/grouping";
 import type {
   InitialMenuItem,
+  MenuAliasTarget,
   MenuItemField,
   MenuItemRow,
 } from "@/lib/menu/types";
@@ -85,6 +86,21 @@ export function useMenuManagerFlow({
         selectedCategoryKey,
       }),
     [items, searchQuery, selectedCategoryKey],
+  );
+  const aliasTargets: MenuAliasTarget[] = useMemo(
+    () =>
+      items
+        .filter(
+          (item): item is MenuItemRow & { persistedId: string } =>
+            Boolean(item.persistedId) && item.name_bg.trim().length > 0,
+        )
+        .map((item) => ({
+          id: item.persistedId,
+          name_bg: item.name_bg,
+          category: item.category,
+          price: item.price,
+        })),
+    [items],
   );
   const isFiltering =
     searchQuery.trim().length > 0 || selectedCategoryKey !== null;
@@ -221,6 +237,7 @@ export function useMenuManagerFlow({
     totalItems,
     allCategories,
     groupedItems,
+    aliasTargets,
     isFiltering,
     searchQuery,
     selectedCategoryKey,

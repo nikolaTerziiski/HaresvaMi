@@ -105,7 +105,7 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
    - enter `Име на устройството`, for example `Таблет на бара`
    - click `Създай връзка за таблет`
    - use `Копирай връзката` or `Отвори връзката`
-   - optionally test `Стартирай на това устройство`; it should sign out this browser and open tablet mode here
+   - optionally test `Стартирай на това устройство`; it should show a short startup message, sign out this browser, and open tablet mode here
 8. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
 9. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
 10. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
@@ -114,7 +114,8 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - select at least one menu item
     - click `Продължи с избраните`
     - click `Започни оценяване`
-    - verify the customer rating screen uses compact full-width rows with image/fallback, description when available, quantity when > 1, and 1-5 star buttons
+    - verify the customer rating screen is fullscreen and clean: no top staff header, no AI scan count, no receipt preview, no setup labels
+    - verify it uses compact full-width rows with image/fallback, description when available, quantity when > 1, and 1-5 star buttons
     - on tablet landscape sizes `1280x800`, `1024x768`, and `1366x768`, verify the dish list scrolls internally, the `Готово` footer button stays visible, and about 7-8 rows fit at `1280x800` when the menu has enough selected items
     - rate at least one item from 1 to 5 stars, or choose the secondary `Харесва ми` / `Не ми харесва`
     - click `Готово`
@@ -140,7 +141,7 @@ Only run this if `GOOGLE_GEMINI_API_KEY` is configured in `.env.local`.
 5. Allow camera access if the browser asks.
 6. Take or upload a clear receipt photo.
 7. If Gemini extracts menu items, verify the staff review screen before continuing:
-   - each extracted row shows raw receipt text, quantity, matched menu item, and `alias` / `fuzzy` / `unknown`
+   - each extracted row shows raw receipt text, quantity, matched menu item, and Bulgarian match hints: `разпознато`, `провери`, or `неясно`
    - matched rows can be kept as-is or changed to another active menu item
    - unknown rows can be assigned to an active menu item or ignored
    - to test alias learning, change one non-alias row or assign one unknown row to an active menu item before continuing

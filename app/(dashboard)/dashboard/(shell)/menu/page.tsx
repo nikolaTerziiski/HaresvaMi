@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
+import type { MenuItemAlias } from "@/lib/menu/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MenuManager } from "@/components/dashboard/menu/MenuManager";
 
@@ -31,11 +32,30 @@ export default async function MenuPage() {
     console.error("Error fetching menu items:", error);
   }
 
+  const { data: aliasRows, error: aliasError } = await supabase
+    .from("receipt_aliases")
+    .select("id, alias, menu_item_id, confidence, times_seen")
+    .eq("restaurant_id", restaurant.id)
+    .order("alias", { ascending: true });
+
+  if (aliasError) {
+    console.error("Error fetching receipt aliases:", aliasError);
+  }
+
+  const initialAliases: MenuItemAlias[] = (aliasRows ?? []).map((alias) => ({
+    id: alias.id,
+    alias: alias.alias,
+    menu_item_id: alias.menu_item_id,
+    confidence: alias.confidence as MenuItemAlias["confidence"],
+    times_seen: alias.times_seen,
+  }));
+
   return (
     <div className="flex h-full w-full">
       <MenuManager
         restaurantId={restaurant.id}
         initialItems={menuItems || []}
+        initialAliases={initialAliases}
       />
     </div>
   );

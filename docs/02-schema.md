@@ -95,6 +95,8 @@ CREATE INDEX idx_receipt_aliases_lookup ON receipt_aliases(restaurant_id, alias)
 
 Aliases are learned through `POST /api/receipt-aliases/learn` after kiosk or owner authorization. The API stores only the normalized alias text and the selected menu item id; it does not store customer comments, receipt images, or full receipt payloads. Before writing, the API verifies that the menu item belongs to the authorized restaurant and is active with `deleted_at IS NULL`.
 
+The owner menu screen reads `receipt_aliases` for the restaurant and groups them by `menu_item_id` so aliases can appear under each active dish. Manual owner additions use the same learning API and the response includes the saved alias id, normalized alias, selected menu item id, confidence, and `timesSeen` count for immediate UI updates.
+
 Alias normalization:
 
 - trim leading/trailing whitespace

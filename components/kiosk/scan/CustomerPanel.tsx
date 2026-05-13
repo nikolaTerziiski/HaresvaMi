@@ -1,4 +1,4 @@
-import { Heart, LockKeyhole, ThumbsDown } from "lucide-react";
+import { Heart, ThumbsDown } from "lucide-react";
 
 import { DishRatingRow } from "@/components/kiosk/scan/DishRatingRow";
 import type {
@@ -36,18 +36,12 @@ export function CustomerPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="flex items-end justify-between gap-5 px-7 pt-3 pb-3 max-md:flex-col max-md:items-start max-md:px-5">
-        <div>
-          <h2 className="m-0 font-[var(--f-display)] text-[38px] font-normal leading-none text-[var(--ink)] max-md:text-[34px]">
-            {copy.customerTitle}
-          </h2>
-          <p className="mt-1.5 mb-0 max-w-[820px] text-[15px] leading-[1.35] text-[var(--ink-2)]">
-            {copy.customerBody}
-          </p>
-        </div>
-        <p className="m-0 shrink-0 rounded-full border border-[var(--rule)] bg-[var(--paper)] px-3 py-1.5 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.08em] text-[var(--ink-mute)]">
-          <b className="text-[var(--ink)]">{ratedCount}</b>{" "}
-          {copy.customerProgress} {items.length} {copy.customerProgressSuffix}
+      <header className="px-7 pt-5 pb-4 max-md:px-5">
+        <h2 className="m-0 font-[var(--f-display)] text-[40px] font-normal leading-none text-[var(--ink)] max-md:text-[34px]">
+          {copy.customerTitle}
+        </h2>
+        <p className="mt-2 mb-0 max-w-[760px] text-[16px] leading-[1.4] text-[var(--ink-2)]">
+          {copy.customerBody}
         </p>
       </header>
 
@@ -69,21 +63,9 @@ export function CustomerPanel({
         </div>
       </div>
 
-      <footer className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-[var(--rule)] bg-[var(--paper)] px-7 py-2.5 max-[980px]:grid-cols-1 max-md:px-5">
+      <footer className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-t border-[var(--rule)] bg-[var(--paper)] px-7 py-3 max-[980px]:grid-cols-1 max-md:px-5">
         <div className="min-w-0">
-          <p className="m-0 flex items-center gap-2 text-[13px] leading-[1.4] text-[var(--ink-mute)]">
-            <LockKeyhole aria-hidden="true" size={16} strokeWidth={1.5} />
-            {copy.anonymousNote}
-          </p>
-          {statusMessage ? (
-            <p className="mt-2 mb-0 text-[14px] text-[var(--accent)]">
-              {statusMessage}
-            </p>
-          ) : null}
-          <section className="mt-2 flex flex-wrap items-center gap-2">
-            <h3 className="m-0 text-[13px] font-medium text-[var(--ink-mute)]">
-              {copy.overallTitle}
-            </h3>
+          <section className="flex flex-wrap items-center gap-2">
             <OverallButton
               active={overallRating === "like"}
               disabled={isSaving}
@@ -101,6 +83,11 @@ export function CustomerPanel({
               onClick={() => onOverallRatingChange("dislike")}
             />
           </section>
+          {statusMessage ? (
+            <p className="mt-2 mb-0 text-[14px] text-[var(--accent)]">
+              {statusMessage}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"
@@ -108,11 +95,7 @@ export function CustomerPanel({
           disabled={isSaving || !hasFeedback}
           onClick={onFinish}
         >
-          {isSaving
-            ? copy.savingFeedback
-            : hasFeedback
-              ? copy.finish
-              : copy.finishDisabled}
+          {isSaving ? copy.savingFeedback : copy.finish}
         </button>
       </footer>
     </div>

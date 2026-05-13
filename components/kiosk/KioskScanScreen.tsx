@@ -30,14 +30,6 @@ export function KioskScanScreen({
 
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--ink)]">
-      <ScanHeader
-        entitlement={flow.entitlement}
-        exhaustedTitle={copy.exhaustedTitle}
-        remainingLabel={copy.remainingScansLabel}
-        restaurant={restaurant}
-        scanEyebrow={copy.scanEyebrow}
-      />
-
       {isCustomerFacing ? (
         <main className="min-h-0 flex-1">
           {flow.mode === "customer" ? (
@@ -59,74 +51,84 @@ export function KioskScanScreen({
           ) : null}
         </main>
       ) : (
-        <main className="grid flex-1 grid-cols-[1.05fr_0.95fr] items-stretch gap-0 max-[900px]:grid-cols-1">
-          <section className="flex flex-col justify-center border-r border-[var(--rule)] bg-[var(--paper)] px-10 py-10 max-md:px-5">
-            {flow.mode === "scan" ? (
-              <ScanPanel
-                canScan={flow.canScan}
-                copy={copy}
-                isProcessing={flow.isProcessing}
-                remainingText={remainingText}
-                onManual={flow.showManualSelection}
-                onScan={flow.openCamera}
-              />
-            ) : null}
+        <>
+          <ScanHeader
+            entitlement={flow.entitlement}
+            exhaustedTitle={copy.exhaustedTitle}
+            remainingLabel={copy.remainingScansLabel}
+            restaurant={restaurant}
+            scanEyebrow={copy.scanEyebrow}
+          />
 
-            {flow.mode === "manual" ? (
-              <>
-                {flow.entitlement.remaining <= 0 ? (
-                  <ExhaustedNotice copy={copy} />
-                ) : null}
-                <ManualPanel
+          <main className="grid flex-1 grid-cols-[1.05fr_0.95fr] items-stretch gap-0 max-[900px]:grid-cols-1">
+            <section className="flex flex-col justify-center border-r border-[var(--rule)] bg-[var(--paper)] px-10 py-10 max-md:px-5">
+              {flow.mode === "scan" ? (
+                <ScanPanel
+                  canScan={flow.canScan}
                   copy={copy}
-                  filteredMenuItems={flow.filteredMenuItems}
-                  menuItems={menuItems}
-                  query={flow.query}
-                  selectedCount={flow.manualSelectedItems.length}
-                  selectedIds={flow.selectedIds}
-                  setQuery={flow.setQuery}
-                  toggleMenuItem={flow.toggleMenuItem}
-                  onContinue={flow.continueWithManualSelection}
+                  isProcessing={flow.isProcessing}
+                  remainingText={remainingText}
+                  onManual={flow.showManualSelection}
+                  onScan={flow.openCamera}
                 />
-              </>
-            ) : null}
+              ) : null}
 
-            {flow.mode === "review" ? (
-              <ReviewPanel
-                copy={copy}
-                decisions={flow.receiptReviewDecisions}
-                menuItems={menuItems}
-                receiptMatches={flow.receiptMatches}
-                onIgnoreRow={flow.ignoreReceiptReviewRow}
-                onManual={flow.showManualSelection}
-                onMenuItemChange={flow.setReceiptReviewMenuItem}
-                onUseExtracted={flow.continueWithExtractedItems}
+              {flow.mode === "manual" ? (
+                <>
+                  {flow.entitlement.remaining <= 0 ? (
+                    <ExhaustedNotice copy={copy} />
+                  ) : null}
+                  <ManualPanel
+                    copy={copy}
+                    filteredMenuItems={flow.filteredMenuItems}
+                    menuItems={menuItems}
+                    query={flow.query}
+                    selectedCount={flow.manualSelectedItems.length}
+                    selectedIds={flow.selectedIds}
+                    setQuery={flow.setQuery}
+                    toggleMenuItem={flow.toggleMenuItem}
+                    onContinue={flow.continueWithManualSelection}
+                  />
+                </>
+              ) : null}
+
+              {flow.mode === "review" ? (
+                <ReviewPanel
+                  copy={copy}
+                  decisions={flow.receiptReviewDecisions}
+                  menuItems={menuItems}
+                  receiptMatches={flow.receiptMatches}
+                  onIgnoreRow={flow.ignoreReceiptReviewRow}
+                  onManual={flow.showManualSelection}
+                  onMenuItemChange={flow.setReceiptReviewMenuItem}
+                  onUseExtracted={flow.continueWithExtractedItems}
+                />
+              ) : null}
+
+              {flow.mode === "ready" ? (
+                <ReadyPanel
+                  copy={copy}
+                  items={flow.selectedItems}
+                  onEdit={flow.showManualSelection}
+                  onStartCustomerStep={flow.showCustomerStep}
+                />
+              ) : null}
+
+              <StatusMessage message={flow.statusMessage} />
+            </section>
+
+            <section className="flex items-center justify-center px-10 py-10 max-md:px-5">
+              <ReceiptPreview
+                restaurant={restaurant}
+                subtitle={
+                  flow.entitlement.remaining > 0
+                    ? copy.subtitle
+                    : copy.ownerUpgradeHint
+                }
               />
-            ) : null}
-
-            {flow.mode === "ready" ? (
-              <ReadyPanel
-                copy={copy}
-                items={flow.selectedItems}
-                onEdit={flow.showManualSelection}
-                onStartCustomerStep={flow.showCustomerStep}
-              />
-            ) : null}
-
-            <StatusMessage message={flow.statusMessage} />
-          </section>
-
-          <section className="flex items-center justify-center px-10 py-10 max-md:px-5">
-            <ReceiptPreview
-              restaurant={restaurant}
-              subtitle={
-                flow.entitlement.remaining > 0
-                  ? copy.subtitle
-                  : copy.ownerUpgradeHint
-              }
-            />
-          </section>
-        </main>
+            </section>
+          </main>
+        </>
       )}
 
       <input

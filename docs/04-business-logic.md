@@ -99,7 +99,7 @@ export async function getMonthlyUsage(
 6. Server calls Gemini 2.5 Flash Lite first, then retries with Gemini 2.5 Flash on low confidence.
 7. Server returns `{items, confidence, model, retryCount, usage}`.
 8. Kiosk maps each API item into a receipt match with `rawText`, `menuItemId`, `menuItemName`, `quantity`, and `matchedVia`.
-9. The waiter sees a staff-facing review screen before the customer rating step. Each receipt row shows the raw receipt text, quantity, matched menu item, and match source (`alias`, `fuzzy`, or `unknown`).
+9. The waiter sees a staff-facing review screen before the customer rating step. Each receipt row shows the raw receipt text, quantity, matched menu item, and a Bulgarian match hint: `разпознато`, `провери`, or `неясно`.
 10. Matched rows are preselected and require no extra work unless the waiter changes the menu item. Unknown rows default to ignored, but the waiter can select an active menu item when the row is real.
 11. Continuing from review converts only confirmed, non-ignored rows into `SelectedItem` values for the customer rating screen. Ignored rows remain out of feedback submission.
 12. If extraction fails or returns no extracted receipt rows, kiosk falls back to manual item selection.
@@ -211,6 +211,14 @@ The first 1–2 weeks of a restaurant's usage are "training" the system on their
 3. When a waiter corrects or confirms a real receipt shortcut, the UI can call the learning API with the raw receipt text and chosen active menu item.
 4. Next time that normalized receipt text appears, Gemini receives it in the restaurant alias list and can match it via `matched_via: "alias"`.
 
+### Owner alias management
+
+The Menu review/editor shows existing aliases as small chips stacked under each dish name. Dishes without aliases show a subtle `+ псевдоним` action. Rows with several aliases show only the first few chips and a compact `+ още` indicator to keep the menu list scannable.
+
+Owners can open the `Псевдоними на ястия` side panel from the Menu toolbar or from an empty alias row. The panel explains the mapping in non-technical Bulgarian, shows `“ШП” → “Шопска салата”` as the example, and lets the owner manually connect one receipt text value to one saved menu item. New unsaved menu rows cannot receive aliases until the menu item exists in the database.
+
+Owner-created aliases use `POST /api/receipt-aliases/learn`, so they follow the same authorization, normalization, menu item ownership check, and metadata-only storage rules as kiosk-learned aliases. AI suggestions, coverage percentage, deletion controls, and CSV import are intentionally out of scope for this MVP step.
+
 ### Future UI flow
 
 1. Receipt scanned. AI returns 6 items, 4 matched, 2 with `matched_via: "unknown"`.
@@ -272,7 +280,7 @@ Once a valid kiosk cookie exists on a device, visiting `/` redirects directly to
 - customer rating
 - thank-you auto reset
 
-The receipt preview is visible only in staff scan/manual/ready modes. It is hidden during customer rating and thank-you modes so the customer gets the full tablet width.
+The staff header, receipt preview, AI scan counts, setup labels, and staff badges are visible only in staff scan/manual/review/ready modes. They are hidden during customer rating and thank-you modes so the customer gets a clean fullscreen rating moment.
 
 Customer-facing API routes authorize either:
 

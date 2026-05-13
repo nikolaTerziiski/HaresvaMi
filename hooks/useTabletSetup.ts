@@ -112,6 +112,7 @@ export function useTabletSetup(initialSessions: KioskSession[]) {
 
       try {
         const nextSetupUrl = await createSession("Този браузър");
+        setMessage("Стартираме режим таблет. Излизаме от таблото...");
         await supabase.auth.signOut();
         window.location.assign(toAbsoluteSetupUrl(nextSetupUrl));
       } catch (error) {

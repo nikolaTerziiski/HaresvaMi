@@ -26,7 +26,7 @@ export function ThanksPanel({ copy, onReset }: ThanksPanelProps) {
   }, [onReset]);
 
   return (
-    <div className="grid min-h-[calc(100dvh-56px)] place-items-center px-6 text-center">
+    <div className="grid min-h-dvh place-items-center px-6 text-center">
       <section className="max-w-[720px]">
         <div className="mx-auto mb-6 grid size-24 place-items-center rounded-full border border-[var(--accent)] bg-[var(--paper)] font-[var(--f-display)] text-[72px] leading-none text-[var(--accent)]">
           ♥

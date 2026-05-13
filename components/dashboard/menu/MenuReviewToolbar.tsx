@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { RotateCcw, Search } from "lucide-react";
+import { BookOpen, RotateCcw, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { CategoryFilter } from "@/lib/menu/types";
@@ -11,10 +11,12 @@ type MenuReviewToolbarProps = {
   selectedCategoryKey: string | null;
   allCategories: CategoryFilter[];
   totalItems: number;
+  aliasCount: number;
   isSaving: boolean;
   onSearchQueryChange: (value: string) => void;
   onCategoryChange: (value: string | null) => void;
   onStartOverClick: () => void;
+  onAliasesClick: () => void;
 };
 
 function chipClass(active: boolean) {
@@ -33,10 +35,12 @@ export function MenuReviewToolbar({
   selectedCategoryKey,
   allCategories,
   totalItems,
+  aliasCount,
   isSaving,
   onSearchQueryChange,
   onCategoryChange,
   onStartOverClick,
+  onAliasesClick,
 }: MenuReviewToolbarProps) {
   const t = useTranslations("dashboard.menu");
 
@@ -84,6 +88,19 @@ export function MenuReviewToolbar({
         </div>
 
         <div className="flex-1" />
+
+        <Button
+          variant="outline"
+          onClick={onAliasesClick}
+          disabled={isSaving}
+          className="h-8 gap-1.5 border-[color-mix(in_oklab,var(--accent)_25%,var(--rule))] bg-[color-mix(in_oklab,var(--accent)_6%,var(--paper))] px-3 text-[13px] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--paper)]"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          {t("aliases.title")}
+          <span className="font-[var(--f-mono)] text-[10px] opacity-75">
+            {aliasCount}
+          </span>
+        </Button>
 
         <Button
           variant="outline"

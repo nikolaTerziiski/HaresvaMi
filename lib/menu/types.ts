@@ -7,6 +7,14 @@ export interface InitialMenuItem {
   sort_order: number;
 }
 
+export type MenuItemAlias = {
+  id: string;
+  alias: string;
+  menu_item_id: string;
+  confidence: "manual" | "ai_suggested";
+  times_seen: number;
+};
+
 export interface MenuItemRow {
   id: string;
   persistedId?: string;
@@ -17,6 +25,13 @@ export interface MenuItemRow {
 }
 
 export type MenuItemField = "name_bg" | "category" | "price" | "description_bg";
+
+export type MenuAliasTarget = {
+  id: string;
+  name_bg: string;
+  category: string;
+  price: string;
+};
 
 export type RowError = Partial<
   Record<"name_bg" | "category" | "price", string>

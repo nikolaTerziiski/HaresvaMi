@@ -3,23 +3,34 @@
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 
+import { MenuAliasChips } from "@/components/dashboard/menu/MenuAliasChips";
 import { categoryColorFor } from "@/lib/menu/format";
-import type { MenuItemField, MenuItemRow, RowError } from "@/lib/menu/types";
+import type {
+  MenuItemAlias,
+  MenuItemField,
+  MenuItemRow,
+  RowError,
+} from "@/lib/menu/types";
 
 type MenuItemEditorRowProps = {
   item: MenuItemRow;
   rowErrors: RowError;
+  aliases: MenuItemAlias[];
   onItemChange: (id: string, field: MenuItemField, value: string) => void;
   onRemoveItem: (id: string) => void;
+  onAddAliasClick: () => void;
 };
 
 export function MenuItemEditorRow({
   item,
   rowErrors,
+  aliases,
   onItemChange,
   onRemoveItem,
+  onAddAliasClick,
 }: MenuItemEditorRowProps) {
   const t = useTranslations("dashboard.menu");
+  const showAliasLine = Boolean(item.persistedId || item.name_bg.trim());
 
   return (
     <div className="group/row grid grid-cols-[minmax(0,3fr)_minmax(0,1.4fr)_120px_52px] gap-0 border-b border-[var(--rule-soft,var(--rule))] px-4 py-1 transition last:border-b-0 hover:bg-[color-mix(in_oklab,var(--accent)_4%,var(--paper))]">
@@ -37,6 +48,15 @@ export function MenuItemEditorRow({
           <p className="px-2.5 pt-1 text-[11px] text-[var(--bad)]">
             {rowErrors.name_bg}
           </p>
+        ) : null}
+        {showAliasLine ? (
+          <div className="px-2.5 pb-1">
+            <MenuAliasChips
+              aliases={aliases}
+              canAddAlias={Boolean(item.persistedId)}
+              onAddAliasClick={onAddAliasClick}
+            />
+          </div>
         ) : null}
       </div>
 

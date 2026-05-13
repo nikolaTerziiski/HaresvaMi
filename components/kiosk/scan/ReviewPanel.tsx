@@ -17,9 +17,9 @@ type ReviewPanelProps = {
 };
 
 const matchedViaLabels: Record<ReceiptMatch["matchedVia"], string> = {
-  alias: "alias",
-  fuzzy_match: "fuzzy",
-  unknown: "unknown",
+  alias: "разпознато",
+  fuzzy_match: "провери",
+  unknown: "неясно",
 };
 
 export function ReviewPanel({

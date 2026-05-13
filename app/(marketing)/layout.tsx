@@ -28,14 +28,14 @@ export default async function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
+  if (await hasValidKioskSession()) {
+    redirect("/kiosk/scan");
+  }
+
   const { user, restaurant } = await getCurrentOwnerState();
 
   if (user) {
     redirect(getOwnerDestination(restaurant));
-  }
-
-  if (await hasValidKioskSession()) {
-    redirect("/kiosk/scan");
   }
 
   return <>{children}</>;

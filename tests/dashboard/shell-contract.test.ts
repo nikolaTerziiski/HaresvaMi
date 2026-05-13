@@ -14,6 +14,22 @@ const feedbackOverviewSource = source(
   "components/dashboard/feedback/FeedbackOverview.tsx",
 );
 
+function assertSourceOrder(fileSource: string, snippets: string[]) {
+  let previousIndex = -1;
+
+  for (const snippet of snippets) {
+    const nextIndex = fileSource.indexOf(snippet, previousIndex + 1);
+
+    assert.notEqual(nextIndex, -1, `Missing source snippet: ${snippet}`);
+    assert.ok(
+      nextIndex > previousIndex,
+      `Expected snippet to appear later: ${snippet}`,
+    );
+
+    previousIndex = nextIndex;
+  }
+}
+
 test("landing redirects active owner sessions to the dashboard", () => {
   assert.match(marketingLayoutSource, /getCurrentOwnerState/);
   assert.match(
@@ -26,6 +42,15 @@ test("landing redirects valid kiosk sessions to the kiosk scan screen", () => {
   assert.match(marketingLayoutSource, /KIOSK_SESSION_COOKIE/);
   assert.match(marketingLayoutSource, /verifyKioskToken\(token\)/);
   assert.match(marketingLayoutSource, /redirect\("\/kiosk\/scan"\)/);
+});
+
+test("landing gives kiosk mode priority over owner dashboard redirects", () => {
+  assertSourceOrder(marketingLayoutSource, [
+    "if (await hasValidKioskSession())",
+    'redirect("/kiosk/scan")',
+    "const { user, restaurant } = await getCurrentOwnerState()",
+    "redirect(getOwnerDestination(restaurant))",
+  ]);
 });
 
 test("dashboard topbar has one functional home action and no dead notification button", () => {
