@@ -209,33 +209,6 @@
         "manualFallback": "Manual dish selection remains available in tablet mode so service does not stop."
       }
     },
-    "stubs": {
-      "feedback": {
-        "title": "Feedback",
-        "description": "This is where you’ll see every rating your customers leave, dish by dish."
-      },
-      "menu": {
-        "title": "Menu",
-        "description": "This is where you’ll manage your dishes and receipt abbreviations."
-      },
-      "tablet": {
-        "title": "Tablet",
-        "description": "This is where you’ll pair and monitor the in-restaurant tablet."
-      },
-      "team": {
-        "title": "Team",
-        "description": "This is where you’ll invite staff and assign their roles."
-      },
-      "settings": {
-        "title": "Settings",
-        "description": "This is where you’ll manage restaurant settings and your plan."
-      },
-      "profile": {
-        "title": "Profile",
-        "description": "This is where you’ll manage your personal details and access."
-      },
-      "comingSoon": "Coming soon."
-    },
     "menu": {
       "title": "Menu",
       "emptyEyebrow": "No items added",
