@@ -388,6 +388,32 @@ Return only the insight text, no explanation.
 - They negotiate amongst themselves who taps what
 - Future enhancement: split bill mode (post-MVP)
 
+## Currency display
+
+All menu item prices are stored in BGN in the `menu_items.price` column. EUR is always derived on the fly and never stored.
+
+### Fixed conversion ratio
+
+**1 EUR = 1.95583 BGN** — this is the Bulgarian National Bank's legally-mandated fixed rate for the euro changeover period. It does not change.
+
+The constant and helper functions live in `lib/menu/currency.ts`:
+
+```ts
+export const BGN_PER_EUR = 1.95583;
+export function bgnToEur(bgn: number): number { ... }
+export function formatBgn(value: number): string { ... }
+export function formatEur(value: number): string { ... }
+```
+
+**Do not redefine `BGN_PER_EUR` anywhere else in the codebase.** Import it from `lib/menu/currency.ts`.
+
+### Display rule
+
+- **BGN primary** — larger text, mono numerals, shown in full (e.g. `12.50`).
+- **EUR secondary** — smaller text, muted color (`var(--ink-mute)`), prefix `≈`, e.g. `≈ 6.39 €`.
+
+The `eurAbbrev` i18n key (`€`) is used so the abbreviation is translatable if needed.
+
 ## Webhook handling (Phase 2 — Stripe)
 
 ### Events to handle

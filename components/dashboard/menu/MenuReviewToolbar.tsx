@@ -1,9 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { RotateCcw, Search } from "lucide-react";
+import { FolderPlus, RotateCcw, Search } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import type { CategoryFilter } from "@/lib/menu/types";
 
 type MenuReviewToolbarProps = {
@@ -14,19 +13,9 @@ type MenuReviewToolbarProps = {
   isSaving: boolean;
   onSearchQueryChange: (value: string) => void;
   onCategoryChange: (value: string | null) => void;
+  onAddCategory: () => void;
   onStartOverClick: () => void;
 };
-
-function chipClass(active: boolean) {
-  const base =
-    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition";
-
-  if (active) {
-    return `${base} border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)]`;
-  }
-
-  return `${base} border-[var(--rule)] bg-[var(--paper)] text-[var(--ink-2)] hover:border-[var(--ink-mute)] hover:text-[var(--ink)]`;
-}
 
 export function MenuReviewToolbar({
   searchQuery,
@@ -36,64 +25,92 @@ export function MenuReviewToolbar({
   isSaving,
   onSearchQueryChange,
   onCategoryChange,
+  onAddCategory,
   onStartOverClick,
 }: MenuReviewToolbarProps) {
   const t = useTranslations("dashboard.menu");
 
   return (
-    <div className="sticky top-[56px] z-30 border-b border-[var(--rule)] bg-[color-mix(in_oklab,var(--bg)_92%,transparent)] px-9 py-2.5 backdrop-blur-sm max-md:px-5">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex w-[280px] items-center gap-2 rounded-lg border border-[var(--rule)] bg-[var(--paper)] px-3 py-1.5 text-[var(--ink-mute)] max-md:w-full">
-          <Search className="h-3.5 w-3.5" strokeWidth={1.75} />
-          <input
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-[var(--ink)] outline-none placeholder:text-[var(--ink-mute)]"
+    <div className="sticky top-0 z-30 mt-10 -mx-10 border-b border-[var(--rule)] bg-[var(--bg)] px-10 py-4 max-md:-mx-6 max-md:px-6 max-w-none">
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Search */}
+        <label className="relative flex max-w-[320px] flex-1 items-center">
+          <Search
+            size={16}
+            strokeWidth={1.5}
+            className="pointer-events-none absolute left-3 text-[var(--ink-mute)]"
           />
-        </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="min-h-10 w-full rounded border border-[var(--rule)] bg-[var(--paper)] pl-9 pr-3 font-[var(--f-ui)] text-[14px] text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--ink-mute)] focus:border-[var(--accent)]"
+          />
+        </label>
 
-        <div className="ml-1 flex flex-wrap gap-1">
+        {/* Category chips */}
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => onCategoryChange(null)}
-            className={chipClass(selectedCategoryKey === null)}
+            className={
+              selectedCategoryKey === null
+                ? "inline-flex items-center gap-2 rounded-full border border-[var(--ink)] bg-[var(--ink)] px-3.5 py-1.5 font-[var(--f-ui)] text-[13px] font-medium text-[var(--paper)]"
+                : "inline-flex items-center gap-2 rounded-full border border-[var(--rule)] bg-[var(--paper)] px-3.5 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)]"
+            }
           >
             {t("chipAll")}
-            <span className="font-[var(--f-mono)] text-[10px] opacity-70">
+            <span className="font-[var(--f-mono)] text-[11px] opacity-70">
               {totalItems}
             </span>
           </button>
-          {allCategories.map((category) => (
+
+          {allCategories.map((cat) => (
             <button
-              key={category.key || "__uncategorized"}
+              key={cat.key || "__uncategorized"}
               type="button"
-              onClick={() => onCategoryChange(category.key)}
-              className={chipClass(selectedCategoryKey === category.key)}
+              onClick={() => onCategoryChange(cat.key)}
+              className={
+                selectedCategoryKey === cat.key
+                  ? "inline-flex items-center gap-2 rounded-full border border-[var(--ink)] bg-[var(--ink)] px-3.5 py-1.5 font-[var(--f-ui)] text-[13px] font-medium text-[var(--paper)]"
+                  : "inline-flex items-center gap-2 rounded-full border border-[var(--rule)] bg-[var(--paper)] px-3.5 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)]"
+              }
             >
               <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: category.color }}
+                className="size-2 rounded-full"
+                style={{ backgroundColor: cat.color }}
+                aria-hidden
               />
-              {category.displayName || t("uncategorized")}
-              <span className="font-[var(--f-mono)] text-[10px] opacity-70">
-                {category.count}
+              {cat.displayName || t("uncategorized")}
+              <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+                {cat.count}
               </span>
             </button>
           ))}
         </div>
 
-        <div className="flex-1" />
+        {/* New category button */}
+        <button
+          type="button"
+          onClick={onAddCategory}
+          disabled={isSaving}
+          className="ml-auto inline-flex items-center gap-1.5 rounded border border-[var(--accent)] px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--accent)] transition-colors hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] disabled:pointer-events-none disabled:opacity-50"
+        >
+          <FolderPlus size={14} strokeWidth={1.5} />
+          {t("newCategory")}
+        </button>
 
-        <Button
-          variant="outline"
+        {/* Start over — ghost */}
+        <button
+          type="button"
           onClick={onStartOverClick}
           disabled={isSaving}
-          className="h-8 gap-1.5 px-3 text-[13px]"
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--ink-mute)] transition-colors hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] disabled:pointer-events-none disabled:opacity-50"
         >
-          <RotateCcw className="h-3.5 w-3.5" />
+          <RotateCcw size={14} strokeWidth={1.5} />
           {t("startOver")}
-        </Button>
+        </button>
       </div>
     </div>
   );

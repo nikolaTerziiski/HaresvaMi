@@ -96,20 +96,29 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
 
 1. Start the app with `npm run dev`.
 2. Open `http://localhost:3000/register` and create an owner account, or open `http://localhost:3000/login` if the owner already exists.
-3. Create the restaurant during onboarding. The user-facing flow is Bulgarian-first, for example `Име на ресторанта` and `Продължи към таблото`.
-4. Open Dashboard -> `Меню`.
-5. Add menu items. For the manual path, use `Въведи ръчно`, add at least the required menu items, then `Запази менюто`.
-6. Open Dashboard -> `Таблет`.
-7. Create a tablet session:
-   - check that the top of the page shows the setup steps: name device, create link, open on tablet, connected
-   - enter `Име на устройството`, for example `Таблет на бара`
-   - click `Създай връзка за таблет`
-   - use `Копирай връзката` or `Отвори връзката`
-   - optionally test `Стартирай на това устройство`; it should sign out this browser and open tablet mode here
-8. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
-9. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
-10. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
-11. On `/kiosk/scan`, submit manual feedback:
+3. Complete the restaurant setup form. After successful creation the app **auto-redirects to `/dashboard/menu`** — verify this redirect happens without a manual navigation step.
+4. On the empty-state menu page:
+   - Verify the first-time empty state shows the eyebrow, title, subtitle, and two entry paths (AI upload and manual entry).
+   - Click **"Готово засега"** and verify it dismisses the empty state without error and that the page remains navigable.
+   - Return to the menu page and use **"Въведи ръчно"** to add at least the required menu items.
+5. Test new category creation: click **"+ Нова категория"** in the toolbar and verify a new category card appears with an editable name field.
+6. Test category rename: click an existing category name inline and rename it; verify the change persists after save.
+7. Test item move-to-category: use the per-row "move to category" popover to reassign an item; verify it appears under the new category without delete-and-re-add.
+8. Click **Запази менюто** and verify:
+   - The **top success banner** ("Успешно запазено") slides in at the top of the page.
+   - The banner auto-dismisses after ~5 seconds.
+   - The **bottom unsaved-changes bar** clears once the new save baseline is set.
+9. Open Dashboard -> `Таблет`.
+10. Create a tablet session:
+    - check that the top of the page shows the setup steps: name device, create link, open on tablet, connected
+    - enter `Име на устройството`, for example `Таблет на бара`
+    - click `Създай връзка за таблет`
+    - use `Копирай връзката` or `Отвори връзката`
+    - optionally test `Стартирай на това устройство`; it should sign out this browser and open tablet mode here
+11. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
+12. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
+13. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
+14. On `/kiosk/scan`, submit manual feedback:
     - click `Избери ръчно`
     - select at least one menu item
     - click `Продължи с избраните`
@@ -119,13 +128,13 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - rate at least one item from 1 to 5 stars, or choose the secondary `Харесва ми` / `Не ми харесва`
     - click `Готово`
     - verify the thank-you screen auto-resets back to the staff preparation screen
-12. Return to the owner browser and open Dashboard -> `Отзиви`.
-13. Verify the new feedback appears in the dashboard after refresh if needed.
-14. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
-15. Return to Dashboard -> `Таблет`.
-16. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
-17. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
-18. Verify revoked access fails:
+15. Return to the owner browser and open Dashboard -> `Отзиви`.
+16. Verify the new feedback appears in the dashboard after refresh if needed.
+17. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
+18. Return to Dashboard -> `Таблет`.
+19. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
+20. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
+21. Verify revoked access fails:
     - `/kiosk/scan` should show `Таблетът не е свързан.`
     - the old connect link should show the invalid/expired tablet-link page
 

@@ -347,6 +347,51 @@ There is no `tailwind.config.ts` in the current app. Tailwind v4 reads project t
 }
 ```
 
+## Menu management surface
+
+The menu editor (`/dashboard/menu`) uses a hybrid card layout that differs from the generic dashboard card pattern. Read this section before touching any menu UI file.
+
+### Hybrid category card
+
+Each menu category renders as a full-page-width rounded card with:
+
+- **Colored dot header** — a small filled circle in the category's assigned color, followed by the category name. The name is click-to-edit inline; clicking it switches to an `<input>` in place, saving on blur or Enter.
+- **Tinted background** — `background: color-mix(in srgb, var(--category-color) 4%, var(--paper))`. The 4% tint is subtle enough to feel warm, not garish.
+- **Divider-separated item rows inside** — each item sits in a row separated by a 1 px `var(--rule)` line. No nested card borders.
+- **Full page width** — matches the sticky unsaved-changes bar at the bottom so the page feels flush.
+
+### Price display
+
+All prices are stored in BGN. The menu item rows show:
+
+- BGN as the primary value — larger text, mono font (`--f-mono`), e.g. `12.50`.
+- EUR derived and displayed underneath — smaller, `text-[var(--ink-mute)]`, formatted as `≈ X.XX €`.
+- Use `lib/menu/currency.ts` for the conversion. Never redefine `BGN_PER_EUR` in a component.
+
+### Validation flash pattern
+
+When a price input transitions from valid to invalid (e.g. the user clears the field), the input border flashes red using the `flash-error` keyframe defined in `app/globals.css`. The animation fires **on the error transition**, not continuously while the field is in an invalid state. This avoids a pulsing red border that would feel aggressive. Apply the keyframe class only when the error first appears and remove it after the animation completes.
+
+### Success banner pattern
+
+After a successful save, `MenuSaveBanner` renders at the top of the viewport:
+
+- Position: top of the main content area (below the nav), full width.
+- Background: `bg-[var(--good)]` (muted green).
+- Text color: `text-[var(--paper)]`.
+- Animation: slides in via `banner-enter` keyframe, slides out via `banner-exit` keyframe (both defined in `app/globals.css`).
+- Auto-dismiss: the parent (`useMenuManagerFlow`) sets `show = false` after 5 seconds, triggering the exit animation.
+
+### Keyframes in `app/globals.css`
+
+Three keyframes support the menu surface:
+
+- `flash-error` — brief red border flash on input error transition.
+- `banner-in` — banner slides down from above on enter.
+- `banner-out` — banner slides up and fades on exit.
+
+Reference these keyframe names in Tailwind `animate-*` utilities or inline `animation:` declarations. Do not duplicate the definitions.
+
 ## Design system enforcement checklist
 
 Before merging any UI code, verify:

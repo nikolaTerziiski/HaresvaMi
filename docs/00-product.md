@@ -19,6 +19,8 @@ But generic "rate your visit 1–5" feedback is low-signal noise. The real value
 
 ## The solution
 
+After registration the owner completes a short restaurant setup form and is automatically forwarded to `/dashboard/menu` — the activation moment where they build their menu before anything else. A "Готово засега" affordance lets them skip menu setup and return later, but the default path lands them in the menu editor immediately so the product delivers value from the first session.
+
 A tablet sits at the checkout. The owner is logged in, kiosk mode is active. When a customer pays:
 
 1. Waiter taps "Сканирай бона" (scan receipt)
@@ -150,3 +152,14 @@ Break-even on personal time: probably never on this product alone. This is a sta
 - Not a delivery feedback tool
 
 Stay focused. Resist scope creep. If a feature doesn't help Дани learn what customers think of his кебапче, it doesn't ship in v1.
+
+## Menu setup as activation moment
+
+The menu is the first thing an owner configures after creating their restaurant. Without menu items, the kiosk cannot present per-dish ratings and the feedback loop has no value. For this reason, completing restaurant setup auto-forwards to `/dashboard/menu` rather than the generic dashboard.
+
+The empty-state menu page has two paths:
+
+- **AI upload** — owner photographs or uploads their existing printed menu; Gemini extracts items.
+- **Manual entry** — owner types items one by one.
+
+Both paths are available from the same empty state. A "Готово засега" button lets the owner skip for now without friction and return later. The kiosk flow blocks entry if no menu items exist, pointing the owner back to `/dashboard/menu` to complete setup.

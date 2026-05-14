@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -53,6 +53,12 @@ export function useMenuManagerFlow({
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(
     null,
   );
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [showSaveBanner, setShowSaveBanner] = useState(false);
+
+  // Mutable baseline used for hasUnsavedChanges comparison.
+  // Stored in a ref so updates don't cause re-renders on their own.
+  const baselineRef = useRef<InitialMenuItem[]>(initialItems);
 
   const validationMessages = useMemo(
     () => ({
@@ -69,8 +75,9 @@ export function useMenuManagerFlow({
   const hasUnsavedChanges = useMemo(
     () =>
       removedExistingIds.length > 0 ||
-      rowsDifferFromInitial(items, initialItems),
-    [items, removedExistingIds, initialItems],
+      rowsDifferFromInitial(items, baselineRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items, removedExistingIds],
   );
   const totalItems = useMemo(
     () => items.filter((item) => !isBlankNewRow(item)).length,
@@ -146,7 +153,7 @@ export function useMenuManagerFlow({
   }
 
   function handleUndo() {
-    setItems(createRowsFromInitialItems(initialItems));
+    setItems(createRowsFromInitialItems(baselineRef.current));
     setRemovedExistingIds([]);
     setError(null);
   }
@@ -179,6 +186,45 @@ export function useMenuManagerFlow({
     });
   }
 
+  function handleAddCategory() {
+    const existingNames = new Set(allCategories.map((c) => c.displayName));
+    const baseName = t("newCategory");
+    let name = baseName;
+    let counter = 2;
+    while (existingNames.has(name)) {
+      name = `${baseName} ${counter}`;
+      counter++;
+    }
+    setItems((currentItems) => [...currentItems, createEmptyRow(name)]);
+  }
+
+  function handleRenameCategory(oldCategory: string, newCategory: string) {
+    const trimmedNew = newCategory.trim();
+    if (!trimmedNew) return;
+
+    const existingNames = new Set(allCategories.map((c) => c.displayName));
+    // Don't allow renaming to an already-existing different category
+    if (trimmedNew !== oldCategory && existingNames.has(trimmedNew)) return;
+
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.category === oldCategory
+          ? { ...item, category: trimmedNew }
+          : item,
+      ),
+    );
+  }
+
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    setShowSaveBanner(true);
+    const timer = setTimeout(() => {
+      setShowSaveBanner(false);
+      setLastSavedAt(null);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [lastSavedAt]);
+
   async function handleSave() {
     const currentValidation = validateRows(items, validationMessages);
 
@@ -204,7 +250,40 @@ export function useMenuManagerFlow({
         removedExistingIds,
       });
 
-      router.push("/dashboard");
+      // Build a new baseline from the saved items so hasUnsavedChanges
+      // returns false immediately without waiting for a server re-fetch.
+      // For items that already had a persistedId we keep it; for newly
+      // inserted rows we use the local row id as a placeholder (they will
+      // get real DB ids on the next router.refresh()).
+      const newBaseline: InitialMenuItem[] = items
+        .filter((row) => !isBlankNewRow(row))
+        .map((row, index) => ({
+          id: row.persistedId ?? row.id,
+          name_bg: row.name_bg,
+          category: row.category || null,
+          price:
+            currentValidation.validItems.find(
+              (v) => v.persistedId === row.persistedId,
+            )?.price ?? null,
+          description_bg: row.description_bg || null,
+          sort_order: index,
+        }));
+
+      baselineRef.current = newBaseline;
+
+      // Re-sync items to use the new baseline ids as persistedIds
+      setItems((currentItems) =>
+        currentItems.map((row) => ({
+          ...row,
+          persistedId: row.persistedId ?? row.id,
+        })),
+      );
+      setRemovedExistingIds([]);
+      setLastSavedAt(new Date());
+      setIsSaving(false);
+
+      // Refresh to pull fresh DB rows (new items get real UUIDs)
+      router.refresh();
     } catch (saveError) {
       console.error(saveError);
       setError(t("errors.save"));
@@ -218,6 +297,8 @@ export function useMenuManagerFlow({
     isSaving,
     canSave,
     hasUnsavedChanges,
+    lastSavedAt,
+    showSaveBanner,
     totalItems,
     allCategories,
     groupedItems,
@@ -235,6 +316,8 @@ export function useMenuManagerFlow({
     handleUndo,
     handleItemChange,
     handleAddItemInCategory,
+    handleAddCategory,
+    handleRenameCategory,
     handleRemoveItem,
     handleSave,
   };

@@ -143,6 +143,48 @@
   --radius: 0.5rem; /* 8px, matches radius-md */
 }
 
+@keyframes flash-error {
+  0%,
+  100% {
+    border-color: var(--rule);
+    background-color: transparent;
+  }
+  50% {
+    border-color: var(--bad);
+    background-color: color-mix(in srgb, var(--bad) 6%, transparent);
+  }
+}
+.flash-error {
+  animation: flash-error 600ms ease-in-out 2;
+}
+
+@keyframes banner-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes banner-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+.banner-enter {
+  animation: banner-in 200ms ease-out forwards;
+}
+.banner-exit {
+  animation: banner-out 200ms ease-in forwards;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

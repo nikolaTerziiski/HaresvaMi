@@ -101,7 +101,10 @@ haresvami/
 │   │   ├── InsightCard.tsx
 │   │   ├── DishTrendChart.tsx
 │   │   ├── FeedbackList.tsx
-│   │   └── EmptyState.tsx
+│   │   ├── EmptyState.tsx
+│   │   └── menu/                   # Menu management components (hybrid card design)
+│   │       ├── MenuSaveBanner.tsx  # Top success banner, slides in for 5 s after save
+│   │       └── ...                 # State-specific components (shell, toolbar, category cards, item rows, empty state)
 │   ├── menu/
 │   │   ├── MenuItemForm.tsx
 │   │   ├── MenuItemCard.tsx
@@ -122,6 +125,8 @@ haresvami/
 │   │   │   └── claude.ts           # Backup provider
 │   │   ├── prompts.ts              # Receipt extraction prompt
 │   │   └── generate-insights.ts    # Plain-Bulgarian insights (Phase 3)
+│   ├── menu/
+│   │   └── currency.ts             # BGN↔EUR helpers at fixed 1.95583 ratio
 │   ├── i18n/
 │   │   ├── config.ts
 │   │   ├── messages/
@@ -185,6 +190,15 @@ haresvami/
 ```
 
 The owner dashboard shell redirects `/` to `/dashboard` when an owner session is already active. The kiosk cookie is independent from the owner session so a checkout tablet can stay in kiosk mode without showing the public landing page again.
+
+After a new restaurant is created via `RestaurantSetupForm`, the owner is automatically forwarded to `/dashboard/menu` rather than the generic dashboard, making menu setup the first activation step.
+
+## Notable helpers
+
+- **`lib/menu/currency.ts`** — BGN↔EUR conversion at the legally-mandated fixed ratio (1 EUR = 1.95583 BGN). Exports `BGN_PER_EUR`, `bgnToEur`, `formatBgn`, `formatEur`. Use this helper everywhere prices are displayed; do not redefine the constant in components.
+- **`components/dashboard/menu/MenuSaveBanner.tsx`** — Client component that renders a top-of-viewport success banner after menu save. Receives a `show: boolean` prop and handles enter/exit animation internally. Uses the `banner-enter` / `banner-exit` CSS classes defined in `app/globals.css`.
+
+The `components/dashboard/menu/design-preview/` scaffolding folder and the `/dashboard/menu-preview` route were transient design exploration artifacts. Both were removed once the real hybrid-card components were integrated.
 
 ## Environment variables
 

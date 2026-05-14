@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
-import { FileText, Keyboard, Sparkles } from "lucide-react";
+import { ChevronRight, Plus, Sparkles, Upload } from "lucide-react";
 
 interface MenuEmptyStateProps {
   onFileSelect: (file: File) => void;
@@ -24,153 +24,123 @@ export function MenuEmptyState({
   };
 
   return (
-    <div className="w-full">
-      <section className="grid items-end gap-10 border-b border-[var(--rule-soft,var(--rule))] px-9 pt-9 pb-6 md:grid-cols-[1fr_auto] max-md:px-5">
-        <div>
-          <span className="font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)]">
-            {t("emptyStepper")}
-          </span>
-          <h1 className="mt-2 font-[var(--f-display)] text-[44px] font-normal leading-[1.02] tracking-[-0.02em] text-[var(--ink)] max-md:text-[32px]">
-            {t.rich("emptyTitle", {
-              em: (chunks) => (
-                <em className="italic text-[var(--accent)]">{chunks}</em>
-              ),
-            })}
-          </h1>
-          <p className="mt-2 max-w-[560px] text-[15px] leading-[1.55] text-[var(--ink-2)]">
-            {t("emptyLead")}
-          </p>
-        </div>
-        <StatBlock products={0} categories={0} />
-      </section>
+    <div className="mx-auto w-full max-w-[1080px] px-10 py-12 pb-20 max-md:px-6 max-md:py-8">
+      {/* Header */}
+      <header className="max-w-[640px]">
+        <p className="font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
+          {t("firstTimeEyebrow")}
+        </p>
+        <h1 className="mt-5 font-[var(--f-display)] text-[44px] font-normal leading-[1.05] tracking-[-0.01em] text-[var(--ink)] max-md:text-[34px]">
+          {t.rich("firstTimeTitle", {
+            em: (chunks) => <em className="italic">{chunks}</em>,
+          })}
+        </h1>
+        <p className="mt-4 max-w-[520px] text-[15px] leading-[1.6] text-[var(--ink-2)]">
+          {t("firstTimeSubtitle")}
+        </p>
+      </header>
 
-      <div className="mx-auto max-w-[960px] px-9 pt-7 pb-16 max-md:px-5">
-        <div className="grid gap-5 md:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="group relative flex flex-col gap-3 overflow-hidden rounded-[14px] border border-[var(--rule)] bg-[linear-gradient(160deg,var(--paper)_0%,var(--bg-2,var(--rule))_100%)] p-8 pt-8 text-left transition hover:-translate-y-[2px] hover:border-[var(--ink)] hover:shadow-[0_30px_50px_-30px_rgba(26,21,18,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+      {/* Section divider */}
+      <div className="mt-12 flex items-center gap-4" aria-hidden>
+        <span className="h-px w-10 bg-[var(--accent)]" />
+        <span className="font-[var(--f-mono)] text-[11px] uppercase tracking-[0.18em] text-[var(--ink-mute)]">
+          {t("emptyStepper")}
+        </span>
+        <span className="h-px flex-1 bg-[var(--rule)]" />
+      </div>
+
+      {/* Two entry-path cards */}
+      <div className="mt-6 grid grid-cols-[1.05fr_0.95fr] gap-6 max-[900px]:grid-cols-1">
+        {/* Primary: AI upload */}
+        <article className="relative flex flex-col rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-6">
+          <div className="flex items-center gap-2 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--accent)]">
+            <Sparkles size={14} strokeWidth={1.5} />
+            {t("aiRibbon")}
+          </div>
+          <h2 className="mt-4 font-[var(--f-display)] text-[28px] font-normal leading-[1.15] text-[var(--ink)]">
+            {t.rich("aiCardTitle", {
+              em: (chunks) => <em className="italic">{chunks}</em>,
+            })}
+          </h2>
+          <p className="mt-2 max-w-[420px] text-[14px] leading-[1.55] text-[var(--ink-2)]">
+            {t("aiCardDesc")}
+          </p>
+
+          {/* Drop zone */}
+          <label
+            htmlFor="menu-file-empty"
+            className="mt-6 flex cursor-pointer flex-col items-center justify-center gap-4 rounded border-2 border-dashed border-[var(--accent)] bg-[var(--bg)] px-6 py-10 text-center transition-colors hover:bg-[var(--bg-2)]"
           >
-            <span className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-2.5 py-1 font-[var(--f-mono)] text-[9px] uppercase tracking-[0.1em] text-[var(--paper)]">
-              {t("aiRibbon")}
+            <span className="grid size-12 place-items-center rounded-full border border-[var(--rule)] bg-[var(--paper)] text-[var(--accent)]">
+              <Upload size={20} strokeWidth={1.5} />
             </span>
-            <span className="grid h-11 w-11 place-items-center rounded-[12px] border border-[var(--accent)] bg-[var(--accent)] text-[var(--paper)]">
-              <Sparkles className="h-5 w-5" strokeWidth={1.75} />
+            <span className="text-[14px] text-[var(--ink-2)]">
+              {t("aiDemoSource")}
             </span>
-            <h3 className="font-[var(--f-display)] text-[26px] font-normal leading-[1.1] tracking-[-0.01em] text-[var(--ink)]">
-              {t.rich("aiCardTitle", {
-                em: (chunks) => (
-                  <em className="italic text-[var(--accent)]">{chunks}</em>
-                ),
-              })}
-            </h3>
-            <p className="max-w-[320px] text-[13px] leading-[1.55] text-[var(--ink-2)]">
-              {t("aiCardDesc")}
-            </p>
-            <div className="flex flex-col gap-1 rounded-lg border border-dashed border-[var(--rule)] bg-[var(--paper)] px-3.5 py-3 font-[var(--f-mono)] text-[11px] leading-[1.4] text-[var(--ink-2)]">
-              <span>
-                {t("aiDemoSource")}{" "}
-                <span className="text-[var(--accent)]">→</span>
-              </span>
-              <span className="text-[var(--ink)]">{t("aiDemoResult")}</span>
-            </div>
-            <div className="mt-auto flex gap-3.5 border-t border-dashed border-[var(--rule)] pt-3 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--ink-mute)]">
-              <span className="inline-flex items-center gap-1">
-                <FileText className="h-3 w-3" /> PDF
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <FileText className="h-3 w-3" /> {t("aiDemoTagPhoto")}
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <FileText className="h-3 w-3" /> XLS
-              </span>
-            </div>
-            <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4.5 py-2.5 text-[13px] font-medium text-[var(--paper)]">
-              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+            <span className="rounded bg-[var(--accent)] px-6 py-2.5 font-[var(--f-ui)] text-[14px] font-medium text-[var(--paper)] transition-colors hover:bg-[var(--ink)]">
               {t("aiCardCta")}
             </span>
             <input
+              id="menu-file-empty"
               type="file"
               ref={fileInputRef}
-              className="hidden"
               accept="image/*,application/pdf"
+              className="sr-only"
               onChange={handleFileChange}
             />
-          </button>
+          </label>
+
+          <p className="mt-4 font-[var(--f-mono)] text-[11px] tracking-wide text-[var(--ink-mute)]">
+            JPG · PNG · PDF · до 10 MB
+          </p>
+        </article>
+
+        {/* Secondary: Manual entry */}
+        <article className="flex flex-col rounded-lg border border-[var(--rule)] bg-[var(--paper)] p-6">
+          <div className="flex items-center gap-2 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--ink-mute)]">
+            <Plus size={14} strokeWidth={1.5} />
+            {t("manualCardTitle")}
+          </div>
+          <h2 className="mt-4 font-[var(--f-display)] text-[28px] font-normal leading-[1.15] text-[var(--ink)]">
+            {t.rich("manualCardTitle", {
+              em: (chunks) => <em className="italic">{chunks}</em>,
+            })}
+          </h2>
+          <p className="mt-2 max-w-[420px] text-[14px] leading-[1.55] text-[var(--ink-2)]">
+            {t("manualCardDesc")}
+          </p>
+
+          <ol className="mt-6 space-y-3 rounded border border-[var(--rule)] bg-[var(--bg)] p-5">
+            <li className="flex items-baseline gap-4 text-[13px] leading-[1.5] text-[var(--ink-2)]">
+              <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+                01
+              </span>
+              <span>{t("manualDemoLine1")}</span>
+            </li>
+            <li className="flex items-baseline gap-4 text-[13px] leading-[1.5] text-[var(--ink-2)]">
+              <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+                02
+              </span>
+              <span>{t("descriptionPlaceholder")}</span>
+            </li>
+            <li className="flex items-baseline gap-4 text-[13px] leading-[1.5] text-[var(--ink-2)]">
+              <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+                03
+              </span>
+              <span>{t("manualCardCta")}</span>
+            </li>
+          </ol>
 
           <button
             type="button"
             onClick={onManualEntry}
-            className="group relative flex flex-col gap-3 overflow-hidden rounded-[14px] border border-[var(--rule)] bg-[var(--paper)] p-8 pt-8 text-left transition hover:-translate-y-[2px] hover:border-[var(--ink)] hover:shadow-[0_30px_50px_-30px_rgba(26,21,18,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ink)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+            className="mt-6 inline-flex w-fit items-center gap-2 self-start rounded border border-[var(--ink)] bg-[var(--paper)] px-5 py-2.5 font-[var(--f-ui)] text-[14px] font-medium text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--paper)]"
           >
-            <span className="grid h-11 w-11 place-items-center rounded-[12px] border border-[var(--rule)] bg-[var(--bg)] text-[var(--accent)]">
-              <Keyboard className="h-5 w-5" strokeWidth={1.75} />
-            </span>
-            <h3 className="font-[var(--f-display)] text-[26px] font-normal leading-[1.1] tracking-[-0.01em] text-[var(--ink)]">
-              {t("manualCardTitle")}
-            </h3>
-            <p className="max-w-[320px] text-[13px] leading-[1.55] text-[var(--ink-2)]">
-              {t("manualCardDesc")}
-            </p>
-            <div className="flex flex-col gap-1 rounded-lg border border-dashed border-[var(--rule)] bg-[var(--bg)] px-3.5 py-3 font-[var(--f-mono)] text-[11px] leading-[1.4] text-[var(--ink-2)]">
-              <span>{t("manualDemoLine1")}</span>
-              <span>{t("manualDemoLine2")}</span>
-            </div>
-            <div className="mt-auto flex gap-3.5 border-t border-dashed border-[var(--rule)] pt-3 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.06em] text-[var(--ink-mute)]">
-              <span className="inline-flex items-center gap-1">
-                <Keyboard className="h-3 w-3" /> {t("manualDemoTagKeyboard")}
-              </span>
-              <span>Tab / Enter</span>
-            </div>
-            <span className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-lg bg-[var(--ink)] px-4.5 py-2.5 text-[13px] font-medium text-[var(--paper)]">
-              {t("manualCardCta")}
-            </span>
+            {t("manualCardCta")}
+            <ChevronRight size={16} strokeWidth={1.5} />
           </button>
-        </div>
-
-        <div className="mt-8 grid gap-6 border-t border-[var(--rule-soft,var(--rule))] pt-6 md:grid-cols-3">
-          <HelpCell title={t("helpTitle1")} body={t("helpBody1")} />
-          <HelpCell title={t("helpTitle2")} body={t("helpBody2")} />
-          <HelpCell title={t("helpTitle3")} body={t("helpBody3")} />
-        </div>
+        </article>
       </div>
-    </div>
-  );
-}
-
-function StatBlock({
-  products,
-  categories,
-}: {
-  products: number;
-  categories: number;
-}) {
-  const t = useTranslations("dashboard.menu");
-  return (
-    <div className="flex items-end gap-7 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.08em] text-[var(--ink-mute)]">
-      <div>
-        <span className="block font-[var(--f-display)] text-[40px] italic leading-[0.9] tracking-[-0.02em] text-[var(--ink)]">
-          {products}
-        </span>
-        {t("statProducts")}
-      </div>
-      <div>
-        <span className="block font-[var(--f-display)] text-[40px] italic leading-[0.9] tracking-[-0.02em] text-[var(--ink)]">
-          {categories}
-        </span>
-        {t("statCategories")}
-      </div>
-    </div>
-  );
-}
-
-function HelpCell({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="text-[13px] leading-[1.55] text-[var(--ink-2)]">
-      <b className="mb-1 block font-[var(--f-display)] text-[18px] font-medium tracking-[-0.01em] text-[var(--ink)]">
-        {title}
-      </b>
-      {body}
     </div>
   );
 }
