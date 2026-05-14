@@ -67,7 +67,7 @@ export function RestaurantSetupForm({
     }
 
     if (existingRestaurant) {
-      router.replace("/dashboard");
+      router.replace("/dashboard/menu");
       router.refresh();
       return;
     }
@@ -105,7 +105,7 @@ export function RestaurantSetupForm({
       return;
     }
 
-    router.replace("/dashboard");
+    router.replace("/dashboard/menu");
     router.refresh();
   });
 

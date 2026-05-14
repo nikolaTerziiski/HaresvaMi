@@ -284,6 +284,10 @@
         "add": "Add row",
         "remove": "Remove"
       },
+      "firstTimeEyebrow": "Step 02 · Menu",
+      "firstTimeTitle": "Now let's add your menu.",
+      "firstTimeSubtitle": "This is the step before customers start rating your dishes. Upload a photo or enter items by hand — whichever feels easier.",
+      "skipForNow": "Done for now — I'll do this later",
       "errors": {
         "upload": "Failed to read menu. Try a clearer photo.",
         "fileTooLarge": "The file is too large. Upload an image or PDF up to 10 MB.",
