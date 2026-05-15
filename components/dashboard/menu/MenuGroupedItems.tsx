@@ -13,6 +13,10 @@ type MenuGroupedItemsProps = {
   isFiltering: boolean;
   validation: ValidationResult;
   categories: string[];
+  focusItemId?: string;
+  readOnly?: boolean;
+  expandedCategories: Record<string, boolean>;
+  onToggleCategory: (key: string) => void;
   onAddItemInCategory: (categoryName: string) => void;
   onAddCategory: () => void;
   onItemChange: (id: string, field: MenuItemField, value: string) => void;
@@ -25,6 +29,10 @@ export function MenuGroupedItems({
   isFiltering,
   validation,
   categories,
+  focusItemId,
+  readOnly = false,
+  expandedCategories,
+  onToggleCategory,
   onAddItemInCategory,
   onAddCategory,
   onItemChange,
@@ -45,6 +53,10 @@ export function MenuGroupedItems({
             group={group}
             validation={validation}
             categories={categories}
+            focusItemId={focusItemId}
+            readOnly={readOnly}
+            expanded={expandedCategories[group.key] ?? false}
+            onToggleExpand={() => onToggleCategory(group.key)}
             onAddItemInCategory={onAddItemInCategory}
             onAddCategory={onAddCategory}
             onItemChange={onItemChange}

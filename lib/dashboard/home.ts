@@ -4,6 +4,7 @@ import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { getCurrentOwnerState, type OwnerRestaurant } from "@/lib/auth/owner";
+import { MIN_MENU_ITEMS_FOR_NEXT_STEP } from "@/lib/menu/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const FREE_TIER_FEEDBACK_LIMIT = 50;
@@ -151,7 +152,7 @@ export const getDashboardHomeData = cache(
     // tablet feature ships.
     const tabletPaired = false;
 
-    const hasMenu = menuCount >= 5;
+    const hasMenu = menuCount >= MIN_MENU_ITEMS_FOR_NEXT_STEP;
     const hasFeedback = feedbackCount > 0;
 
     let state: ChecklistState;

@@ -90,6 +90,38 @@ export function categoryColorFor(name: string): string {
   return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
 }
 
+export function getDirtyRows(
+  items: MenuItemRow[],
+  baseline: InitialMenuItem[],
+): MenuItemRow[] {
+  const initialById = new Map(baseline.map((item) => [item.id, item]));
+  const dirty: MenuItemRow[] = [];
+
+  for (const row of items) {
+    if (!row.persistedId) {
+      if (!isBlankNewRow(row)) dirty.push(row);
+      continue;
+    }
+
+    const initialItem = initialById.get(row.persistedId);
+    if (!initialItem) {
+      dirty.push(row);
+      continue;
+    }
+
+    if (
+      row.name_bg !== initialItem.name_bg ||
+      (row.category || null) !== initialItem.category ||
+      row.price !== formatPrice(initialItem.price) ||
+      (row.description_bg || null) !== initialItem.description_bg
+    ) {
+      dirty.push(row);
+    }
+  }
+
+  return dirty;
+}
+
 export function rowsDifferFromInitial(
   items: MenuItemRow[],
   initial: InitialMenuItem[],

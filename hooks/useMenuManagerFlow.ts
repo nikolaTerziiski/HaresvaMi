@@ -13,12 +13,15 @@ import {
   saveMenuItems,
 } from "@/lib/menu/client-actions";
 import {
+  categoryKey,
   createEmptyRow,
   createRowsFromInitialItems,
+  getDirtyRows,
   isBlankNewRow,
   rowsDifferFromInitial,
 } from "@/lib/menu/format";
 import { buildCategoryFilters, buildGroupedItems } from "@/lib/menu/grouping";
+import { useMenuViewState } from "@/hooks/useMenuViewState";
 import type {
   InitialMenuItem,
   MenuItemField,
@@ -26,7 +29,7 @@ import type {
 } from "@/lib/menu/types";
 import { validateRows } from "@/lib/menu/validation";
 
-type MenuMode = "empty" | "uploading" | "review";
+type MenuMode = "empty" | "manual_starter" | "uploading" | "review";
 
 type UseMenuManagerFlowInput = {
   restaurantId: string;
@@ -50,15 +53,27 @@ export function useMenuManagerFlow({
   const [isSaving, setIsSaving] = useState(false);
   const [confirmStartOverOpen, setConfirmStartOverOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(
-    null,
-  );
+  const [selectedCategoryKeys, setSelectedCategoryKeys] = useState<
+    string[] | null
+  >(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showSaveBanner, setShowSaveBanner] = useState(false);
 
+  const {
+    editMode,
+    setEditMode,
+    expandedCategories,
+    toggleCategory,
+    setCategoryExpanded,
+    expandAllFromItems,
+    renameCategoryKey,
+  } = useMenuViewState(initialItems.length);
+
   // Mutable baseline used for hasUnsavedChanges comparison.
-  // Stored in a ref so updates don't cause re-renders on their own.
   const baselineRef = useRef<InitialMenuItem[]>(initialItems);
+
+  // Id of the first new row to autofocus after handleManualStart.
+  const focusItemIdRef = useRef<string | null>(null);
 
   const validationMessages = useMemo(
     () => ({
@@ -89,16 +104,34 @@ export function useMenuManagerFlow({
       buildGroupedItems({
         items,
         searchQuery,
-        selectedCategoryKey,
+        selectedCategoryKeys,
       }),
-    [items, searchQuery, selectedCategoryKey],
+    [items, searchQuery, selectedCategoryKeys],
   );
   const isFiltering =
-    searchQuery.trim().length > 0 || selectedCategoryKey !== null;
+    searchQuery.trim().length > 0 || selectedCategoryKeys !== null;
+
+  // True when there are unsaved changes but all dirty rows are in hidden categories.
+  const hasOnlyHiddenChanges = useMemo(() => {
+    if (!hasUnsavedChanges) return false;
+    if (selectedCategoryKeys === null) return false;
+    if (removedExistingIds.length > 0) return false;
+    const dirtyRows = getDirtyRows(items, baselineRef.current);
+    if (dirtyRows.length === 0) return false;
+    return dirtyRows.every(
+      (row) => !selectedCategoryKeys.includes(categoryKey(row.category)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasUnsavedChanges, items, selectedCategoryKeys, removedExistingIds]);
+
   const canSave =
     !isSaving &&
     !validation.hasErrors &&
     validation.validItems.length >= MIN_MENU_ITEMS_FOR_NEXT_STEP;
+
+  function clearCategoryFilter() {
+    setSelectedCategoryKeys(null);
+  }
 
   async function handleFileSelect(file: File) {
     if (file.size > MAX_MENU_FILE_SIZE_BYTES) {
@@ -117,6 +150,8 @@ export function useMenuManagerFlow({
       });
 
       setItems(newItems);
+      setEditMode(true);
+      expandAllFromItems(newItems);
       setMode("review");
     } catch (err) {
       console.error(err);
@@ -126,14 +161,26 @@ export function useMenuManagerFlow({
   }
 
   function handleManualEntry() {
-    setItems([
-      createEmptyRow(),
-      createEmptyRow(),
-      createEmptyRow(),
-      createEmptyRow(),
-      createEmptyRow(),
-    ]);
+    setMode("manual_starter");
+  }
+
+  function handleManualStart(categories: string[]) {
+    const newRows = categories
+      .map((cat) => cat.trim())
+      .filter(Boolean)
+      .map((cat) => createEmptyRow(cat));
+
+    if (newRows.length === 0) return;
+
+    focusItemIdRef.current = newRows[0].id;
+    setItems(newRows);
+    setEditMode(true);
+    expandAllFromItems(newRows);
     setMode("review");
+  }
+
+  function handleManualBack() {
+    setMode("empty");
   }
 
   function handleStartOver() {
@@ -147,7 +194,7 @@ export function useMenuManagerFlow({
     setItems([]);
     setError(null);
     setSearchQuery("");
-    setSelectedCategoryKey(null);
+    setSelectedCategoryKeys(null);
     setMode("empty");
     setConfirmStartOverOpen(false);
   }
@@ -168,6 +215,7 @@ export function useMenuManagerFlow({
 
   function handleAddItemInCategory(categoryName: string) {
     setItems((currentItems) => [...currentItems, createEmptyRow(categoryName)]);
+    if (categoryName) setCategoryExpanded(categoryKey(categoryName), true);
   }
 
   function handleRemoveItem(id: string) {
@@ -196,6 +244,7 @@ export function useMenuManagerFlow({
       counter++;
     }
     setItems((currentItems) => [...currentItems, createEmptyRow(name)]);
+    setCategoryExpanded(categoryKey(name), true);
   }
 
   function handleRenameCategory(oldCategory: string, newCategory: string) {
@@ -203,8 +252,9 @@ export function useMenuManagerFlow({
     if (!trimmedNew) return;
 
     const existingNames = new Set(allCategories.map((c) => c.displayName));
-    // Don't allow renaming to an already-existing different category
     if (trimmedNew !== oldCategory && existingNames.has(trimmedNew)) return;
+
+    renameCategoryKey(oldCategory, trimmedNew);
 
     setItems((currentItems) =>
       currentItems.map((item) =>
@@ -250,11 +300,6 @@ export function useMenuManagerFlow({
         removedExistingIds,
       });
 
-      // Build a new baseline from the saved items so hasUnsavedChanges
-      // returns false immediately without waiting for a server re-fetch.
-      // For items that already had a persistedId we keep it; for newly
-      // inserted rows we use the local row id as a placeholder (they will
-      // get real DB ids on the next router.refresh()).
       const newBaseline: InitialMenuItem[] = items
         .filter((row) => !isBlankNewRow(row))
         .map((row, index) => ({
@@ -271,7 +316,6 @@ export function useMenuManagerFlow({
 
       baselineRef.current = newBaseline;
 
-      // Re-sync items to use the new baseline ids as persistedIds
       setItems((currentItems) =>
         currentItems.map((row) => ({
           ...row,
@@ -281,8 +325,10 @@ export function useMenuManagerFlow({
       setRemovedExistingIds([]);
       setLastSavedAt(new Date());
       setIsSaving(false);
+      setSelectedCategoryKeys(null);
+      setEditMode(false);
+      // expandedCategories preserved as-is
 
-      // Refresh to pull fresh DB rows (new items get real UUIDs)
       router.refresh();
     } catch (saveError) {
       console.error(saveError);
@@ -297,6 +343,7 @@ export function useMenuManagerFlow({
     isSaving,
     canSave,
     hasUnsavedChanges,
+    hasOnlyHiddenChanges,
     lastSavedAt,
     showSaveBanner,
     totalItems,
@@ -304,14 +351,23 @@ export function useMenuManagerFlow({
     groupedItems,
     isFiltering,
     searchQuery,
-    selectedCategoryKey,
+    selectedCategoryKeys,
     validation,
     confirmStartOverOpen,
+    editMode,
+    expandedCategories,
     setConfirmStartOverOpen,
     setSearchQuery,
-    setSelectedCategoryKey,
+    setSelectedCategoryKeys,
+    setEditMode,
+    focusItemId: focusItemIdRef.current,
+    clearFocusItemId: () => {
+      focusItemIdRef.current = null;
+    },
     handleFileSelect,
     handleManualEntry,
+    handleManualStart,
+    handleManualBack,
     handleStartOver,
     handleUndo,
     handleItemChange,
@@ -320,6 +376,9 @@ export function useMenuManagerFlow({
     handleRenameCategory,
     handleRemoveItem,
     handleSave,
+    toggleCategory,
+    setCategoryExpanded,
+    clearCategoryFilter,
   };
 }
 

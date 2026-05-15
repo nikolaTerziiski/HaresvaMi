@@ -295,6 +295,36 @@
       "firstTimeSubtitle": "This is the step before customers start rating your dishes. Upload a photo or enter items by hand — whichever feels easier.",
       "skipForNow": "Done for now — I'll do this later",
       "descriptionPlaceholder": "Short description — fresh tomatoes, white cheese",
+      "categoryFilterMenuLabel": "Filter by category",
+      "categoryFilterMore": "{name} +{count}",
+      "aliasesButtonAria": "Manage aliases",
+      "aliasesTitle": "Aliases for {name}",
+      "aliasesEmpty": "No aliases yet. Add the first one below.",
+      "aliasesAddPlaceholder": "e.g. PK, keb, shop",
+      "aliasesAddButton": "Add",
+      "aliasesLearnedLabel": "learned",
+      "aliasesDuplicateError": "This alias already exists.",
+      "aliasesNotSavedHint": "Save the menu first to add aliases.",
+      "aliasesLoading": "Loading...",
+      "editToggle": {
+        "edit": "Edit menu",
+        "done": "Done"
+      },
+      "hiddenChangesHint": "Changes in a hidden category",
+      "showAll": "Show all",
+      "expandCategoryAria": "Toggle category {name}",
+      "manualStarter": {
+        "eyebrow": "Step 02 · Menu",
+        "title": "What do we start with?",
+        "subtitle": "Pick the categories you have in your menu. We'll add the dishes next.",
+        "suggestionsLabel": "Common categories",
+        "customPlaceholder": "Other category…",
+        "customAdd": "Add",
+        "continue": "Continue",
+        "back": "Back",
+        "selectedCount": "{count} selected",
+        "minOne": "Pick at least one category."
+      },
       "errors": {
         "upload": "Failed to read menu. Try a clearer photo.",
         "fileTooLarge": "The file is too large. Upload an image or PDF up to 10 MB.",
@@ -303,7 +333,7 @@
         "invalidPrice": "Price must be a number, for example 8.90.",
         "duplicateName": "This item is already added.",
         "fixBeforeSave": "Fix the highlighted fields before saving.",
-        "needMoreItems": "Add at least {count} items to continue.",
+        "needMoreItems": "Add at least one item to continue.",
         "save": "We could not save the menu. Please try again."
       }
     }

@@ -48,17 +48,17 @@ export function buildCategoryFilters(items: MenuItemRow[]): CategoryFilter[] {
 export function buildGroupedItems({
   items,
   searchQuery,
-  selectedCategoryKey,
+  selectedCategoryKeys,
 }: {
   items: MenuItemRow[];
   searchQuery: string;
-  selectedCategoryKey: string | null;
+  selectedCategoryKeys: string[] | null;
 }): CategoryGroup[] {
   const query = searchQuery.trim().toLocaleLowerCase("bg-BG");
   const filtered = items.filter((item) => {
     const key = categoryKey(item.category);
 
-    if (selectedCategoryKey !== null && key !== selectedCategoryKey) {
+    if (selectedCategoryKeys !== null && !selectedCategoryKeys.includes(key)) {
       return false;
     }
 

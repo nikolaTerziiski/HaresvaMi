@@ -295,6 +295,36 @@
       "firstTimeSubtitle": "Това е стъпката преди клиентите да започнат да оценяват ястията ти. Качи снимка или го въведи ръчно — както ти е удобно.",
       "skipForNow": "Готово засега — ще го направя по-късно",
       "descriptionPlaceholder": "Кратко описание — пресни домати, краве сирене",
+      "categoryFilterMenuLabel": "Филтър по категории",
+      "categoryFilterMore": "{name} +{count}",
+      "aliasesButtonAria": "Управление на псевдоними",
+      "aliasesTitle": "Псевдоними за {name}",
+      "aliasesEmpty": "Все още няма псевдоними. Добави първия по-долу.",
+      "aliasesAddPlaceholder": "напр. PK, кеб, шоп",
+      "aliasesAddButton": "Добави",
+      "aliasesLearnedLabel": "научен",
+      "aliasesDuplicateError": "Този псевдоним вече съществува.",
+      "aliasesNotSavedHint": "Запази менюто, за да добавиш псевдоними.",
+      "aliasesLoading": "Зарежда...",
+      "editToggle": {
+        "edit": "Редактирай менюто",
+        "done": "Готово"
+      },
+      "hiddenChangesHint": "Промени в скрита категория",
+      "showAll": "Покажи всички",
+      "expandCategoryAria": "Покажи/скрий категория {name}",
+      "manualStarter": {
+        "eyebrow": "Стъпка 02 · Меню",
+        "title": "С какво да започнем?",
+        "subtitle": "Избери категориите, които имаш в менюто. После ще добавим ястията.",
+        "suggestionsLabel": "Често използвани",
+        "customPlaceholder": "Друга категория…",
+        "customAdd": "Добави",
+        "continue": "Продължи",
+        "back": "Назад",
+        "selectedCount": "{count} избрани",
+        "minOne": "Избери поне една категория."
+      },
       "errors": {
         "upload": "Неуспешно прочитане на менюто. Опитай с по-добра снимка.",
         "fileTooLarge": "Файлът е твърде голям. Качи снимка или PDF до 10 MB.",
@@ -303,7 +333,7 @@
         "invalidPrice": "Цената трябва да е число, например 8,90.",
         "duplicateName": "Този продукт вече е добавен.",
         "fixBeforeSave": "Поправи отбелязаните полета, преди да запазиш.",
-        "needMoreItems": "Добави поне {count} продукта, за да продължиш.",
+        "needMoreItems": "Добави поне един продукт, за да продължиш.",
         "save": "Не успяхме да запазим менюто. Опитай пак."
       }
     }

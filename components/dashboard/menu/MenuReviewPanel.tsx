@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { MenuGroupedItems } from "@/components/dashboard/menu/MenuGroupedItems";
 import { MenuReviewHeader } from "@/components/dashboard/menu/MenuReviewHeader";
 import { MenuReviewToolbar } from "@/components/dashboard/menu/MenuReviewToolbar";
@@ -13,6 +15,15 @@ type MenuReviewPanelProps = {
 };
 
 export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
+  // After the first render of review mode, clear the focus hint so it
+  // doesn't re-trigger on subsequent renders.
+  useEffect(() => {
+    if (flow.mode === "review" && flow.focusItemId !== null) {
+      flow.clearFocusItemId();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="relative w-full pb-[120px]">
       <MenuSaveBanner show={flow.showSaveBanner} />
@@ -31,14 +42,16 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
 
         <MenuReviewToolbar
           searchQuery={flow.searchQuery}
-          selectedCategoryKey={flow.selectedCategoryKey}
+          selectedCategoryKeys={flow.selectedCategoryKeys}
           allCategories={flow.allCategories}
           totalItems={flow.totalItems}
           isSaving={flow.isSaving}
+          editMode={flow.editMode}
           onSearchQueryChange={flow.setSearchQuery}
-          onCategoryChange={flow.setSelectedCategoryKey}
+          onCategoryKeysChange={flow.setSelectedCategoryKeys}
           onAddCategory={flow.handleAddCategory}
           onStartOverClick={() => flow.setConfirmStartOverOpen(true)}
+          onToggleEditMode={() => flow.setEditMode(!flow.editMode)}
         />
 
         <MenuGroupedItems
@@ -46,6 +59,10 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
           isFiltering={flow.isFiltering}
           validation={flow.validation}
           categories={flow.allCategories.map((c) => c.displayName)}
+          focusItemId={flow.focusItemId ?? undefined}
+          readOnly={!flow.editMode}
+          expandedCategories={flow.expandedCategories}
+          onToggleCategory={flow.toggleCategory}
           onAddItemInCategory={flow.handleAddItemInCategory}
           onAddCategory={flow.handleAddCategory}
           onItemChange={flow.handleItemChange}
@@ -56,12 +73,14 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
 
       <MenuUnsavedBar
         hasUnsavedChanges={flow.hasUnsavedChanges}
+        hasOnlyHiddenChanges={flow.hasOnlyHiddenChanges}
         validItemCount={flow.validation.validItems.length}
         hasValidationErrors={flow.validation.hasErrors}
         isSaving={flow.isSaving}
         canSave={flow.canSave}
         onUndo={flow.handleUndo}
         onSave={flow.handleSave}
+        onClearCategoryFilter={flow.clearCategoryFilter}
       />
 
       <MenuStartOverDialog

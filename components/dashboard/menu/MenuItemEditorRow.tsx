@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRightLeft, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Tag, Trash2 } from "lucide-react";
 
+import { AliasManagerPopover } from "@/components/dashboard/menu/AliasManagerPopover";
+import { MenuItemReadRow } from "@/components/dashboard/menu/MenuItemReadRow";
 import { parsePrice } from "@/lib/menu/format";
 import { bgnToEur, formatEur } from "@/lib/menu/currency";
 import type { MenuItemField, MenuItemRow, RowError } from "@/lib/menu/types";
@@ -12,6 +14,8 @@ type MenuItemEditorRowProps = {
   item: MenuItemRow;
   rowErrors: RowError;
   categories: string[];
+  autoFocusName?: boolean;
+  readOnly?: boolean;
   onItemChange: (id: string, field: MenuItemField, value: string) => void;
   onRemoveItem: (id: string) => void;
   onAddCategory: () => void;
@@ -21,14 +25,29 @@ export function MenuItemEditorRow({
   item,
   rowErrors,
   categories,
+  autoFocusName,
+  readOnly = false,
   onItemChange,
   onRemoveItem,
   onAddCategory,
 }: MenuItemEditorRowProps) {
   const t = useTranslations("dashboard.menu");
   const [moveOpen, setMoveOpen] = useState(false);
+  const [aliasOpen, setAliasOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const aliasPopoverRef = useRef<HTMLDivElement>(null);
+  const aliasBtnRef = useRef<HTMLButtonElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Autofocus the name input on first mount when requested.
+  useEffect(() => {
+    if (autoFocusName && !readOnly) {
+      nameInputRef.current?.focus();
+    }
+    // Run only once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Flash-error state for name and price inputs
   const [nameFlash, setNameFlash] = useState(false);
@@ -51,13 +70,22 @@ export function MenuItemEditorRow({
   }, [rowErrors.price]);
 
   function handleMoveBlur(e: React.FocusEvent) {
-    // Close only when focus leaves the entire popover+button group
     if (
       popoverRef.current &&
       !popoverRef.current.contains(e.relatedTarget as Node) &&
       buttonRef.current !== e.relatedTarget
     ) {
       setMoveOpen(false);
+    }
+  }
+
+  function handleAliasBlur(e: React.FocusEvent) {
+    if (
+      aliasPopoverRef.current &&
+      !aliasPopoverRef.current.contains(e.relatedTarget as Node) &&
+      aliasBtnRef.current !== e.relatedTarget
+    ) {
+      setAliasOpen(false);
     }
   }
 
@@ -73,11 +101,20 @@ export function MenuItemEditorRow({
       ? t("eurAbbrev", { value: formatEur(bgnToEur(parsedPrice.value)) })
       : "—";
 
+  const hasPersisted = Boolean(item.persistedId);
+
+  // ── Read-only render — delegate to MenuItemReadRow ───────────────────────
+  if (readOnly) {
+    return <MenuItemReadRow item={item} />;
+  }
+
+  // ── Edit render ──────────────────────────────────────────────────────────
   return (
     <li className="group flex items-start gap-4 px-6 py-4 transition-colors hover:bg-[var(--bg)]/40">
       {/* Name + description stacked */}
       <div className="min-w-0 flex-1">
         <input
+          ref={nameInputRef}
           type="text"
           value={item.name_bg}
           onChange={(e) => onItemChange(item.id, "name_bg", e.target.value)}
@@ -139,6 +176,38 @@ export function MenuItemEditorRow({
         ) : null}
       </div>
 
+      {/* Alias manager */}
+      <div className="relative">
+        <button
+          ref={aliasBtnRef}
+          type="button"
+          disabled={!hasPersisted}
+          onClick={() => hasPersisted && setAliasOpen((o) => !o)}
+          onBlur={handleAliasBlur}
+          title={
+            hasPersisted ? t("aliasesButtonAria") : t("aliasesNotSavedHint")
+          }
+          aria-label={t("aliasesButtonAria")}
+          className={[
+            "grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-0 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] group-hover:opacity-100 focus:opacity-100",
+            !hasPersisted ? "cursor-not-allowed opacity-50" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <Tag size={16} strokeWidth={1.5} />
+        </button>
+
+        {aliasOpen && hasPersisted ? (
+          <AliasManagerPopover
+            menuItemId={item.persistedId!}
+            menuItemName={item.name_bg}
+            onBlur={handleAliasBlur}
+            containerRef={aliasPopoverRef}
+          />
+        ) : null}
+      </div>
+
       {/* Move to category */}
       <div className="relative">
         <button
@@ -170,7 +239,6 @@ export function MenuItemEditorRow({
                   key={cat}
                   type="button"
                   onMouseDown={(e) => {
-                    // Prevent blur on the parent button before click fires
                     e.preventDefault();
                     handleSelectCategory(cat);
                   }}

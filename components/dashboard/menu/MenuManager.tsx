@@ -1,6 +1,7 @@
 "use client";
 
 import { MenuEmptyPanel } from "@/components/dashboard/menu/MenuEmptyPanel";
+import { MenuManualStarter } from "@/components/dashboard/menu/MenuManualStarter";
 import { MenuReviewPanel } from "@/components/dashboard/menu/MenuReviewPanel";
 import { MenuUploadingState } from "@/components/dashboard/menu/MenuUploadingState";
 import { useMenuManagerFlow } from "@/hooks/useMenuManagerFlow";
@@ -22,6 +23,15 @@ export function MenuManager({ restaurantId, initialItems }: MenuManagerProps) {
         error={flow.error}
         onFileSelect={flow.handleFileSelect}
         onManualEntry={flow.handleManualEntry}
+      />
+    );
+  }
+
+  if (flow.mode === "manual_starter") {
+    return (
+      <MenuManualStarter
+        onContinue={flow.handleManualStart}
+        onBack={flow.handleManualBack}
       />
     );
   }
