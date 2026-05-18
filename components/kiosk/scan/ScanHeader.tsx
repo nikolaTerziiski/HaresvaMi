@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import type { EntitlementResult, KioskRestaurant } from "@/lib/kiosk/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -8,6 +10,7 @@ type ScanHeaderProps = {
   restaurant: KioskRestaurant;
   scanEyebrow: string;
   exhaustedTitle: string;
+  onExitRequest?: () => void;
 };
 
 export function ScanHeader({
@@ -17,8 +20,10 @@ export function ScanHeader({
   restaurant,
   scanEyebrow,
   exhaustedTitle,
+  onExitRequest,
 }: ScanHeaderProps) {
   const isStaff = audience === "staff";
+  const t = useTranslations("kiosk.exit");
 
   return (
     <header
@@ -41,17 +46,27 @@ export function ScanHeader({
         </div>
       </div>
       {isStaff ? (
-        <div
-          className={[
-            "rounded-full border px-4 py-2 text-right font-[var(--f-mono)] text-[11px] uppercase tracking-[0.08em] max-sm:hidden",
-            entitlement.remaining > 0
-              ? "border-[var(--rule)] text-[var(--ink-mute)]"
-              : "border-[var(--accent)] text-[var(--accent)]",
-          ].join(" ")}
-        >
-          {entitlement.remaining > 0
-            ? `${entitlement.remaining} / ${entitlement.limit} ${remainingLabel}`
-            : exhaustedTitle}
+        <div className="flex items-center gap-3">
+          <div
+            className={[
+              "rounded-full border px-4 py-2 text-right font-[var(--f-mono)] text-[11px] uppercase tracking-[0.08em] max-sm:hidden",
+              entitlement.remaining > 0
+                ? "border-[var(--rule)] text-[var(--ink-mute)]"
+                : "border-[var(--accent)] text-[var(--accent)]",
+            ].join(" ")}
+          >
+            {entitlement.remaining > 0
+              ? `${entitlement.remaining} / ${entitlement.limit} ${remainingLabel}`
+              : exhaustedTitle}
+          </div>
+          <button
+            type="button"
+            aria-label={t("button")}
+            onClick={onExitRequest}
+            className="rounded-full border border-[var(--rule)] px-3 py-1.5 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)] hover:border-[var(--ink)] hover:text-[var(--ink)]"
+          >
+            {t("button")}
+          </button>
         </div>
       ) : null}
     </header>

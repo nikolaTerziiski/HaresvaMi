@@ -132,9 +132,15 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
 16. Verify the new feedback appears in the dashboard after refresh if needed.
 17. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
 18. Return to Dashboard -> `Таблет`.
-19. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
-20. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
-21. Verify revoked access fails:
+19. Test the kiosk exit affordance in the tablet browser:
+    - On `/kiosk/scan` in staff mode, tap the "Изход" pill on the far right of the header.
+    - Confirm in the dialog by clicking "Излез".
+    - Verify the page redirects (likely to `/login` since the owner browser session was signed out by `handleStartThisDevice`, or to `/dashboard` if the owner session is still present).
+    - Verify the kiosk cookie is gone: navigating to `/kiosk/scan` should now show "Таблетът не е свързан." instead of the kiosk scan screen.
+    - Verify that the original `/kiosk/connect?token=ks_...` link still works and reconnects the device, since the session row was not revoked.
+20. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
+21. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
+22. Verify revoked access fails:
     - `/kiosk/scan` should show `Таблетът не е свързан.`
     - the old connect link should show the invalid/expired tablet-link page
 

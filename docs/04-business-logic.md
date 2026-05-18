@@ -274,6 +274,8 @@ Once a valid kiosk cookie exists on a device, visiting `/` redirects directly to
 
 The receipt preview is visible only in staff scan/manual/ready modes. It is hidden during customer rating and thank-you modes so the customer gets the full tablet width.
 
+When an owner needs to take the device back from kiosk mode, they can tap the "Изход" pill in the staff header. This opens a confirmation dialog, and on confirm the browser calls `POST /kiosk/exit`, which clears the kiosk cookie. The kiosk session row in the database remains active, so the same setup link can be reused to reconnect later without generating a new token.
+
 Customer-facing API routes authorize either:
 
 - a valid kiosk cookie, for the tablet flow

@@ -69,6 +69,12 @@
       "thanksNewReviewNow": "New feedback now",
       "reset": "New customer",
       "ownerUpgradeHint": "Scanning is paused because of the limit. Manual selection is still available."
+    },
+    "exit": {
+      "button": "Exit",
+      "confirmTitle": "Exit kiosk mode?",
+      "confirmDescription": "You'll need to sign in again to manage the tablet.",
+      "confirmCta": "Exit"
     }
   },
   "dashboard": {

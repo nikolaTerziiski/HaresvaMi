@@ -8,6 +8,7 @@ function source(path: string) {
 }
 
 const connectRouteSource = source("app/kiosk/connect/route.ts");
+const exitRouteSource = source("app/kiosk/exit/route.ts");
 const feedbackRouteSource = source("app/api/feedback/route.ts");
 const extractReceiptRouteSource = source("app/api/extract-receipt/route.ts");
 const authorizationSource = source("lib/kiosk/authorization.ts");
@@ -44,6 +45,27 @@ function withoutImports(fileSource: string) {
     .filter((line) => !line.trimStart().startsWith("import "))
     .join("\n");
 }
+
+test("/kiosk/exit returns 204", () => {
+  assert.match(exitRouteSource, /status:\s*204/);
+});
+
+test("/kiosk/exit clears the kiosk cookie with maxAge 0", () => {
+  assert.match(exitRouteSource, /maxAge:\s*0/);
+  assert.match(exitRouteSource, /KIOSK_SESSION_COOKIE/);
+  assert.match(exitRouteSource, /value:\s*""/);
+});
+
+test("/kiosk/exit sets the cleared cookie as HttpOnly", () => {
+  assert.match(exitRouteSource, /httpOnly:\s*true/);
+});
+
+test("/kiosk/exit only sets secure cookies in production", () => {
+  assert.match(
+    exitRouteSource,
+    /secure:\s*process\.env\.NODE_ENV\s*===\s*"production"/,
+  );
+});
 
 test("/kiosk/connect sets the kiosk cookie for all app routes", () => {
   assert.match(connectRouteSource, /path:\s*"\/"/);

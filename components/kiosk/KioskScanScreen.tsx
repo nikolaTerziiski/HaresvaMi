@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+
+import { KioskExitDialog } from "@/components/kiosk/scan/KioskExitDialog";
 import { CustomerPanel } from "@/components/kiosk/scan/CustomerPanel";
 import { ExhaustedNotice } from "@/components/kiosk/scan/ExhaustedNotice";
 import { ManualPanel } from "@/components/kiosk/scan/ManualPanel";
@@ -21,6 +24,7 @@ export function KioskScanScreen({
   initialEntitlement,
   copy,
 }: KioskScanScreenProps) {
+  const [exitDialogOpen, setExitDialogOpen] = useState(false);
   const flow = useKioskScanFlow({
     restaurant,
     menuItems,
@@ -36,6 +40,15 @@ export function KioskScanScreen({
         ? "thanks"
         : "staff";
 
+  async function handleExitConfirm() {
+    try {
+      await fetch("/kiosk/exit", { method: "POST" });
+    } catch {
+      // proceed even if the request fails; taking the owner home is better than leaving them stuck
+    }
+    window.location.assign("/");
+  }
+
   return (
     <div
       className={cn(
@@ -50,6 +63,7 @@ export function KioskScanScreen({
         remainingLabel={copy.remainingScansLabel}
         restaurant={restaurant}
         scanEyebrow={copy.scanEyebrow}
+        onExitRequest={() => setExitDialogOpen(true)}
       />
 
       {isCustomerFacing ? (
@@ -156,6 +170,12 @@ export function KioskScanScreen({
       {flow.isProcessing ? (
         <ProcessingOverlay message={copy.processing} />
       ) : null}
+
+      <KioskExitDialog
+        open={exitDialogOpen}
+        onOpenChange={setExitDialogOpen}
+        onConfirm={handleExitConfirm}
+      />
     </div>
   );
 }

@@ -69,6 +69,12 @@
       "thanksNewReviewNow": "Нов отзив сега",
       "reset": "Нов клиент",
       "ownerUpgradeHint": "Сканирането е спряно заради лимита. Ръчният избор остава достъпен."
+    },
+    "exit": {
+      "button": "Изход",
+      "confirmTitle": "Излез от режим таблет?",
+      "confirmDescription": "Ще трябва да влезеш отново, за да управляваш таблета.",
+      "confirmCta": "Излез"
     }
   },
   "dashboard": {
