@@ -110,9 +110,9 @@ export function MenuItemEditorRow({
 
   // ── Edit render ──────────────────────────────────────────────────────────
   return (
-    <li className="group flex items-start gap-4 px-6 py-4 transition-colors hover:bg-[var(--bg)]/40">
+    <li className="group flex flex-wrap items-start gap-x-3 gap-y-3 px-6 py-4 transition-colors hover:bg-[var(--bg)]/40 sm:flex-nowrap sm:gap-x-4">
       {/* Name + description stacked */}
-      <div className="min-w-0 flex-1">
+      <div className="w-full min-w-0 sm:w-auto sm:flex-1">
         <input
           ref={nameInputRef}
           type="text"
@@ -177,7 +177,7 @@ export function MenuItemEditorRow({
       </div>
 
       {/* Alias manager */}
-      <div className="relative">
+      <div className="relative ml-auto sm:ml-0">
         <button
           ref={aliasBtnRef}
           type="button"
@@ -189,8 +189,8 @@ export function MenuItemEditorRow({
           }
           aria-label={t("aliasesButtonAria")}
           className={[
-            "grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-0 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] group-hover:opacity-100 focus:opacity-100",
-            !hasPersisted ? "cursor-not-allowed opacity-50" : "",
+            "grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100",
+            !hasPersisted ? "cursor-not-allowed disabled:opacity-50" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -217,7 +217,7 @@ export function MenuItemEditorRow({
           onBlur={handleMoveBlur}
           title={t("moveTo")}
           aria-label={t("moveItemAria")}
-          className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-0 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] group-hover:opacity-100 focus:opacity-100"
+          className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
         >
           <ArrowRightLeft size={16} strokeWidth={1.5} />
         </button>
@@ -271,7 +271,7 @@ export function MenuItemEditorRow({
         onClick={() => onRemoveItem(item.id)}
         title={t("table.remove")}
         aria-label={t("table.remove")}
-        className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-0 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--bad)] group-hover:opacity-100 focus:opacity-100"
+        className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--bad)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
       >
         <Trash2 size={16} strokeWidth={1.5} />
       </button>
