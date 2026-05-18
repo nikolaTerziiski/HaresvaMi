@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { extractMenu } from "@/lib/ai/extract-menu";
+import { MAX_MENU_FILE_SIZE_BYTES } from "@/lib/menu/constants";
 
 export const maxDuration = 60; // 60s timeout for Gemini API calls
 
@@ -30,12 +31,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert File to base64
+    if (file.size > MAX_MENU_FILE_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: "File exceeds maximum size of 10MB" },
+        { status: 413 },
+      );
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Data = buffer.toString("base64");
 
-    const result = await extractMenu(mimeType, base64Data);
+    const result = await extractMenu(mimeType, base64Data, restaurant.id);
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 422 });
