@@ -75,6 +75,31 @@ export function MenuGroupCard({
     ? group.items.filter((item) => !isBlankNewRow(item))
     : group.items;
 
+  const chevron = (
+    <ChevronDown
+      size={16}
+      strokeWidth={1.5}
+      className={[
+        "transition-transform duration-150",
+        expanded ? "rotate-0" : "-rotate-90",
+      ].join(" ")}
+    />
+  );
+
+  const colorDot = (
+    <span
+      className="relative top-[-3px] size-2.5 shrink-0 rounded-full"
+      style={{ backgroundColor: group.color }}
+      aria-hidden
+    />
+  );
+
+  const itemCount = (
+    <span className="ml-auto font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--ink-mute)]">
+      {t("itemCountPlural", { count: visibleItems.length })}
+    </span>
+  );
+
   return (
     <article
       className="rounded-lg border border-[var(--rule)]"
@@ -82,64 +107,64 @@ export function MenuGroupCard({
         backgroundColor: `color-mix(in srgb, ${group.color} 14%, var(--paper))`,
       }}
     >
-      {/* Card header */}
-      <header className="flex items-baseline gap-4 border-b border-[var(--rule)] px-6 py-5">
-        {/* Chevron toggle */}
-        <button
-          type="button"
-          aria-label={t("expandCategoryAria", { name: groupLabel })}
-          onClick={onToggleExpand}
-          className="relative top-[-2px] flex shrink-0 items-center text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
-        >
-          <ChevronDown
-            size={16}
-            strokeWidth={1.5}
-            className={[
-              "transition-transform duration-150",
-              expanded ? "rotate-0" : "-rotate-90",
-            ].join(" ")}
-          />
-        </button>
-
-        {/* Colored dot */}
-        <span
-          className="relative top-[-3px] size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: group.color }}
-          aria-hidden
-        />
-
-        {/* Category name — editable only in edit mode */}
-        {!readOnly && editingName ? (
-          <input
-            ref={inputRef}
-            type="text"
-            value={draftName}
-            onChange={(e) => setDraftName(e.target.value)}
-            onBlur={commitRename}
-            onKeyDown={handleNameKeyDown}
-            className="min-w-0 flex-1 bg-transparent font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)] outline-none"
-          />
-        ) : (
-          <h2
-            className={[
-              "font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)]",
-              !readOnly
-                ? "cursor-text hover:underline hover:decoration-dotted"
-                : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            title={!readOnly ? t("newCategory") : undefined}
-            onClick={handleNameClick}
+      {/* Card header — two distinct trees for read vs edit mode */}
+      {readOnly ? (
+        <header className="border-b border-[var(--rule)]">
+          <button
+            type="button"
+            aria-expanded={expanded}
+            aria-label={t("expandCategoryAria", { name: groupLabel })}
+            onClick={onToggleExpand}
+            className="flex w-full items-baseline gap-4 px-6 py-5 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_3%,transparent)]"
           >
-            {groupLabel}
-          </h2>
-        )}
+            <span className="relative top-[-2px] shrink-0 text-[var(--ink-mute)]">
+              {chevron}
+            </span>
+            {colorDot}
+            <h2 className="font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)]">
+              {groupLabel}
+            </h2>
+            {itemCount}
+          </button>
+        </header>
+      ) : (
+        <header className="flex items-baseline gap-4 border-b border-[var(--rule)] px-6 py-5">
+          {/* Chevron toggle — larger hit area in edit mode */}
+          <button
+            type="button"
+            aria-label={t("expandCategoryAria", { name: groupLabel })}
+            onClick={onToggleExpand}
+            className="relative top-[-2px] -m-1 flex shrink-0 items-center p-1 text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+          >
+            {chevron}
+          </button>
 
-        <span className="ml-auto font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--ink-mute)]">
-          {visibleItems.length} ястия
-        </span>
-      </header>
+          {colorDot}
+
+          {/* Category name — editable only in edit mode */}
+          {editingName ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={handleNameKeyDown}
+              className="min-w-0 flex-1 bg-transparent font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)] outline-none"
+            />
+          ) : (
+            <h2
+              className="cursor-text font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)] hover:underline hover:decoration-dotted"
+              title={t("newCategory")}
+              onClick={handleNameClick}
+            >
+              {groupLabel}
+            </h2>
+          )}
+
+          {itemCount}
+        </header>
+      )}
 
       {/* Items list + footer — only when expanded */}
       {expanded ? (

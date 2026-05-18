@@ -313,6 +313,7 @@
       "hiddenChangesHint": "Changes in a hidden category",
       "showAll": "Show all",
       "expandCategoryAria": "Toggle category {name}",
+      "itemCountPlural": "{count, plural, one {# dish} other {# dishes}}",
       "manualStarter": {
         "eyebrow": "Step 02 · Menu",
         "title": "What do we start with?",

@@ -313,6 +313,7 @@
       "hiddenChangesHint": "Промени в скрита категория",
       "showAll": "Покажи всички",
       "expandCategoryAria": "Покажи/скрий категория {name}",
+      "itemCountPlural": "{count, plural, one {# ястие} other {# ястия}}",
       "manualStarter": {
         "eyebrow": "Стъпка 02 · Меню",
         "title": "С какво да започнем?",
