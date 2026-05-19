@@ -376,6 +376,20 @@
         "noDataYet": "Not enough data for dish trends yet.",
         "loading": "Loading...",
         "errorLoading": "Error loading"
+      },
+      "ranking": {
+        "eyebrow": "Ranking",
+        "title": "All rated dishes",
+        "subtitle": "Sort by any column. {count} dishes with fewer than {minSample} ratings are hidden.",
+        "columns": {
+          "name": "Dish",
+          "category": "Category",
+          "rating": "Rating",
+          "samples": "Ratings"
+        },
+        "showHidden": "Show all",
+        "hideAll": "Hide low-sample",
+        "noDelta": "—"
       }
     }
   }

@@ -3,6 +3,16 @@ import type {
   FeedbackSessionRow,
   MenuItemRow,
 } from "@/lib/feedback/dashboard-queries";
+import {
+  MIN_DISH_SAMPLE,
+  average,
+  compareByName,
+  hasCurrentDishSample,
+  likeRate,
+  menuItemName,
+  roundOne,
+  windowKeyForSession,
+} from "@/lib/insights/aggregation/helpers";
 import { pickCommentOfWeek } from "@/lib/insights/comments";
 import { resolveInsightPeriod } from "@/lib/insights/period";
 import type {
@@ -12,68 +22,6 @@ import type {
   InsightWindowKey,
   WeeklyInsights,
 } from "@/lib/insights/types";
-
-const MIN_DISH_SAMPLE = 3;
-
-function roundOne(value: number) {
-  return Math.round(value * 10) / 10;
-}
-
-function menuItemName(menuItem: MenuItemRow | undefined) {
-  if (!menuItem) {
-    return "Изтрито ястие";
-  }
-
-  return menuItem.deleted_at
-    ? `${menuItem.name_bg} (премахнато)`
-    : menuItem.name_bg;
-}
-
-function average(sum: number, count: number) {
-  return count > 0 ? roundOne(sum / count) : null;
-}
-
-function likeRate(likes: number, responses: number) {
-  return responses > 0 ? roundOne((likes / responses) * 100) : null;
-}
-
-function compareByName(left: { name: string }, right: { name: string }) {
-  return left.name.localeCompare(right.name, "bg-BG");
-}
-
-function isDishInsight(value: {
-  currentAverage: number | null;
-}): value is DishInsight {
-  return value.currentAverage !== null;
-}
-
-function hasCurrentDishSample(dish: {
-  currentAverage: number | null;
-  currentCount: number;
-}): dish is DishInsight {
-  return dish.currentCount >= MIN_DISH_SAMPLE && isDishInsight(dish);
-}
-
-function windowKeyForSession(
-  session: FeedbackSessionRow,
-  previousStart: number,
-  currentStart: number,
-  currentEnd: number,
-): InsightWindowKey | null {
-  if (!session.completed_at) return null;
-
-  const completedAt = new Date(session.completed_at).getTime();
-
-  if (completedAt >= currentStart && completedAt <= currentEnd) {
-    return "current";
-  }
-
-  if (completedAt >= previousStart && completedAt < currentStart) {
-    return "previous";
-  }
-
-  return null;
-}
 
 export function buildInsights(input: {
   sessions: FeedbackSessionRow[];
@@ -169,10 +117,12 @@ export function buildInsights(input: {
         currentAverage !== null && previousAverage !== null
           ? roundOne(currentAverage - previousAverage)
           : null;
+      const menuItem = menuById.get(menuItemId);
 
       return {
         menuItemId,
-        name: menuItemName(menuById.get(menuItemId)),
+        name: menuItemName(menuItem),
+        category: menuItem?.category ?? null,
         currentCount: bucket.currentCount,
         previousCount: bucket.previousCount,
         currentAverage,
@@ -184,6 +134,16 @@ export function buildInsights(input: {
       (left, right) =>
         right.currentCount - left.currentCount ||
         right.previousCount - left.previousCount ||
+        compareByName(left, right),
+    );
+
+  const dishRanking = dishStats
+    .filter((dish) => dish.currentCount > 0)
+    .sort(
+      (left, right) =>
+        (right.currentAverage ?? -Infinity) -
+          (left.currentAverage ?? -Infinity) ||
+        right.currentCount - left.currentCount ||
         compareByName(left, right),
     );
 
@@ -244,6 +204,7 @@ export function buildInsights(input: {
     current: buildPeriodTotals(windows.current),
     previous: buildPeriodTotals(windows.previous),
     dishStats,
+    dishRanking,
     topPerformer,
     watchDish,
     improvedDish,

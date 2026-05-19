@@ -1,3 +1,4 @@
+import { DishRankingTable } from "@/components/dashboard/insights/DishRankingTable";
 import { DishTrendChart } from "@/components/dashboard/insights/DishTrendChart";
 import { InsightHighlights } from "@/components/dashboard/insights/InsightHighlights";
 import { InsightsEmptyState } from "@/components/dashboard/insights/InsightsEmptyState";
@@ -128,6 +129,12 @@ export function InsightsOverview({
                 Как се движи едно ястие
               </h2>
               <DishTrendChart candidates={trendCandidates} />
+            </section>
+          ) : null}
+
+          {data.dishRanking.length > 0 ? (
+            <section className="mt-8 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
+              <DishRankingTable rows={data.dishRanking} minSample={3} />
             </section>
           ) : null}
         </>

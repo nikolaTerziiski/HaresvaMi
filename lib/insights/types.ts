@@ -30,6 +30,7 @@ export type InsightPeriodTotals = {
 export type InsightDishStats = {
   menuItemId: string;
   name: string;
+  category: string | null;
   currentCount: number;
   previousCount: number;
   currentAverage: number | null;
@@ -67,6 +68,7 @@ export type WeeklyInsights = {
   current: InsightPeriodTotals;
   previous: InsightPeriodTotals;
   dishStats: InsightDishStats[];
+  dishRanking: InsightDishStats[];
   topPerformer: DishInsight | null;
   watchDish: DishInsight | null;
   improvedDish: DishInsight | null;
