@@ -343,6 +343,31 @@
         "needMoreItems": "Add at least one item to continue.",
         "save": "We could not save the menu. Please try again."
       }
+    },
+    "insights": {
+      "period": {
+        "week": "This week",
+        "month": "This month",
+        "custom": "Custom range",
+        "from": "From",
+        "to": "To",
+        "apply": "Apply"
+      },
+      "title": {
+        "week": "What to look at this week",
+        "month": "What to look at this month",
+        "custom": "Insights for the selected period"
+      },
+      "subtitle": {
+        "week": "The last 7 days at {restaurant}: {range}. We only show signals with enough ratings — no invented trends.",
+        "month": "The last 30 days at {restaurant}: {range}. We only show signals with enough ratings — no invented trends.",
+        "custom": "{range} at {restaurant}. We only show signals with enough ratings — no invented trends."
+      },
+      "comparisonHint": {
+        "week": "The comparison with the previous week will start once there is feedback in both 7-day windows. Until then we show the current week only.",
+        "month": "The comparison with the previous month will start once there is feedback in both 30-day windows. Until then we show the current month only.",
+        "custom": "The comparison with the previous period of the same length will start once there is feedback in both windows."
+      }
     }
   }
 }

@@ -4,6 +4,16 @@ import type { OwnerRestaurant } from "@/lib/auth/owner";
 
 export type InsightWindowKey = "current" | "previous";
 
+export type InsightPeriodKey = "week" | "month" | "custom";
+
+export type InsightPeriod = {
+  key: InsightPeriodKey;
+  currentFrom: string;
+  currentTo: string;
+  previousFrom: string;
+  previousTo: string;
+};
+
 export type InsightWindow = {
   start: string;
   end: string;
@@ -47,6 +57,7 @@ export type CommentOfWeek =
     };
 
 export type WeeklyInsights = {
+  period: InsightPeriod;
   windows: {
     current: InsightWindow;
     previous: InsightWindow;

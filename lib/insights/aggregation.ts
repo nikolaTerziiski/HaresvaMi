@@ -4,14 +4,15 @@ import type {
   MenuItemRow,
 } from "@/lib/feedback/dashboard-queries";
 import { pickCommentOfWeek } from "@/lib/insights/comments";
+import { resolveInsightPeriod } from "@/lib/insights/period";
 import type {
   DishInsight,
+  InsightPeriod,
   InsightPeriodTotals,
   InsightWindowKey,
   WeeklyInsights,
 } from "@/lib/insights/types";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_DISH_SAMPLE = 3;
 
 function roundOne(value: number) {
@@ -74,20 +75,20 @@ function windowKeyForSession(
   return null;
 }
 
-export function buildWeeklyInsights(input: {
+export function buildInsights(input: {
   sessions: FeedbackSessionRow[];
   ratings: FeedbackRatingRow[];
   menuItems: MenuItemRow[];
   allCompletedSessions: number;
-  now?: Date;
+  period: InsightPeriod;
 }): WeeklyInsights {
-  const now = input.now ?? new Date();
-  const currentEnd = now.getTime();
-  const currentStart = currentEnd - 7 * DAY_MS;
-  const previousStart = currentEnd - 14 * DAY_MS;
+  const { period } = input;
+  const currentStart = new Date(period.currentFrom).getTime();
+  const currentEnd = new Date(period.currentTo).getTime();
+  const previousStart = new Date(period.previousFrom).getTime();
   const menuById = new Map(input.menuItems.map((item) => [item.id, item]));
   const sessionWindows = new Map<string, InsightWindowKey>();
-  const period = {
+  const windows = {
     current: {
       sessions: 0,
       likes: 0,
@@ -115,13 +116,13 @@ export function buildWeeklyInsights(input: {
     if (!windowKey) return;
 
     sessionWindows.set(session.id, windowKey);
-    period[windowKey].sessions += 1;
+    windows[windowKey].sessions += 1;
 
     if (session.overall_rating === "like") {
-      period[windowKey].likes += 1;
-      period[windowKey].overallResponses += 1;
+      windows[windowKey].likes += 1;
+      windows[windowKey].overallResponses += 1;
     } else if (session.overall_rating === "dislike") {
-      period[windowKey].overallResponses += 1;
+      windows[windowKey].overallResponses += 1;
     }
   });
 
@@ -155,8 +156,8 @@ export function buildWeeklyInsights(input: {
       bucket.previousCount += 1;
     }
 
-    period[windowKey].ratingSum += rating.rating;
-    period[windowKey].ratingCount += 1;
+    windows[windowKey].ratingSum += rating.rating;
+    windows[windowKey].ratingCount += 1;
     dishBuckets.set(rating.menu_item_id, bucket);
   });
 
@@ -233,20 +234,15 @@ export function buildWeeklyInsights(input: {
       )[0] ?? null;
 
   return {
+    period,
     windows: {
-      current: {
-        start: new Date(currentStart).toISOString(),
-        end: now.toISOString(),
-      },
-      previous: {
-        start: new Date(previousStart).toISOString(),
-        end: new Date(currentStart).toISOString(),
-      },
+      current: { start: period.currentFrom, end: period.currentTo },
+      previous: { start: period.previousFrom, end: period.previousTo },
     },
     menuItemCount: input.menuItems.filter((item) => !item.deleted_at).length,
     allCompletedSessions: input.allCompletedSessions,
-    current: buildPeriodTotals(period.current),
-    previous: buildPeriodTotals(period.previous),
+    current: buildPeriodTotals(windows.current),
+    previous: buildPeriodTotals(windows.previous),
     dishStats,
     topPerformer,
     watchDish,
@@ -258,8 +254,20 @@ export function buildWeeklyInsights(input: {
       sessionWindows,
     ),
     hasPreviousComparison:
-      period.previous.sessions > 0 || period.previous.ratingCount > 0,
+      windows.previous.sessions > 0 || windows.previous.ratingCount > 0,
   };
+}
+
+export function buildWeeklyInsights(input: {
+  sessions: FeedbackSessionRow[];
+  ratings: FeedbackRatingRow[];
+  menuItems: MenuItemRow[];
+  allCompletedSessions: number;
+  now?: Date;
+}): WeeklyInsights {
+  const period = resolveInsightPeriod({ key: "week", now: input.now });
+
+  return buildInsights({ ...input, period });
 }
 
 function buildPeriodTotals(period: {
