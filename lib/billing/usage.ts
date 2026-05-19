@@ -8,6 +8,7 @@ export type MonthlyUsage = {
   period: string;
   feedbackCount: number;
   aiScanCount: number;
+  menuExtractionCount: number;
 };
 
 export type ScanCreditSummary = {
@@ -50,7 +51,7 @@ export async function getMonthlyUsage(
 
   const { data, error } = await supabase
     .from("usage_counters")
-    .select("feedback_count, receipt_scans_count")
+    .select("feedback_count, receipt_scans_count, menu_extraction_count")
     .eq("restaurant_id", restaurantId)
     .eq("period", period)
     .maybeSingle();
@@ -63,18 +64,21 @@ export async function getMonthlyUsage(
     period,
     feedbackCount: data?.feedback_count ?? 0,
     aiScanCount: data?.receipt_scans_count ?? 0,
+    menuExtractionCount: data?.menu_extraction_count ?? 0,
   };
 }
 
 async function incrementMonthlyUsage(
   restaurantId: string,
-  delta: { feedback?: number; aiScans?: number },
+  delta: { feedback?: number; aiScans?: number; menuExtractions?: number },
 ): Promise<MonthlyUsage> {
   const supabase = createSupabaseServiceClient();
   const current = await getMonthlyUsage(restaurantId);
   const next = {
     feedback_count: current.feedbackCount + (delta.feedback ?? 0),
     receipt_scans_count: current.aiScanCount + (delta.aiScans ?? 0),
+    menu_extraction_count:
+      current.menuExtractionCount + (delta.menuExtractions ?? 0),
   };
 
   const { data, error } = await supabase
@@ -87,7 +91,7 @@ async function incrementMonthlyUsage(
       },
       { onConflict: "restaurant_id,period" },
     )
-    .select("feedback_count, receipt_scans_count")
+    .select("feedback_count, receipt_scans_count, menu_extraction_count")
     .single();
 
   if (error) {
@@ -98,6 +102,7 @@ async function incrementMonthlyUsage(
     period: current.period,
     feedbackCount: data.feedback_count,
     aiScanCount: data.receipt_scans_count,
+    menuExtractionCount: data.menu_extraction_count,
   };
 }
 
@@ -111,6 +116,36 @@ export async function incrementAiScanUsage(
   restaurantId: string,
 ): Promise<MonthlyUsage> {
   return incrementMonthlyUsage(restaurantId, { aiScans: 1 });
+}
+
+export async function incrementMenuExtractionUsage(
+  restaurantId: string,
+): Promise<MonthlyUsage> {
+  return incrementMonthlyUsage(restaurantId, { menuExtractions: 1 });
+}
+
+export async function tryIncrementFeedbackUsage(input: {
+  restaurantId: string;
+  period: string;
+  limit: number;
+}): Promise<number | null> {
+  const supabase = createSupabaseServiceClient();
+  const { data, error } = await supabase.rpc(
+    "increment_feedback_usage_if_under_limit",
+    {
+      p_restaurant_id: input.restaurantId,
+      p_period: input.period,
+      p_limit: input.limit,
+    },
+  );
+
+  if (error) {
+    throw new Error(
+      `Unable to atomically increment feedback usage: ${error.message}`,
+    );
+  }
+
+  return data as number | null;
 }
 
 export async function getActiveScanCreditGrants(
@@ -177,16 +212,17 @@ export async function consumeActiveScanCreditGrant(
   }
 
   const supabase = createSupabaseServiceClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("scan_credit_grants")
     .update({ credits_used: grant.creditsUsed + 1 })
     .eq("id", grant.id)
     .eq("restaurant_id", restaurantId)
-    .eq("credits_used", grant.creditsUsed);
+    .eq("credits_used", grant.creditsUsed)
+    .select("id");
 
   if (error) {
     throw new Error(`Unable to consume scan credit grant: ${error.message}`);
   }
 
-  return true;
+  return Array.isArray(data) && data.length > 0;
 }

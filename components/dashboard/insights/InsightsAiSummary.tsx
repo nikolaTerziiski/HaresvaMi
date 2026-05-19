@@ -70,11 +70,18 @@ export function InsightsAiSummary({
       };
 
       if (!res.ok || !json.summaryText) {
-        const message =
-          json.error === "not_enough_data"
-            ? "Нужни са поне 10 завършени отзива в избрания период."
-            : (json.message ??
-              "Не успяхме да генерираме резюме. Опитай отново след малко.");
+        let message: string;
+
+        if (json.error === "not_enough_data") {
+          message = "Нужни са поне 10 завършени отзива в избрания период.";
+        } else if (json.error === "force_regenerate_limit") {
+          message =
+            "Достигна лимита от 10 регенерации този месец. Опитай отново следващия месец.";
+        } else {
+          message =
+            json.message ??
+            "Не успяхме да генерираме резюме. Опитай отново след малко.";
+        }
 
         setState({ kind: "error", message });
         return;

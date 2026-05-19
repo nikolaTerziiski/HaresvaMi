@@ -23,6 +23,7 @@ type RequestBody = {
 
 const CACHE_TTL_DAYS = 7;
 const MIN_SESSIONS = 10;
+const MONTHLY_AI_INSIGHT_FORCE_LIMIT = 10;
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { user, restaurant } = await getCurrentOwnerState();
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "pro_required" }, { status: 402 });
   }
 
+  const serviceClient = createSupabaseServiceClient();
+
   let body: RequestBody;
   try {
     body = (await req.json()) as RequestBody;
@@ -66,6 +69,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     !period.previousTo
   ) {
     return NextResponse.json({ error: "invalid_period" }, { status: 400 });
+  }
+
+  if (force) {
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+
+    const { count, error: countError } = await serviceClient
+      .from("ai_usage_events")
+      .select("id", { count: "exact", head: true })
+      .eq("restaurant_id", restaurant.id)
+      .eq("event_type", "insight_generation")
+      .gte("created_at", monthStart.toISOString());
+
+    if (countError) {
+      console.error("Failed to count insight generations:", countError.message);
+    } else if ((count ?? 0) >= MONTHLY_AI_INSIGHT_FORCE_LIMIT) {
+      return NextResponse.json(
+        {
+          error: "force_regenerate_limit",
+          limit: MONTHLY_AI_INSIGHT_FORCE_LIMIT,
+        },
+        { status: 429 },
+      );
+    }
   }
 
   const periodStart = period.currentFrom.slice(0, 10);
@@ -159,7 +187,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const serviceClient = createSupabaseServiceClient();
   await serviceClient.from("insight_summaries").upsert(
     {
       restaurant_id: restaurant.id,

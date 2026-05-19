@@ -1,10 +1,14 @@
 import "server-only";
 
 import {
-  canSubmitFeedback,
-  incrementFeedbackUsage,
-} from "@/lib/billing/entitlements";
-import type { EntitlementResult } from "@/lib/billing/entitlements-core";
+  getFeedbackEntitlement,
+  type EntitlementResult,
+} from "@/lib/billing/entitlements-core";
+import {
+  getCurrentUsagePeriod,
+  getMonthlyUsage,
+  tryIncrementFeedbackUsage,
+} from "@/lib/billing/usage";
 import type { FeedbackSubmissionInput } from "@/lib/feedback/schema";
 import {
   assertFeedbackHasContent,
@@ -91,13 +95,45 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
   assertRatingsBelongToSelectedItems(input);
   await assertMenuItemsAreActive(input);
 
-  const entitlement = await canSubmitFeedback(input.restaurantId);
+  const [restaurant, currentUsage] = await Promise.all([
+    (async () => {
+      const supabase = createSupabaseServiceClient();
+      const { data } = await supabase
+        .from("restaurants")
+        .select(
+          "id, tier, subscription_status, current_period_ends_at, trial_ends_at",
+        )
+        .eq("id", input.restaurantId)
+        .maybeSingle();
+      return data;
+    })(),
+    getMonthlyUsage(input.restaurantId),
+  ]);
 
-  if (!entitlement.allowed) {
+  if (!restaurant) {
+    throw new Error("Restaurant not found.");
+  }
+
+  const entitlement = getFeedbackEntitlement({
+    restaurant,
+    usage: currentUsage,
+  });
+  const period = getCurrentUsagePeriod();
+  const newCount = await tryIncrementFeedbackUsage({
+    restaurantId: input.restaurantId,
+    period,
+    limit: entitlement.limit,
+  });
+
+  if (newCount === null) {
     throw new FeedbackSubmitError(
       "feedback_limit_reached",
       "Feedback limit reached.",
-      entitlement,
+      {
+        ...entitlement,
+        allowed: false,
+        reason: "feedback_limit_reached",
+      },
     );
   }
 
@@ -117,6 +153,15 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
     .single();
 
   if (sessionError) {
+    await supabase
+      .from("usage_counters")
+      .update({ feedback_count: newCount - 1 })
+      .eq("restaurant_id", input.restaurantId)
+      .eq("period", period)
+      .then(({ error }) => {
+        if (error) console.error("Failed to decrement feedback usage:", error);
+      });
+
     throw new Error(
       `Unable to create feedback session: ${sessionError.message}`,
     );
@@ -138,30 +183,29 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
 
     if (ratingsError) {
       await deleteSession(session.id);
+      await supabase
+        .from("usage_counters")
+        .update({ feedback_count: newCount - 1 })
+        .eq("restaurant_id", input.restaurantId)
+        .eq("period", period)
+        .then(({ error }) => {
+          if (error)
+            console.error("Failed to decrement feedback usage:", error);
+        });
+
       throw new Error(
         `Unable to create feedback ratings: ${ratingsError.message}`,
       );
     }
   }
 
-  const usage = await incrementFeedbackUsage(input.restaurantId);
-
-  if (!usage.allowed) {
-    await deleteSession(session.id);
-    throw new FeedbackSubmitError(
-      "feedback_limit_reached",
-      "Feedback limit reached.",
-      usage,
-    );
-  }
-
   return {
     sessionId: session.id,
     completedAt: session.completed_at,
     usage: {
-      used: usage.used,
-      limit: usage.limit,
-      remaining: usage.remaining,
+      used: newCount,
+      limit: entitlement.limit,
+      remaining: Math.max(0, entitlement.limit - newCount),
     },
   };
 }

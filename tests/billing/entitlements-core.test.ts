@@ -3,9 +3,12 @@ import test from "node:test";
 
 import {
   applySuccessfulEntitlementConsumption,
+  FREE_MENU_EXTRACTION_LIMIT,
   getFeedbackEntitlement,
+  getMenuExtractionEntitlement,
   getScanEntitlement,
   nextUpgradeTarget,
+  PRO_MENU_EXTRACTION_LIMIT,
   shouldConsumeScanCreditGrant,
   type RestaurantEntitlementState,
 } from "@/lib/billing/entitlements-core";
@@ -66,10 +69,11 @@ function restaurant(
   };
 }
 
-function usage(feedbackCount = 0, aiScanCount = 0) {
+function usage(feedbackCount = 0, aiScanCount = 0, menuExtractionCount = 0) {
   return {
     feedbackCount,
     aiScanCount,
+    menuExtractionCount,
   };
 }
 
@@ -289,4 +293,68 @@ test("AI scan usage changes only after successful extraction", () => {
   assert.deepEqual(afterFailure, beforeExtraction);
   assert.equal(afterSuccess.used, beforeExtraction.used + 1);
   assert.equal(afterSuccess.remaining, beforeExtraction.remaining - 1);
+});
+
+test("free plan allows 1 menu extraction and blocks the second", () => {
+  const freeRestaurant = restaurant("free");
+
+  const allowed = getMenuExtractionEntitlement({
+    restaurant: freeRestaurant,
+    usage: usage(0, 0, 0),
+    now,
+  });
+  const blocked = getMenuExtractionEntitlement({
+    restaurant: freeRestaurant,
+    usage: usage(0, 0, FREE_MENU_EXTRACTION_LIMIT),
+    now,
+  });
+
+  assert.equal(allowed.allowed, true);
+  assert.equal(allowed.limit, FREE_MENU_EXTRACTION_LIMIT);
+  assert.equal(allowed.remaining, FREE_MENU_EXTRACTION_LIMIT);
+
+  assert.equal(blocked.allowed, false);
+  assert.equal(blocked.reason, "menu_extraction_limit_reached");
+  assert.equal(blocked.limit, FREE_MENU_EXTRACTION_LIMIT);
+  assert.equal(blocked.remaining, 0);
+  assert.equal(blocked.upgradeTarget, "starter");
+});
+
+test("pro plan allows 10 menu extractions and blocks the eleventh", () => {
+  const proRestaurant = restaurant("pro");
+
+  const allowed = getMenuExtractionEntitlement({
+    restaurant: proRestaurant,
+    usage: usage(0, 0, PRO_MENU_EXTRACTION_LIMIT - 1),
+    now,
+  });
+  const blocked = getMenuExtractionEntitlement({
+    restaurant: proRestaurant,
+    usage: usage(0, 0, PRO_MENU_EXTRACTION_LIMIT),
+    now,
+  });
+
+  assert.equal(allowed.allowed, true);
+  assert.equal(allowed.limit, PRO_MENU_EXTRACTION_LIMIT);
+  assert.equal(allowed.remaining, 1);
+
+  assert.equal(blocked.allowed, false);
+  assert.equal(blocked.reason, "menu_extraction_limit_reached");
+  assert.equal(blocked.upgradeTarget, null);
+});
+
+test("active trial counts as pro for menu extraction limit", () => {
+  const trialRestaurant = restaurant("pro", {
+    subscription_status: "trialing",
+    trial_ends_at: "2026-05-09T12:00:00.000Z",
+  });
+
+  const allowed = getMenuExtractionEntitlement({
+    restaurant: trialRestaurant,
+    usage: usage(0, 0, PRO_MENU_EXTRACTION_LIMIT - 1),
+    now,
+  });
+
+  assert.equal(allowed.allowed, true);
+  assert.equal(allowed.limit, PRO_MENU_EXTRACTION_LIMIT);
 });

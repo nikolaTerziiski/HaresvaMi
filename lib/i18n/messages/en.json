@@ -402,6 +402,7 @@
         "regenerate": "Regenerate",
         "errorGeneric": "We couldn't generate the summary. Try again in a bit.",
         "errorNotEnoughData": "At least 10 completed responses are required in the selected period.",
+        "errorForceLimit": "You have reached the limit of 10 regenerations this month. Try again next month.",
         "relativeJustNow": "just now",
         "relativeHours": "{hours} hr ago",
         "relativeDay": "1 day ago",

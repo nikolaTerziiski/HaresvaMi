@@ -244,18 +244,21 @@ export type Database = {
           period: string;
           feedback_count: number;
           receipt_scans_count: number;
+          menu_extraction_count: number;
         };
         Insert: {
           restaurant_id: string;
           period: string;
           feedback_count?: number;
           receipt_scans_count?: number;
+          menu_extraction_count?: number;
         };
         Update: {
           restaurant_id?: string;
           period?: string;
           feedback_count?: number;
           receipt_scans_count?: number;
+          menu_extraction_count?: number;
         };
         Relationships: [];
       };
@@ -399,7 +402,16 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      increment_feedback_usage_if_under_limit: {
+        Args: {
+          p_restaurant_id: string;
+          p_period: string;
+          p_limit: number;
+        };
+        Returns: number | null;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

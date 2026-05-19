@@ -5,6 +5,9 @@ import {
   type PlanTier,
 } from "@/lib/billing/plans";
 
+export const FREE_MENU_EXTRACTION_LIMIT = 1;
+export const PRO_MENU_EXTRACTION_LIMIT = 10;
+
 export type RestaurantEntitlementState = {
   id: string;
   tier: string;
@@ -16,6 +19,7 @@ export type RestaurantEntitlementState = {
 export type MonthlyUsageSnapshot = {
   feedbackCount: number;
   aiScanCount: number;
+  menuExtractionCount: number;
 };
 
 export type ScanCreditSnapshot = {
@@ -31,7 +35,8 @@ export type EntitlementReason =
   | "trial_expired"
   | "feedback_limit_reached"
   | "scan_limit_reached"
-  | "scan_credit_unavailable";
+  | "scan_credit_unavailable"
+  | "menu_extraction_limit_reached";
 
 export type EntitlementResult = {
   allowed: boolean;
@@ -284,4 +289,23 @@ export function applySuccessfulEntitlementConsumption(
     used: entitlement.used + 1,
     remaining: Math.max(0, entitlement.remaining - 1),
   };
+}
+
+export function getMenuExtractionEntitlement(input: {
+  restaurant: RestaurantEntitlementState;
+  usage: MonthlyUsageSnapshot;
+  now?: Date;
+}): EntitlementResult {
+  const plan = resolvePlanAccess(input.restaurant, input.now);
+  const isPro = plan.tier === "pro" || plan.trialActive;
+  const limit = isPro ? PRO_MENU_EXTRACTION_LIMIT : FREE_MENU_EXTRACTION_LIMIT;
+
+  return resultForLimit({
+    used: input.usage.menuExtractionCount,
+    limit,
+    tier: plan.tier,
+    paidTierInactive: plan.paidTierInactive,
+    trialExpired: plan.trialExpired,
+    limitReason: "menu_extraction_limit_reached",
+  });
 }

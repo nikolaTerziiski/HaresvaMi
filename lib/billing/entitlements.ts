@@ -4,6 +4,7 @@ import {
   applySuccessfulEntitlementConsumption,
   emptyEntitlementResult,
   getFeedbackEntitlement,
+  getMenuExtractionEntitlement,
   getScanEntitlement,
   hasProAccess,
   shouldConsumeScanCreditGrant,
@@ -78,6 +79,24 @@ export async function canScanReceipt(
     restaurant,
     usage,
     creditSummary,
+  });
+}
+
+export async function canExtractMenu(
+  restaurantId: string,
+): Promise<EntitlementResult> {
+  const [restaurant, usage] = await Promise.all([
+    getRestaurantEntitlementRow(restaurantId),
+    getMonthlyUsage(restaurantId),
+  ]);
+
+  if (!restaurant) {
+    return emptyEntitlementResult("restaurant_not_found");
+  }
+
+  return getMenuExtractionEntitlement({
+    restaurant,
+    usage,
   });
 }
 
