@@ -1,27 +1,15 @@
 "use client";
 
-import { useRef } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ChevronRight, Plus, Sparkles, Upload } from "lucide-react";
 
 interface MenuEmptyStateProps {
-  onFileSelect: (file: File) => void;
   onManualEntry: () => void;
 }
 
-export function MenuEmptyState({
-  onFileSelect,
-  onManualEntry,
-}: MenuEmptyStateProps) {
+export function MenuEmptyState({ onManualEntry }: MenuEmptyStateProps) {
   const t = useTranslations("dashboard.menu");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onFileSelect(e.target.files[0]);
-      e.target.value = "";
-    }
-  };
 
   return (
     <div className="mx-auto w-full max-w-[1080px] px-10 py-12 pb-20 max-md:px-6 max-md:py-8">
@@ -66,10 +54,10 @@ export function MenuEmptyState({
             {t("aiCardDesc")}
           </p>
 
-          {/* Drop zone */}
-          <label
-            htmlFor="menu-file-empty"
-            className="mt-6 flex cursor-pointer flex-col items-center justify-center gap-4 rounded border-2 border-dashed border-[var(--accent)] bg-[var(--bg)] px-6 py-10 text-center transition-colors hover:bg-[var(--bg-2)]"
+          {/* Link to new import flow */}
+          <Link
+            href="/dashboard/menu/import-ai"
+            className="mt-6 flex flex-col items-center justify-center gap-4 rounded border-2 border-dashed border-[var(--accent)] bg-[var(--bg)] px-6 py-10 text-center transition-colors hover:bg-[var(--bg-2)]"
           >
             <span className="grid size-12 place-items-center rounded-full border border-[var(--rule)] bg-[var(--paper)] text-[var(--accent)]">
               <Upload size={20} strokeWidth={1.5} />
@@ -80,15 +68,7 @@ export function MenuEmptyState({
             <span className="rounded bg-[var(--accent)] px-6 py-2.5 font-[var(--f-ui)] text-[14px] font-medium text-[var(--paper)] transition-colors hover:bg-[var(--ink)]">
               {t("aiCardCta")}
             </span>
-            <input
-              id="menu-file-empty"
-              type="file"
-              ref={fileInputRef}
-              accept="image/*,application/pdf"
-              className="sr-only"
-              onChange={handleFileChange}
-            />
-          </label>
+          </Link>
 
           <p className="mt-4 font-[var(--f-mono)] text-[11px] tracking-wide text-[var(--ink-mute)]">
             JPG · PNG · PDF · до 10 MB

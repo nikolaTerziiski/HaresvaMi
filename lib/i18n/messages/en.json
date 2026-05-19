@@ -392,6 +392,43 @@
           "cta": "Upgrade to Pro",
           "backToMenu": "← back to menu"
         },
+        "review": {
+          "eyebrow": "AI import · step 3 of 3",
+          "title": "Review and confirm the <em>menu</em>.",
+          "subtitle": "{count} dishes in {categories} categories. I've flagged in yellow the ones that need a look.",
+          "summary": {
+            "title": "Analysis complete.",
+            "body": "{count} files processed",
+            "stats": {
+              "items": "dishes",
+              "categories": "categories",
+              "flagged": "to review"
+            }
+          },
+          "existingMenuNotice": "Your menu already has {count} dishes. New ones will be added on top. Duplicates are marked with !",
+          "toolbar": {
+            "searchPlaceholder": "Search dish, category…",
+            "all": "All",
+            "flagged": "Flagged only",
+            "sortByConfidence": "Sort by confidence",
+            "collapseAll": "Collapse all",
+            "expandAll": "Expand all"
+          },
+          "uncategorized": "Uncategorised",
+          "warn": {
+            "fixChip": "fix"
+          },
+          "commit": {
+            "ready": "Ready to import {count} dishes?",
+            "warning": "{count} dishes have warnings — we recommend reviewing them first.",
+            "discard": "Start over",
+            "cta": "Import menu",
+            "saving": "Saving..."
+          },
+          "errors": {
+            "saveFailed": "Save failed. Please try again."
+          }
+        },
         "errors": {
           "tooManyFiles": "You can upload up to 8 files at once.",
           "fileTooLarge": "The file \"{name}\" is larger than 10 MB.",

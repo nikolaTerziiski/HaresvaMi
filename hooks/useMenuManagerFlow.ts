@@ -4,14 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import {
-  MAX_MENU_FILE_SIZE_BYTES,
-  MIN_MENU_ITEMS_FOR_NEXT_STEP,
-} from "@/lib/menu/constants";
-import {
-  extractMenuItemsFromFile,
-  saveMenuItems,
-} from "@/lib/menu/client-actions";
+import { MIN_MENU_ITEMS_FOR_NEXT_STEP } from "@/lib/menu/constants";
+import { saveMenuItems } from "@/lib/menu/client-actions";
 import {
   categoryKey,
   createEmptyRow,
@@ -29,7 +23,7 @@ import type {
 } from "@/lib/menu/types";
 import { validateRows } from "@/lib/menu/validation";
 
-type MenuMode = "empty" | "manual_starter" | "uploading" | "review";
+type MenuMode = "empty" | "manual_starter" | "review";
 
 type UseMenuManagerFlowInput = {
   restaurantId: string;
@@ -131,33 +125,6 @@ export function useMenuManagerFlow({
 
   function clearCategoryFilter() {
     setSelectedCategoryKeys(null);
-  }
-
-  async function handleFileSelect(file: File) {
-    if (file.size > MAX_MENU_FILE_SIZE_BYTES) {
-      setError(t("errors.fileTooLarge"));
-      return;
-    }
-
-    setMode("uploading");
-    setError(null);
-
-    try {
-      const newItems = await extractMenuItemsFromFile({
-        file,
-        uploadErrorMessage: t("errors.upload"),
-        emptyExtractionMessage: t("errors.emptyExtraction"),
-      });
-
-      setItems(newItems);
-      setEditMode(true);
-      expandAllFromItems(newItems);
-      setMode("review");
-    } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : t("errors.upload"));
-      setMode("empty");
-    }
   }
 
   function handleManualEntry() {
@@ -364,7 +331,6 @@ export function useMenuManagerFlow({
     clearFocusItemId: () => {
       focusItemIdRef.current = null;
     },
-    handleFileSelect,
     handleManualEntry,
     handleManualStart,
     handleManualBack,

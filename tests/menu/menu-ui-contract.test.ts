@@ -42,7 +42,7 @@ test("restaurant setup redirects owners to menu activation", () => {
 test("first-time menu state offers AI upload, manual entry, and skip affordance", () => {
   assert.match(menuEmptyStateSource, /t\.rich\("firstTimeTitle"/);
   assert.match(menuEmptyStateSource, /t\("firstTimeSubtitle"\)/);
-  assert.match(menuEmptyStateSource, /accept="image\/\*,application\/pdf"/);
+  assert.match(menuEmptyStateSource, /\/dashboard\/menu\/import-ai/);
   assert.match(menuEmptyStateSource, /onManualEntry/);
   assert.match(menuEmptyPanelSource, /href="\/dashboard"/);
   assert.match(menuEmptyPanelSource, /t\("skipForNow"\)/);

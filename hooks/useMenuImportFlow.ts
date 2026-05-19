@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useReducer } from "react";
+import { useRouter } from "next/navigation";
 
 import type { EntitlementResult } from "@/lib/billing/entitlements-core";
 import {
@@ -9,6 +10,8 @@ import {
   saveImportDraft,
 } from "@/lib/menu/import-draft";
 import type { MenuImportItem, MenuImportResult } from "@/lib/menu/import-types";
+import { saveMenuItems } from "@/lib/menu/client-actions";
+import type { ValidatedMenuItem } from "@/lib/menu/types";
 
 export type ImportMode =
   | "upload"
@@ -144,6 +147,7 @@ export function useMenuImportFlow({
   restaurantId,
   entitlement,
 }: UseMenuImportFlowOptions) {
+  const router = useRouter();
   // Compute initial state once — useMemo with empty deps acts like a constant
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialState = useMemo(
@@ -277,13 +281,34 @@ export function useMenuImportFlow({
     dispatch({ type: "DISCARD" });
   }, [restaurantId]);
 
-  // Stubbed for Phase 3 — Phase 3 will wire this to saveMenuItems
-  const commit = useCallback((_items: MenuImportItem[]) => {
-    console.warn(
-      "[useMenuImportFlow] commit() is not yet implemented — " +
-        "Phase 3 will wire this to saveMenuItems",
-    );
-  }, []);
+  const commit = useCallback(
+    async (items: MenuImportItem[]) => {
+      dispatch({ type: "START_SAVING" });
+      try {
+        const validated: ValidatedMenuItem[] = items.map((item) => ({
+          name_bg: item.name_bg,
+          category: item.category === "Некласифицирано" ? null : item.category,
+          price: item.price,
+          description_bg: item.description_bg,
+        }));
+
+        await saveMenuItems({
+          restaurantId,
+          items: validated,
+          removedExistingIds: [],
+        });
+
+        clearImportDraft(restaurantId);
+        router.push(`/dashboard/menu?imported=${items.length}`);
+      } catch {
+        dispatch({
+          type: "FAIL_PROCESSING",
+          error: "Запазването пропадна. Опитай отново.",
+        });
+      }
+    },
+    [restaurantId, router],
+  );
 
   return {
     state,

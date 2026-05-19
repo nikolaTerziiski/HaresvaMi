@@ -4,7 +4,7 @@ import type { EntitlementResult } from "@/lib/billing/entitlements-core";
 import { useMenuImportFlow } from "@/hooks/useMenuImportFlow";
 
 import { ImportProcessingStep } from "./ImportProcessingStep";
-import { ImportReviewStepPlaceholder } from "./ImportReviewStepPlaceholder";
+import { ImportReviewStep } from "./ImportReviewStep";
 import { ImportStepper } from "./ImportStepper";
 import { ImportUploadStep } from "./ImportUploadStep";
 import { MenuTierLockedCard } from "./MenuTierLockedCard";
@@ -35,6 +35,7 @@ export function MenuImportFlow({
     startExtraction,
     cancelProcessing,
     discard,
+    commit,
   } = useMenuImportFlow({ restaurantId, entitlement, existingItems });
 
   const { mode, files, result, error } = state;
@@ -69,7 +70,13 @@ export function MenuImportFlow({
       )}
 
       {(mode === "review" || mode === "saving") && result && (
-        <ImportReviewStepPlaceholder result={result} onDiscard={discard} />
+        <ImportReviewStep
+          result={result}
+          existingItemsCount={existingItems.length}
+          onDiscard={discard}
+          onCommit={commit}
+          saving={mode === "saving"}
+        />
       )}
     </div>
   );
