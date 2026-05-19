@@ -249,6 +249,17 @@ export function getScanEntitlement(input: {
   };
 }
 
+export function hasProAccess(restaurant: {
+  tier: string;
+  trial_ends_at: string | null;
+}): boolean {
+  if (normalizeTier(restaurant.tier) === "pro") {
+    return true;
+  }
+
+  return isFuture(restaurant.trial_ends_at, new Date());
+}
+
 export function shouldConsumeScanCreditGrant(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;

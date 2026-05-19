@@ -5,6 +5,7 @@ import {
   emptyEntitlementResult,
   getFeedbackEntitlement,
   getScanEntitlement,
+  hasProAccess,
   shouldConsumeScanCreditGrant,
   type EntitlementReason,
   type EntitlementResult,
@@ -20,7 +21,7 @@ import {
 } from "@/lib/billing/usage";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
-export { getCurrentUsagePeriod, getMonthlyUsage };
+export { getCurrentUsagePeriod, getMonthlyUsage, hasProAccess };
 export type { EntitlementReason, EntitlementResult };
 
 async function getRestaurantEntitlementRow(restaurantId: string) {

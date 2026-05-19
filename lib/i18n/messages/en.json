@@ -390,6 +390,23 @@
         "showHidden": "Show all",
         "hideAll": "Hide low-sample",
         "noDelta": "—"
+      },
+      "aiSummary": {
+        "eyebrow": "Pro insights",
+        "title": "Weekly Bulgarian summary",
+        "lockedCopy": "The Pro plan summarizes what's happening with your menu in one or two sentences. No charts, no jargon.",
+        "lockedCta": "Upgrade to Pro",
+        "lockedPrice": "From €10/month",
+        "generate": "Generate summary",
+        "generating": "Generating...",
+        "regenerate": "Regenerate",
+        "errorGeneric": "We couldn't generate the summary. Try again in a bit.",
+        "errorNotEnoughData": "At least 10 completed responses are required in the selected period.",
+        "relativeJustNow": "just now",
+        "relativeHours": "{hours} hr ago",
+        "relativeDay": "1 day ago",
+        "relativeDays": "{days} days ago",
+        "updated": "Updated {relative}"
       }
     }
   }

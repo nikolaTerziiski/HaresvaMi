@@ -11,6 +11,8 @@ export type OwnerRestaurant = {
   slug: string;
   language_default: Locale | null;
   customer_languages: string[] | null;
+  tier: string;
+  trial_ends_at: string | null;
 };
 
 export async function getCurrentOwnerState() {
@@ -35,7 +37,9 @@ export async function getCurrentOwnerState() {
 
   const { data: restaurant, error: restaurantError } = await supabase
     .from("restaurants")
-    .select("id, name, slug, language_default, customer_languages")
+    .select(
+      "id, name, slug, language_default, customer_languages, tier, trial_ends_at",
+    )
     .eq("owner_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)

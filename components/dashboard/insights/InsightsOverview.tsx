@@ -1,6 +1,7 @@
 import { DishRankingTable } from "@/components/dashboard/insights/DishRankingTable";
 import { DishTrendChart } from "@/components/dashboard/insights/DishTrendChart";
 import { InsightHighlights } from "@/components/dashboard/insights/InsightHighlights";
+import { InsightsAiSummary } from "@/components/dashboard/insights/InsightsAiSummary";
 import { InsightsEmptyState } from "@/components/dashboard/insights/InsightsEmptyState";
 import { InsightsSummary } from "@/components/dashboard/insights/InsightsSummary";
 import { PeriodSwitcher } from "@/components/dashboard/insights/PeriodSwitcher";
@@ -13,6 +14,11 @@ import type { InsightPeriodKey } from "@/lib/insights/types";
 type InsightsOverviewProps = {
   data: InsightsDashboardData;
   trendCandidates: DishCandidate[];
+  trialActive: boolean;
+  initialAiSummary: {
+    summaryText: string;
+    generatedAt: string;
+  } | null;
 };
 
 function formatDateRange(start: string, end: string) {
@@ -75,6 +81,8 @@ function emptyStateFor(data: InsightsDashboardData) {
 export function InsightsOverview({
   data,
   trendCandidates,
+  trialActive,
+  initialAiSummary,
 }: InsightsOverviewProps) {
   const emptyState = emptyStateFor(data);
   const { period } = data;
@@ -99,6 +107,15 @@ export function InsightsOverview({
         currentFrom={period.currentFrom}
         currentTo={period.currentTo}
       />
+
+      <section className="mt-8 max-w-[760px]">
+        <InsightsAiSummary
+          period={period}
+          tier={data.restaurant.tier ?? "free"}
+          trialActive={trialActive}
+          initialSummary={initialAiSummary}
+        />
+      </section>
 
       {emptyState ? (
         <InsightsEmptyState kind={emptyState} />

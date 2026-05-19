@@ -390,6 +390,23 @@
         "showHidden": "Покажи всички",
         "hideAll": "Скрий ниските",
         "noDelta": "—"
+      },
+      "aiSummary": {
+        "eyebrow": "Pro прозрения",
+        "title": "Седмично резюме на български",
+        "lockedCopy": "Pro план обобщава какво се случва с менюто ти, с една-две изречения. Без графики, без жаргон.",
+        "lockedCta": "Обнови до Pro",
+        "lockedPrice": "От €10/месец",
+        "generate": "Генерирай резюме",
+        "generating": "Генерира...",
+        "regenerate": "Регенерирай",
+        "errorGeneric": "Не успяхме да генерираме резюме. Опитай отново след малко.",
+        "errorNotEnoughData": "Нужни са поне 10 завършени отзива в избрания период.",
+        "relativeJustNow": "току-що",
+        "relativeHours": "преди {hours} ч.",
+        "relativeDay": "преди 1 ден",
+        "relativeDays": "преди {days} дни",
+        "updated": "Обновено {relative}"
       }
     }
   }

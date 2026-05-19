@@ -370,6 +370,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      insight_summaries: {
+        Row: {
+          id: string;
+          restaurant_id: string;
+          period_start: string;
+          period_end: string;
+          summary_text: string;
+          generated_at: string;
+        };
+        Insert: {
+          id?: string;
+          restaurant_id: string;
+          period_start: string;
+          period_end: string;
+          summary_text: string;
+          generated_at?: string;
+        };
+        Update: {
+          id?: string;
+          restaurant_id?: string;
+          period_start?: string;
+          period_end?: string;
+          summary_text?: string;
+          generated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
