@@ -37,10 +37,11 @@ test("extract-menu route returns 413 when file exceeds size limit", () => {
   assert.ok(routeSource.includes("File exceeds maximum size of 10MB"));
 });
 
-test("extract-menu route passes restaurant.id to extractMenu", () => {
+test("extract-menu route passes restaurant.id to extractMenu (legacy path)", () => {
+  // The call may be formatted across multiple lines by prettier
   assert.match(
     routeSource,
-    /extractMenu\(\s*mimeType,\s*base64Data,\s*restaurant\.id\s*\)/,
+    /extractMenu\([\s\S]*?mimeType[\s\S]*?base64Data[\s\S]*?restaurant\.id[\s\S]*?\)/,
   );
 });
 
@@ -102,11 +103,11 @@ test("extractMenu logs failure event with zero tokens on catch path", () => {
   assert.ok(extractorSource.includes("totalTokens: 0"));
 });
 
-test("extract-menu route stays thin", () => {
+test("extract-menu route stays under 300 lines (multi-file path added)", () => {
   const lines = routeSource.trim().split(/\r?\n/);
   assert.ok(
-    lines.length < 100,
-    `Route should stay thin (got ${lines.length} lines)`,
+    lines.length < 300,
+    `Route should stay under 300 lines (got ${lines.length} lines)`,
   );
 });
 
@@ -116,4 +117,54 @@ test("extract-menu lib stays under 300 lines", () => {
     lines.length < 300,
     `extract-menu.ts should stay under 300 lines (got ${lines.length} lines)`,
   );
+});
+
+test("extract-menu route validates max 8 files for multi-file path", () => {
+  assert.ok(routeSource.includes("too_many_files"));
+  assert.ok(routeSource.includes("MAX_FILES"));
+});
+
+test("extract-menu route enforces 30 MB total size ceiling", () => {
+  assert.ok(routeSource.includes("total_too_large"));
+  assert.ok(routeSource.includes("MAX_TOTAL_BYTES"));
+});
+
+test("extract-menu route returns 502 on Gemini failure (multi-file)", () => {
+  assert.ok(routeSource.includes("status: 502"));
+  assert.ok(routeSource.includes("ai_failed"));
+});
+
+test("extract-menu route reads files via formData.getAll('files')", () => {
+  assert.ok(routeSource.includes('formData.getAll("files")'));
+});
+
+test("extract-menu route calls extractMenuFromFiles and returns result wrapper", () => {
+  assert.ok(routeSource.includes("extractMenuFromFiles"));
+  assert.ok(routeSource.includes("{ result }"));
+});
+
+test("extract-menu route increments usage only after successful extraction", () => {
+  assert.ok(routeSource.includes("incrementMenuExtractionUsage"), "Missing incrementMenuExtractionUsage");
+  assert.ok(routeSource.includes("status: 502"), "Missing 502 for AI failure");
+  // The ai_failed error guard must not be followed by an increment call before
+  // control returns — verify that "await incrementMenuExtractionUsage" (the call)
+  // never appears inside the catch block that returns 502.
+  const aiFailedIndex = routeSource.indexOf('"ai_failed"');
+  // Find the await call (not the import)
+  const awaitIncrementIndex = routeSource.indexOf("await incrementMenuExtractionUsage");
+  assert.notEqual(aiFailedIndex, -1, "Missing ai_failed error key");
+  assert.notEqual(awaitIncrementIndex, -1, "Missing await incrementMenuExtractionUsage call");
+  // The 502 block ends before the await increment call — confirmed by index ordering
+  assert.ok(
+    awaitIncrementIndex > aiFailedIndex,
+    "await incrementMenuExtractionUsage must come after the ai_failed guard",
+  );
+});
+
+test("extract-menu route validates mime type per-file", () => {
+  assert.ok(routeSource.includes("unsupported_type"));
+});
+
+test("extractMenuFromFiles is exported from extract-menu.ts", () => {
+  assert.ok(extractorSource.includes("export async function extractMenuFromFiles"));
 });

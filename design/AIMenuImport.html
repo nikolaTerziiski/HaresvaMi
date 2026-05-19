@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HaresvaMi — Импорт на меню с AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #F6F1E8; --bg-2: #EDE4D3; --paper: #FDF9F1;
+  --ink: #1A1512; --ink-2: #4A3F35; --ink-mute: #8A7A68;
+  --rule: #D9CEBB; --rule-soft: #E6DDC9;
+  --accent: #C24D2C; --accent-2: #E89A3C; --plum: #5B2A2A;
+  --good: #4E6B3C; --warn: #B47A1F;
+  --f-display: 'Instrument Serif', Georgia, serif;
+  --f-ui: 'Inter', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Category palette — matches user's screenshot */
+  --c-alc-bg: #E5D7C5;   --c-alc-dot: #5B3F2B;
+  --c-garn-bg: #F4E1C5;  --c-garn-dot: #C77A28;
+  --c-napit-bg: #E3D9D6; --c-napit-dot: #7C5A6E;
+  --c-osn-bg: #EBD9CF;   --c-osn-dot: #B23E1F;
+  --c-pech-bg: #D5DDC8;  --c-pech-dot: #4E6B3C;
+  --c-salat-bg: #F1DDC4; --c-salat-dot: #C77A28;
+  --c-skar-bg: #F0D2B6;  --c-skar-dot: #D17A2A;
+  --c-pred-bg: #DECBB3;  --c-pred-dot: #8B6235;
+  --c-desert-bg: #ECD6D0; --c-desert-dot: #9B4A3F;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size:14.5px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+button { font-family: inherit; cursor: pointer; background: transparent; border: none; color: inherit; padding: 0; }
+a { color: inherit; text-decoration: none; }
+input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+svg { stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ===== Preview tabs ===== */
+.tabs-bar { position: sticky; top: 0; z-index: 80; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 14px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.tabs-bar .label { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); }
+.tabs-bar .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs-bar button { padding: 8px 14px; border-radius: 999px; font-size: 12px; color: var(--ink-2); border: 1px solid var(--rule); font-family: var(--f-mono); }
+.tabs-bar button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tabs-bar .spacer { flex: 1; }
+.tabs-bar .back { font-family: var(--f-mono); font-size: 11px; color: var(--ink-mute); }
+
+/* ===== Shell ===== */
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 240px; flex-shrink: 0; background: var(--bg); border-right: 1px solid var(--rule); padding: 20px 16px 16px; display: flex; flex-direction: column; position: sticky; top: 51px; height: calc(100vh - 51px); }
+.sb-brand { display: flex; align-items: center; gap: 8px; color: var(--ink-mute); font-size: 13px; padding: 0 8px; }
+.sb-mark { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: var(--paper); display: grid; place-items: center; font-family: var(--f-display); font-style: italic; font-size: 13px; line-height: 1; }
+.sb-rest { font-family: var(--f-display); font-size: 22px; margin-top: 14px; line-height: 1.05; letter-spacing: -0.01em; padding: 0 8px; }
+.sb-chip { display: inline-block; margin: 8px 8px 0; padding: 3px 8px; border: 1px solid var(--rule); border-radius: 999px; font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute); letter-spacing: 0.08em; text-transform: uppercase; }
+.sep { height: 1px; background: var(--rule); margin: 20px 0 0; }
+.sb-group { padding-top: 20px; }
+.sb-label { font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); padding: 0 8px 8px; }
+.sb-nav { display: flex; flex-direction: column; gap: 2px; }
+.sb-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; font-size: 14px; color: var(--ink-2); }
+.sb-item.on { background: var(--paper); color: var(--ink); font-weight: 500; }
+.sb-item .ic { width: 16px; height: 16px; opacity: .75; display: inline-grid; place-items: center; }
+.sb-item.on .ic { color: var(--accent); opacity: 1; }
+.sb-bottom { margin-top: auto; padding: 20px 8px 0; display: flex; flex-direction: column; gap: 16px; }
+.av-row { display: flex; align-items: center; gap: 10px; }
+.av { width: 36px; height: 36px; border-radius: 50%; background: var(--plum); color: var(--paper); display: grid; place-items: center; font-family: var(--f-display); font-style: italic; font-size: 18px; line-height: 1; }
+.av-row .who { font-size: 13px; }
+.av-row .who b { display: block; color: var(--ink); font-weight: 500; }
+.av-row .who span { font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.06em; }
+.lang { display: flex; gap: 2px; font-family: var(--f-mono); font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.lang button { padding: 2px 6px; color: inherit; }
+.lang button.on { color: var(--ink); border-bottom: 1px solid var(--accent); }
+
+/* ===== Main ===== */
+.main { flex: 1; min-width: 0; }
+.topbar { position: sticky; top: 51px; z-index: 20; border-bottom: 1px solid var(--rule); background: color-mix(in oklab, var(--bg) 85%, transparent); backdrop-filter: blur(8px); }
+.topbar-inner { padding: 22px 48px; display: flex; align-items: center; gap: 12px; }
+.greet { flex: 1; font-family: var(--f-display); font-size: 30px; line-height: 1.05; letter-spacing: -0.02em; }
+.greet em { font-style: italic; color: var(--accent); }
+.prof { display: inline-grid; place-items: center; height: 36px; border-radius: 8px; padding: 4px 12px 4px 4px; gap: 8px; }
+.content { padding: 36px 48px 80px; }
+
+/* ===== Step header (used by step 2, 3, 4) ===== */
+.eyebrow { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.intro h2 { font-family: var(--f-display); font-size: 44px; line-height: 1.02; letter-spacing: -0.02em; margin: 8px 0 14px; font-weight: 400; }
+.intro h2 em { font-style: italic; color: var(--accent); }
+.intro p { margin: 0; color: var(--ink-mute); font-size: 15.5px; max-width: 620px; line-height: 1.55; }
+
+/* Step indicator */
+.stepper {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--paper); border: 1px solid var(--rule);
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.stepper .s { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-mute); }
+.stepper .s.done { color: var(--good); }
+.stepper .s.on { color: var(--accent); }
+.stepper .s .num {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--rule);
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 600;
+}
+.stepper .s.done .num { background: var(--good); border-color: var(--good); color: var(--paper); }
+.stepper .s.on .num { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+.stepper .sep { width: 18px; height: 1px; background: var(--rule); }
+
+/* ===========================================================
+   STEP 1 — UPLOAD
+   =========================================================== */
+.upload-grid {
+  margin-top: 36px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.dropzone {
+  background: var(--paper);
+  border: 2px dashed color-mix(in oklab, var(--accent) 30%, var(--rule));
+  border-radius: 16px;
+  padding: 40px 36px;
+  position: relative;
+  min-height: 360px;
+  display: flex; flex-direction: column;
+}
+.dropzone.is-dragging {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 6%, var(--paper));
+}
+.dz-top {
+  display: flex; align-items: flex-start; gap: 18px;
+  margin-bottom: 20px;
+}
+.dz-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(140deg, var(--accent), #D17A2A);
+  color: var(--paper);
+  display: grid; place-items: center;
+  box-shadow: 0 12px 28px -10px rgba(194,77,44,0.5);
+  flex-shrink: 0;
+}
+.dz-icon svg { width: 24px; height: 24px; }
+.dz-top h3 {
+  font-family: var(--f-display); font-size: 30px;
+  margin: 0 0 4px; font-weight: 400; letter-spacing: -0.01em;
+}
+.dz-top h3 em { font-style: italic; color: var(--accent); }
+.dz-top p { margin: 0; font-size: 14px; color: var(--ink-mute); max-width: 460px; }
+
+.dz-cta {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px dashed var(--rule);
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap;
+}
+.dz-cta .lbl { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); }
+.dz-cta .btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border-radius: 9px;
+  font-size: 14px; font-weight: 500;
+}
+.dz-cta .btn-pick { background: var(--ink); color: var(--paper); }
+.dz-cta .btn-pick:hover { background: var(--accent); }
+.dz-cta .btn-pick svg { width: 14px; height: 14px; }
+.dz-cta .btn-cam {
+  background: transparent; border: 1px solid var(--rule); color: var(--ink-2);
+  padding: 10px 16px;
+}
+.dz-cta .btn-cam:hover { border-color: var(--ink); color: var(--ink); }
+.dz-formats { font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-mute); letter-spacing: 0.08em; text-transform: uppercase; margin-left: auto; }
+
+/* Selected files list — appears below CTA once user picks */
+.dz-files {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.dz-file {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dz-file .thumb {
+  aspect-ratio: 4/5; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(135deg, #C9BDA8, #B9A88E);
+  position: relative;
+  display: grid; place-items: center;
+  color: rgba(255,255,255,0.7);
+}
+.dz-file .thumb.pdf { background: linear-gradient(135deg, #5B2A2A, #8B3F3F); }
+.dz-file .thumb.pdf::after {
+  content: 'PDF'; font-family: var(--f-mono); font-size: 22px;
+  font-weight: 600; color: var(--paper); letter-spacing: 0.06em;
+}
+.dz-file .thumb.img1 { background: linear-gradient(160deg, #D4C5A8 0%, #9B7E5C 50%, #5B3F2B 100%); }
+.dz-file .thumb.img2 { background: linear-gradient(160deg, #E8D4B5 0%, #B89764 50%, #7C5430 100%); }
+.dz-file .thumb.img3 { background: linear-gradient(160deg, #C8B89A 0%, #8C7456 50%, #4A3525 100%); }
+.dz-file .thumb svg { width: 24px; height: 24px; opacity: 0.85; }
+.dz-file .nm { font-size: 11.5px; color: var(--ink-2); line-height: 1.3; word-break: break-all; }
+.dz-file .nm b { display: block; color: var(--ink); font-weight: 500; font-size: 12px; }
+.dz-file .nm .meta { font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute); margin-top: 2px; letter-spacing: 0.04em; text-transform: uppercase; }
+.dz-file .rm {
+  position: absolute; top: 6px; right: 6px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(26,21,18,0.65); color: var(--paper);
+  display: grid; place-items: center;
+  opacity: 0; transition: opacity .15s;
+}
+.dz-file:hover .rm { opacity: 1; }
+.dz-file .rm svg { width: 10px; height: 10px; }
+.dz-file.add {
+  border-style: dashed; border-color: var(--rule);
+  align-items: center; justify-content: center;
+  color: var(--ink-mute); font-family: var(--f-mono);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; aspect-ratio: auto;
+  padding: 0; min-height: 100%;
+}
+.dz-file.add:hover { color: var(--accent); border-color: var(--accent); background: color-mix(in oklab, var(--accent) 4%, var(--bg)); }
+
+.dz-actions {
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  display: flex; align-items: center; gap: 14px;
+}
+.dz-actions .summary { flex: 1; font-size: 13px; color: var(--ink-2); }
+.dz-actions .summary b { color: var(--ink); font-weight: 500; }
+.dz-actions .summary span { color: var(--ink-mute); font-family: var(--f-mono); font-size: 11px; }
+.dz-actions .btn-start {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 22px; border-radius: 10px;
+  background: var(--accent); color: var(--paper);
+  font-size: 14.5px; font-weight: 500;
+  box-shadow: 0 10px 24px -10px rgba(194,77,44,0.55);
+}
+.dz-actions .btn-start:hover { background: var(--plum); }
+.dz-actions .btn-start svg { width: 15px; height: 15px; }
+
+/* Side rail: tips + manual fallback */
+.up-aside {
+  display: flex; flex-direction: column; gap: 16px;
+  position: sticky; top: 130px;
+}
+.tip-card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px 24px;
+}
+.tip-card .lbl { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 10px; }
+.tip-card h4 { font-family: var(--f-display); font-size: 22px; margin: 0 0 6px; font-weight: 400; letter-spacing: -0.01em; }
+.tip-card h4 em { font-style: italic; color: var(--accent); }
+.tip-card p { margin: 0; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+.tips-list { list-style: none; margin: 14px 0 0; padding: 0; }
+.tips-list li {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 13px; color: var(--ink-2); line-height: 1.5;
+}
+.tips-list li:first-child { border-top: none; padding-top: 0; }
+.tips-list li b { color: var(--ink); font-weight: 500; }
+.tips-list li .ic {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: color-mix(in oklab, var(--accent) 8%, var(--bg));
+  color: var(--accent);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.tips-list li .ic svg { width: 13px; height: 13px; }
+
+.manual-fallback {
+  border: 1px dashed var(--rule);
+  border-radius: 12px;
+  padding: 16px 20px;
+  background: transparent;
+  display: flex; align-items: center; gap: 14px;
+}
+.manual-fallback .t { flex: 1; font-size: 13px; color: var(--ink-2); }
+.manual-fallback .t b { color: var(--ink); display: block; font-weight: 500; }
+.manual-fallback a { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); }
+.manual-fallback a:hover { color: var(--accent); }
+
+/* ===========================================================
+   STEP 2 — PROCESSING
+   =========================================================== */
+.proc-wrap {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 28px;
+}
+.proc-main {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 36px 36px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.proc-main::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg,
+    var(--accent) 0%, var(--accent) 64%,
+    var(--rule) 64%, var(--rule) 100%);
+}
+.proc-main .stripe {
+  position: absolute; top: 0; left: 0; height: 3px; width: 64%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.proc-head { display: flex; align-items: flex-start; gap: 18px; }
+.proc-pulse {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(140deg, var(--accent), #D17A2A);
+  color: var(--paper); display: grid; place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 12%, transparent);
+  animation: glow 1.8s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,100% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 12%, transparent); }
+  50% { box-shadow: 0 0 0 14px color-mix(in oklab, var(--accent) 4%, transparent); }
+}
+.proc-pulse svg { width: 22px; height: 22px; }
+.proc-head h3 { font-family: var(--f-display); font-size: 30px; margin: 0 0 4px; font-weight: 400; letter-spacing: -0.01em; }
+.proc-head h3 em { font-style: italic; color: var(--accent); }
+.proc-head p { margin: 0; font-size: 14px; color: var(--ink-mute); max-width: 480px; line-height: 1.55; }
+
+.proc-progress {
+  margin-top: 28px;
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.proc-progress .bar { flex: 1; height: 5px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+.proc-progress .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 3px; transition: width .4s; }
+.proc-progress .pct { color: var(--ink); font-weight: 600; font-size: 12.5px; }
+.proc-progress .eta { font-style: normal; }
+
+.proc-log {
+  margin-top: 28px;
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--f-mono); font-size: 12px;
+}
+.proc-log .line { display: flex; align-items: center; gap: 12px; padding: 7px 0; color: var(--ink-mute); }
+.proc-log .line .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); flex-shrink: 0; }
+.proc-log .line.done { color: var(--ink-2); }
+.proc-log .line.done .dot { background: var(--good); }
+.proc-log .line.on { color: var(--ink); }
+.proc-log .line.on .dot { background: var(--accent); animation: dotPulse 1.2s ease-in-out infinite; }
+@keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.proc-log .line .ct { margin-left: auto; color: var(--ink-mute); font-size: 11px; }
+
+/* Right rail — files being processed */
+.proc-files {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.proc-files .h { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 14px; }
+.proc-files .f-list { list-style: none; margin: 0; padding: 0; }
+.proc-files .fitem {
+  display: grid; grid-template-columns: 36px 1fr auto;
+  align-items: center; gap: 12px;
+  padding: 10px 0; border-top: 1px solid var(--rule-soft);
+  font-size: 13px;
+}
+.proc-files .fitem:first-child { border-top: none; }
+.proc-files .fitem .mini {
+  width: 36px; height: 44px; border-radius: 5px;
+  background: linear-gradient(135deg, #C9BDA8, #B9A88E);
+  flex-shrink: 0;
+}
+.proc-files .fitem .mini.pdf { background: linear-gradient(135deg, #5B2A2A, #8B3F3F); }
+.proc-files .fitem .mini.img1 { background: linear-gradient(160deg, #D4C5A8, #5B3F2B); }
+.proc-files .fitem .mini.img2 { background: linear-gradient(160deg, #E8D4B5, #7C5430); }
+.proc-files .fitem .mini.img3 { background: linear-gradient(160deg, #C8B89A, #4A3525); }
+.proc-files .fitem .nm b { display: block; color: var(--ink); font-weight: 500; }
+.proc-files .fitem .nm span { font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.05em; }
+.proc-files .fitem .st { font-family: var(--f-mono); font-size: 10.5px; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.06em; text-transform: uppercase; }
+.proc-files .fitem .st.done { background: color-mix(in oklab, var(--good) 14%, transparent); color: var(--good); }
+.proc-files .fitem .st.on { background: color-mix(in oklab, var(--accent) 14%, transparent); color: var(--accent); }
+.proc-files .fitem .st.queue { color: var(--ink-mute); border: 1px solid var(--rule); }
+
+.proc-stats {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.proc-stats .st { font-size: 13px; color: var(--ink-2); }
+.proc-stats .st .v { font-family: var(--f-display); font-size: 24px; color: var(--ink); display: block; line-height: 1; letter-spacing: -0.01em; }
+.proc-stats .st .l { font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; display: block; }
+
+.proc-foot {
+  margin-top: 18px;
+  font-size: 12.5px; color: var(--ink-mute); line-height: 1.55;
+  display: flex; align-items: center; gap: 10px;
+}
+.proc-foot button {
+  font-family: var(--f-mono); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-mute);
+  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--rule);
+  margin-left: auto;
+}
+.proc-foot button:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ===========================================================
+   STEP 3 — REVIEW
+   =========================================================== */
+.review-summary {
+  margin-top: 28px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 18px 22px;
+  background: color-mix(in oklab, var(--good) 8%, var(--paper));
+  border: 1px solid color-mix(in oklab, var(--good) 25%, var(--rule));
+  border-radius: 12px;
+}
+.review-summary .check {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--good); color: var(--paper);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.review-summary .check svg { width: 17px; height: 17px; stroke-width: 2.5; }
+.review-summary .body { flex: 1; }
+.review-summary .body b { display: block; color: var(--ink); font-size: 15px; }
+.review-summary .body span { color: var(--ink-2); font-size: 13px; }
+.review-summary .stats { display: flex; gap: 18px; }
+.review-summary .stats .stat { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); }
+.review-summary .stats .stat b { display: block; font-family: var(--f-display); font-style: normal; font-size: 24px; color: var(--ink); letter-spacing: -0.01em; line-height: 1; margin-bottom: 4px; font-weight: 400; }
+.review-summary .stats .stat.warn b { color: var(--warn); }
+
+.r-toolbar {
+  margin-top: 24px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.r-toolbar .search {
+  flex: 0 1 320px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 999px;
+}
+.r-toolbar .search input { flex: 1; border: none; outline: none; background: transparent; font-size: 13.5px; }
+.r-toolbar .search svg { width: 14px; height: 14px; color: var(--ink-mute); }
+
+.r-filter {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--rule); background: transparent;
+  font-size: 13px; color: var(--ink-2);
+}
+.r-filter:hover { border-color: var(--ink-mute); color: var(--ink); }
+.r-filter.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.r-filter.warn.on { background: var(--warn); border-color: var(--warn); }
+.r-filter .n { font-family: var(--f-mono); font-size: 10.5px; opacity: 0.7; }
+.r-filter .warn-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+.r-toolbar .spacer { flex: 1; }
+.r-toolbar .bulk {
+  font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-mute); padding: 7px 12px; border-radius: 6px; border: 1px solid transparent;
+}
+.r-toolbar .bulk:hover { color: var(--ink); border-color: var(--rule); }
+
+/* Category accordion — matches user's screenshot */
+.cat-wrap { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+.cat-acc {
+  --c-bg: var(--bg-2);
+  --c-dot: var(--ink-mute);
+  background: var(--c-bg);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cat-acc.k-alc    { --c-bg: var(--c-alc-bg);    --c-dot: var(--c-alc-dot); }
+.cat-acc.k-garn   { --c-bg: var(--c-garn-bg);   --c-dot: var(--c-garn-dot); }
+.cat-acc.k-napit  { --c-bg: var(--c-napit-bg);  --c-dot: var(--c-napit-dot); }
+.cat-acc.k-osn    { --c-bg: var(--c-osn-bg);    --c-dot: var(--c-osn-dot); }
+.cat-acc.k-pech   { --c-bg: var(--c-pech-bg);   --c-dot: var(--c-pech-dot); }
+.cat-acc.k-salat  { --c-bg: var(--c-salat-bg);  --c-dot: var(--c-salat-dot); }
+.cat-acc.k-skar   { --c-bg: var(--c-skar-bg);   --c-dot: var(--c-skar-dot); }
+.cat-acc.k-pred   { --c-bg: var(--c-pred-bg);   --c-dot: var(--c-pred-dot); }
+.cat-acc.k-des    { --c-bg: var(--c-desert-bg); --c-dot: var(--c-desert-dot); }
+
+.cat-acc .cat-h {
+  padding: 18px 22px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer;
+}
+.cat-acc .caret { color: var(--ink-mute); transition: transform .2s; }
+.cat-acc.open .caret { transform: rotate(90deg); color: var(--ink-2); }
+.cat-acc .caret svg { width: 12px; height: 12px; }
+.cat-acc .cat-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c-dot); flex-shrink: 0; }
+.cat-acc .cat-name {
+  font-family: var(--f-display); font-size: 26px; font-weight: 400;
+  margin: 0; letter-spacing: -0.01em; color: var(--ink);
+  flex: 1;
+}
+.cat-acc .cat-meta {
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--ink-mute);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 12px;
+}
+.cat-acc .cat-meta .warn-pill {
+  background: color-mix(in oklab, var(--warn) 15%, transparent);
+  color: var(--warn);
+  padding: 3px 9px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.cat-acc .cat-meta .warn-pill::before { content:''; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); }
+
+.cat-acc .cat-body { padding: 0 16px 16px; display: none; }
+.cat-acc.open .cat-body { display: block; }
+
+.dish {
+  background: color-mix(in oklab, var(--paper) 75%, transparent);
+  border-radius: 8px;
+  margin-top: 6px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 22px 1fr 110px 32px;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  transition: background .12s;
+}
+.dish:hover { background: var(--paper); }
+.dish:first-child { margin-top: 0; }
+.dish.warn { box-shadow: inset 3px 0 0 var(--warn); }
+.dish.warn:hover { box-shadow: inset 3px 0 0 var(--warn); }
+.dish .conf {
+  width: 14px; height: 14px; border-radius: 50%;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.dish .conf.high { background: var(--good); color: var(--paper); }
+.dish .conf.high svg { width: 9px; height: 9px; stroke-width: 3; }
+.dish .conf.mid { background: var(--warn); color: var(--paper); }
+.dish .conf.mid::after { content: '?'; font-family: var(--f-mono); font-size: 10px; font-weight: 700; }
+.dish .conf.low { background: transparent; border: 1.5px solid var(--accent); }
+.dish .conf.low::after { content: '!'; font-family: var(--f-mono); font-size: 10px; font-weight: 700; color: var(--accent); }
+.dish .name-input {
+  background: transparent; border: 1px solid transparent;
+  padding: 6px 8px; border-radius: 5px; width: 100%;
+  font-size: 14.5px; color: var(--ink); font-weight: 500;
+}
+.dish .name-input:focus { outline: none; border-color: var(--accent); background: var(--paper); }
+.dish .price-input {
+  background: transparent; border: 1px solid transparent;
+  padding: 6px 8px; border-radius: 5px; width: 100%;
+  text-align: right; font-family: var(--f-mono); font-size: 13.5px; color: var(--ink); font-weight: 500;
+}
+.dish .price-input:focus { outline: none; border-color: var(--accent); background: var(--paper); }
+.dish .price-wrap { display: flex; align-items: center; gap: 4px; }
+.dish .price-wrap .cur { font-family: var(--f-mono); font-size: 11px; color: var(--ink-mute); flex-shrink: 0; }
+.dish .more { color: var(--ink-mute); width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; }
+.dish .more:hover { background: var(--bg-2); color: var(--ink); }
+
+.dish .warn-note {
+  grid-column: 2 / -1;
+  font-family: var(--f-mono); font-size: 10.5px; color: var(--warn);
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+.dish .warn-note .chip-fix {
+  font-size: 10.5px; padding: 3px 8px; border-radius: 5px;
+  background: var(--warn); color: var(--paper); cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.dish .warn-note .chip-fix:hover { background: color-mix(in oklab, var(--warn) 80%, var(--ink)); }
+.dish .source {
+  font-family: var(--f-mono); font-size: 10px; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: auto;
+}
+.dish .source svg { width: 11px; height: 11px; }
+
+.cat-acc .add-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; margin-top: 8px;
+  border: 1px dashed var(--rule);
+  border-radius: 8px;
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-mute);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.cat-acc .add-row svg { width: 12px; height: 12px; }
+.cat-acc .add-row:hover { color: var(--ink); border-color: var(--ink-mute); background: color-mix(in oklab, var(--paper) 50%, transparent); }
+
+/* Floating commit bar */
+.commit-bar {
+  position: sticky; bottom: 20px;
+  margin: 28px auto 0; max-width: 720px;
+  background: var(--ink); color: var(--paper);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 20px 50px -20px rgba(0,0,0,0.4);
+  z-index: 30;
+}
+.commit-bar .info { flex: 1; font-size: 13px; }
+.commit-bar .info b { display: block; font-size: 14.5px; }
+.commit-bar .info span { color: rgba(253,249,241,0.65); font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.04em; }
+.commit-bar .btn-discard {
+  font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: rgba(253,249,241,0.65); padding: 8px 12px; border-radius: 6px;
+}
+.commit-bar .btn-discard:hover { color: var(--paper); background: rgba(255,255,255,0.06); }
+.commit-bar .btn-commit {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: var(--paper);
+  padding: 11px 20px; border-radius: 8px;
+  font-size: 14px; font-weight: 500;
+}
+.commit-bar .btn-commit:hover { background: #DC5F3D; }
+.commit-bar .btn-commit svg { width: 14px; height: 14px; }
+
+/* ===========================================================
+   Variation separator
+   =========================================================== */
+.variation-hr { margin: 60px 0 0; padding: 0 48px; display: flex; align-items: center; gap: 16px; font-family: var(--f-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute); }
+.variation-hr::before, .variation-hr::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+@media (max-width: 960px) {
+  .upload-grid, .proc-wrap { grid-template-columns: 1fr; }
+  .dish { grid-template-columns: 22px 1fr 90px; }
+  .dish .more { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="tabs-bar">
+  <span class="label">/dashboard/menu/import-ai · Step</span>
+  <div class="btns" id="tabs">
+    <button class="on" data-state="1">1 · Upload</button>
+    <button data-state="2">2 · AI processing</button>
+    <button data-state="3">3 · Review &amp; edit</button>
+  </div>
+  <div class="spacer"></div>
+  <a href="Menu with Aliases.html" class="back">← обратно към менюто</a>
+</div>
+
+<div id="stage"></div>
+
+<script>
+const I = {
+  home: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  msg:  '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 5h16v12H7l-3 3z"/></svg>',
+  fork: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M7 2v8a3 3 0 006 0V2"/><path d="M10 10v12"/><path d="M16 2v20"/></svg>',
+  tablet:'<svg viewBox="0 0 24 24" width="16" height="16"><rect x="5" y="2" width="14" height="20" rx="2"/></svg>',
+  users:'<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="9" cy="8" r="3"/><path d="M3 21c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  user: '<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',
+  sparkles:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.5 5.5l2.5 2.5M16 16l2.5 2.5M5.5 18.5l2.5-2.5M16 8l2.5-2.5"/><path d="M12 8a4 4 0 014 4 4 4 0 01-4 4 4 4 0 01-4-4 4 4 0 014-4z"/></svg>',
+  upload:'<svg viewBox="0 0 24 24"><path d="M12 3v13M6 9l6-6 6 6"/><path d="M4 17v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>',
+  cam:  '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  img:  '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M3 17l5-5 5 5 3-3 5 5"/></svg>',
+  pdf:  '<svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>',
+  x:    '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><polyline points="5 12 10 17 20 7"/></svg>',
+  search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>',
+  chev: '<svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/><polyline points="13 5 20 12 13 19"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  dots: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>',
+  rocket:'<svg viewBox="0 0 24 24"><path d="M12 2c4 2 6 6 6 11l-4 2-4-2c0-5 2-9 6-11z" transform="translate(-3 0)"/><path d="M5 16l3-3M14 19l3-3"/><path d="M9 14l-5 1 1-5"/></svg>',
+  info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v5h1"/></svg>',
+  warn: '<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5"/><path d="M12 18h.01"/></svg>',
+  src:  '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+};
+
+const restaurantName = "Златното пиле";
+const owner = "Test";
+
+function sidebarHtml() {
+  const navWork = [
+    { label:"Начало", icon:I.home },
+    { label:"Отзиви", icon:I.msg },
+    { label:"Меню",   icon:I.fork, on:true },
+    { label:"Таблет", icon:I.tablet },
+  ];
+  const navAcc = [
+    { label:"Екип",      icon:I.users },
+    { label:"Настройки", icon:I.gear },
+    { label:"Профил",    icon:I.user },
+  ];
+  const item = (it) => `<a class="sb-item ${it.on?'on':''}"><span class="ic">${it.icon}</span>${it.label}</a>`;
+  return `
+  <aside class="sidebar">
+    <div class="sb-brand"><span class="sb-mark">h</span>HaresvaMi</div>
+    <div class="sb-rest">${restaurantName}</div>
+    <span class="sb-chip">Безплатен план</span>
+    <div class="sep"></div>
+    <div class="sb-group"><div class="sb-label">Работа</div><nav class="sb-nav">${navWork.map(item).join('')}</nav></div>
+    <div class="sb-group"><div class="sb-label">Акаунт</div><nav class="sb-nav">${navAcc.map(item).join('')}</nav></div>
+    <div class="sb-bottom">
+      <div class="lang"><button class="on">BG</button><span>/</span><button>EN</button></div>
+      <div class="av-row"><div class="av">${owner[0]}</div><div class="who"><b>${owner}</b><span>Собственик</span></div></div>
+    </div>
+  </aside>`;
+}
+
+function topbarHtml() {
+  return `
+  <div class="topbar"><div class="topbar-inner">
+    <h1 class="greet">Добър ден, <em>${owner}</em></h1>
+    <button class="prof"><span class="av" style="width:30px;height:30px;font-size:16px">${owner[0]}</span></button>
+  </div></div>`;
+}
+
+function stepperHtml(current) {
+  const steps = [
+    { n: 1, label: 'Качи файлове' },
+    { n: 2, label: 'AI чете' },
+    { n: 3, label: 'Преглед' },
+    { n: 4, label: 'Готово' },
+  ];
+  return `
+  <div class="stepper">
+    ${steps.map((s, i) => {
+      const cls = s.n < current ? 'done' : s.n === current ? 'on' : '';
+      const num = s.n < current ? I.check : s.n;
+      return `<span class="s ${cls}"><span class="num">${num}</span>${s.label}</span>${i < steps.length-1 ? '<span class="sep"></span>' : ''}`;
+    }).join('')}
+  </div>`;
+}
+
+// =========================================================
+// STEP 1 — UPLOAD
+// =========================================================
+function step1Html() {
+  return `
+  <div class="content">
+    ${stepperHtml(1)}
+    <div class="intro">
+      <div class="eyebrow">Импорт с AI · стъпка 1 от 3</div>
+      <h2>Качи <em>менюто</em> — AI чете, ти само преглеждаш.</h2>
+      <p>Снимай менюто, качи PDF, или дай папка със снимки от двете страни на ламиниран лист. Не е нужно да са перфектни — AI се справя със ръкописни цени, абревиатури и снимки под ъгъл.</p>
+    </div>
+
+    <div class="upload-grid">
+      <div class="dropzone" id="dz">
+        <div class="dz-top">
+          <div class="dz-icon">${I.upload}</div>
+          <div>
+            <h3>Пусни тук <em>файловете</em></h3>
+            <p>Или избери от устройството. Може едновременно няколко снимки + PDF — AI ще ги обедини в едно меню.</p>
+          </div>
+        </div>
+
+        <div class="dz-files" id="dzFiles">
+          <div class="dz-file">
+            <div class="thumb pdf">${I.pdf}</div>
+            <div class="nm"><b>menu-2026.pdf</b><span class="meta">PDF · 4 стр. · 2.1 MB</span></div>
+            <button class="rm">${I.x}</button>
+          </div>
+          <div class="dz-file">
+            <div class="thumb img1">${I.img}</div>
+            <div class="nm"><b>IMG_2841.jpg</b><span class="meta">снимка · 3.8 MB</span></div>
+            <button class="rm">${I.x}</button>
+          </div>
+          <div class="dz-file">
+            <div class="thumb img2">${I.img}</div>
+            <div class="nm"><b>IMG_2842.jpg</b><span class="meta">снимка · 4.1 MB</span></div>
+            <button class="rm">${I.x}</button>
+          </div>
+          <div class="dz-file">
+            <div class="thumb img3">${I.img}</div>
+            <div class="nm"><b>IMG_2843.jpg</b><span class="meta">снимка · 3.6 MB</span></div>
+            <button class="rm">${I.x}</button>
+          </div>
+          <button class="dz-file add">+ още</button>
+        </div>
+
+        <div class="dz-cta">
+          <span class="lbl">Или:</span>
+          <button class="btn btn-pick">${I.upload} Избери файлове</button>
+          <button class="btn btn-cam">${I.cam} Снимай</button>
+          <span class="dz-formats">JPG · PNG · HEIC · PDF · до 20 MB</span>
+        </div>
+
+        <div class="dz-actions">
+          <div class="summary"><b>4 файла</b> · общо 13.6 MB · <span>~40 сек обработка</span></div>
+          <button class="btn-start" onclick="render('2')">${I.sparkles} Започни анализа</button>
+        </div>
+      </div>
+
+      <aside class="up-aside">
+        <div class="tip-card">
+          <div class="lbl">Съвет</div>
+          <h4>За <em>най-добри</em> резултати</h4>
+          <p>AI чете и кофти снимки, но няколко неща силно увеличават точността:</p>
+          <ul class="tips-list">
+            <li><span class="ic">${I.check}</span><div><b>Лъскави менюта — без блясък.</b> Снимай отстрани или под ъгъл, така че светлината да не пада върху ламината.</div></li>
+            <li><span class="ic">${I.check}</span><div><b>Едно меню = няколко снимки.</b> Заснеми всеки лист поотделно, вместо широка снимка отдалеч.</div></li>
+            <li><span class="ic">${I.check}</span><div><b>Цените се четат от десния край.</b> Уверете се, че колоната с цени е изцяло в кадъра.</div></li>
+          </ul>
+        </div>
+
+        <div class="manual-fallback">
+          <div class="t"><b>Малко меню?</b>15-20 ястия е по-бързо ръчно.</div>
+          <a href="#">Въведи ръчно →</a>
+        </div>
+      </aside>
+    </div>
+  </div>`;
+}
+
+// =========================================================
+// STEP 2 — PROCESSING
+// =========================================================
+function step2Html() {
+  return `
+  <div class="content">
+    ${stepperHtml(2)}
+    <div class="intro">
+      <div class="eyebrow">Импорт с AI · стъпка 2 от 3</div>
+      <h2><em>AI</em> чете менюто ти.</h2>
+      <p>Може да затвориш този екран — ще ти изпратим имейл и известие, щом е готово. Обикновено отнема 30 секунди до 2 минути.</p>
+    </div>
+
+    <div class="proc-wrap">
+      <div class="proc-main">
+        <div class="stripe"></div>
+        <div class="proc-head">
+          <div class="proc-pulse">${I.sparkles}</div>
+          <div>
+            <h3>Разпознавам ястията — стъпка <em>3 от 4</em></h3>
+            <p>Открих 47 кандидата за ястия. Сега ги групирам по категории и проверявам цените.</p>
+          </div>
+        </div>
+
+        <div class="proc-progress">
+          <span class="lbl">Прогрес</span>
+          <span class="pct">64 %</span>
+          <div class="bar"><i style="width: 64%"></i></div>
+          <span class="eta">≈ 18 сек остават</span>
+        </div>
+
+        <div class="proc-log">
+          <div class="line done"><span class="dot"></span>Прочетен текст от всички файлове <span class="ct">47 блока</span></div>
+          <div class="line done"><span class="dot"></span>Намерени имена на ястия <span class="ct">47 ястия</span></div>
+          <div class="line on"><span class="dot"></span>Групирам по категории <span class="ct">7 категории до момента</span></div>
+          <div class="line"><span class="dot"></span>Проверявам цени и валути</div>
+          <div class="line"><span class="dot"></span>Откривам дубликати</div>
+        </div>
+
+        <div class="proc-foot">
+          ${I.info} Не затваряй раздела за по-бързо. Анализът продължава и при затваряне.
+          <button>Отмени</button>
+        </div>
+      </div>
+
+      <aside class="proc-files">
+        <div class="h">Файлове в обработка</div>
+        <ul class="f-list">
+          <li class="fitem">
+            <span class="mini pdf"></span>
+            <div class="nm"><b>menu-2026.pdf</b><span>PDF · 4 стр.</span></div>
+            <span class="st done">${I.check}</span>
+          </li>
+          <li class="fitem">
+            <span class="mini img1"></span>
+            <div class="nm"><b>IMG_2841.jpg</b><span>лист 1 от 3</span></div>
+            <span class="st done">${I.check}</span>
+          </li>
+          <li class="fitem">
+            <span class="mini img2"></span>
+            <div class="nm"><b>IMG_2842.jpg</b><span>лист 2 от 3</span></div>
+            <span class="st on">чете…</span>
+          </li>
+          <li class="fitem">
+            <span class="mini img3"></span>
+            <div class="nm"><b>IMG_2843.jpg</b><span>лист 3 от 3</span></div>
+            <span class="st queue">чака</span>
+          </li>
+        </ul>
+
+        <div class="proc-stats">
+          <div class="st"><span class="v">47</span><span class="l">Намерени ястия</span></div>
+          <div class="st"><span class="v">7</span><span class="l">Категории</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>`;
+}
+
+// =========================================================
+// STEP 3 — REVIEW
+// =========================================================
+const CATEGORIES = [
+  { id:'osn', key:'k-osn', name:'Основни', items:[
+    { n:'Пилешко филе на скара', p:'12,90', conf:'high', src:'IMG_2841' },
+    { n:'Свинско на сач', p:'18,50', conf:'high', src:'IMG_2841' },
+    { n:'Кебапчета с гарнитура', p:'11,90', conf:'high', src:'menu.pdf · стр.2' },
+    { n:'Кюфтета пържени', p:'10,50', conf:'high', src:'menu.pdf · стр.2' },
+    { n:'Пиле с ориз', p:'12,80', conf:'mid', src:'IMG_2842', warn:'Цената е написана неясно — провери' },
+    { n:'Мусака по тракийски', p:'9,50', conf:'high', src:'IMG_2842' },
+    { n:'Сач „Механата"', p:'28,00', conf:'high', src:'IMG_2842' },
+    { n:'Риба меча пъстърва', p:'22,00', conf:'high', src:'IMG_2843' },
+  ]},
+  { id:'salat', key:'k-salat', name:'Салати', open:true, items:[
+    { n:'Шопска салата', p:'6,90', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Овчарска салата', p:'8,50', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Зелена салата', p:'5,20', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Кьопоолу', p:'4,90', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Снежанка', p:'5,80', conf:'low', src:'IMG_2843', warn:'Възможен дубликат на „Снежанка с орехи" (Предястия)' },
+  ]},
+  { id:'pred', key:'k-pred', name:'Предястия', items:[
+    { n:'Тиквички с млечен сос', p:'6,50', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Кашкавал пане', p:'7,20', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Пържени чушки', p:'4,80', conf:'high', src:'menu.pdf · стр.1' },
+    { n:'Сирене по шопски', p:'5,50', conf:'mid', src:'IMG_2841', warn:'AI се колебае между „Сирене по шопски" и „Сирене на скара"' },
+  ]},
+  { id:'sup', key:'k-osn', name:'Супи', items:[
+    { n:'Таратор', p:'4,50', conf:'high', src:'menu.pdf · стр.2' },
+    { n:'Пилешка супа', p:'4,20', conf:'high', src:'menu.pdf · стр.2' },
+    { n:'Боб чорба', p:'4,50', conf:'high', src:'menu.pdf · стр.2' },
+  ]},
+  { id:'garn', key:'k-garn', name:'Гарнитури', items:[
+    { n:'Пържени картофи', p:'4,20', conf:'high', src:'menu.pdf · стр.3' },
+    { n:'Ориз с грах', p:'3,80', conf:'high', src:'menu.pdf · стр.3' },
+    { n:'Печени картофи', p:'4,50', conf:'high', src:'menu.pdf · стр.3' },
+  ]},
+  { id:'des', key:'k-des', name:'Десерти', items:[
+    { n:'Баница с орехи', p:'5,50', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Крем карамел', p:'4,80', conf:'high', src:'menu.pdf · стр.4' },
+  ]},
+  { id:'pit', key:'k-napit', name:'Безалкохолни', items:[
+    { n:'Домашна лимонада', p:'3,50', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Айрян', p:'2,20', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Кока-Кола 330мл', p:'3,20', conf:'high', src:'menu.pdf · стр.4' },
+  ]},
+  { id:'alc', key:'k-alc', name:'Алкохол', items:[
+    { n:'Вино къщата 250мл', p:'5,80', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Ракия Пещера 50мл', p:'3,50', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Бира Каменица 0.5л', p:'3,80', conf:'high', src:'menu.pdf · стр.4' },
+    { n:'Уиски Bells 50мл', p:'', conf:'low', src:'IMG_2843', warn:'Цената липсва в източника — добави я' },
+  ]},
+];
+
+function dishHtml(d) {
+  const confIcon = d.conf === 'high'
+    ? `<span class="conf high">${I.check}</span>`
+    : d.conf === 'mid'
+      ? `<span class="conf mid"></span>`
+      : `<span class="conf low"></span>`;
+  const warnNote = d.warn ? `
+    <div class="warn-note">
+      ${I.warn} ${d.warn}
+      <button class="chip-fix">поправи</button>
+      <span class="source">${I.src} ${d.src}</span>
+    </div>` : '';
+  return `
+  <div class="dish ${d.warn?'warn':''}">
+    ${confIcon}
+    <input class="name-input" value="${d.n}">
+    <div class="price-wrap">
+      <input class="price-input" value="${d.p}" placeholder="—">
+      <span class="cur">лв</span>
+    </div>
+    <button class="more">${I.dots}</button>
+    ${warnNote}
+  </div>`;
+}
+
+function catHtml(cat) {
+  const warnCount = cat.items.filter(i => i.warn).length;
+  return `
+  <div class="cat-acc ${cat.key} ${cat.open?'open':''}">
+    <div class="cat-h" onclick="this.parentElement.classList.toggle('open')">
+      <span class="caret">${I.chev}</span>
+      <span class="cat-dot"></span>
+      <h3 class="cat-name">${cat.name}</h3>
+      <div class="cat-meta">
+        <span>${cat.items.length} ястия</span>
+        ${warnCount > 0 ? `<span class="warn-pill">${warnCount} за проверка</span>` : ''}
+      </div>
+    </div>
+    <div class="cat-body">
+      ${cat.items.map(dishHtml).join('')}
+      <button class="add-row">${I.plus} добави ястие в ${cat.name.toLowerCase()}</button>
+    </div>
+  </div>`;
+}
+
+function step3Html() {
+  const total = CATEGORIES.reduce((s,c)=>s+c.items.length,0);
+  const warns = CATEGORIES.reduce((s,c)=>s+c.items.filter(i=>i.warn).length,0);
+  return `
+  <div class="content">
+    ${stepperHtml(3)}
+    <div class="intro">
+      <div class="eyebrow">Импорт с AI · стъпка 3 от 3</div>
+      <h2>Прегледай и потвърди <em>менюто</em>.</h2>
+      <p>AI разпозна ${total} ястия в 8 категории. Маркирах с жълто тези, които искат око — пет минути и сме готови.</p>
+    </div>
+
+    <div class="review-summary">
+      <div class="check">${I.check}</div>
+      <div class="body">
+        <b>Анализът приключи за 47 секунди.</b>
+        <span>Точност 92% · обработени са 4 файла</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>${total}</b>ястия</div>
+        <div class="stat"><b>8</b>категории</div>
+        <div class="stat warn"><b>${warns}</b>за проверка</div>
+      </div>
+    </div>
+
+    <div class="r-toolbar">
+      <div class="search">${I.search}<input placeholder="Търси ястие, категория…"></div>
+      <button class="r-filter on">Всички <span class="n">${total}</span></button>
+      <button class="r-filter warn"><span class="warn-dot"></span> Само за проверка <span class="n">${warns}</span></button>
+      <div class="spacer"></div>
+      <button class="bulk">↕ Подреди по уверенозт</button>
+      <button class="bulk">+ Нова категория</button>
+      <button class="bulk">Свий всички</button>
+    </div>
+
+    <div class="cat-wrap">
+      ${CATEGORIES.map(catHtml).join('')}
+    </div>
+
+    <div class="commit-bar">
+      <div class="info">
+        <b>Готов ли си да импортирате ${total} ястия?</b>
+        <span>${warns} ястия имат предупреждения — препоръчваме да ги прегледаш първо.</span>
+      </div>
+      <button class="btn-discard">Започни отначало</button>
+      <button class="btn-commit">${I.check} Импортирай менюто ${I.arrow}</button>
+    </div>
+  </div>`;
+}
+
+// =========================================================
+// PAGE
+// =========================================================
+function pageHtml(step) {
+  let body = step1Html();
+  if (step === '2') body = step2Html();
+  if (step === '3') body = step3Html();
+  return `
+  <div class="shell">
+    ${sidebarHtml()}
+    <div class="main">
+      ${topbarHtml()}
+      ${body}
+    </div>
+  </div>`;
+}
+
+function render(which) {
+  document.getElementById('stage').innerHTML = pageHtml(which);
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.state === which));
+  window.scrollTo({ top: 0 });
+}
+
+document.querySelectorAll('#tabs button').forEach(b => {
+  b.addEventListener('click', () => render(b.dataset.state));
+});
+render('1');
+</script>
+</body>
+</html>
