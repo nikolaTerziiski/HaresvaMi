@@ -15,6 +15,9 @@ import {
   loadInsightRatings,
   loadInsightSessions,
 } from "@/lib/insights/queries";
+import { loadDishCandidates, type DishCandidate } from "@/lib/insights/trends";
+
+export type { DishCandidate } from "@/lib/insights/trends";
 
 export type {
   CommentOfWeek,
@@ -72,3 +75,10 @@ export const getInsightsDashboardData = cache(
     };
   },
 );
+
+export async function getDishTrendData(
+  restaurantId: string,
+): Promise<{ candidates: DishCandidate[] }> {
+  const candidates = await loadDishCandidates(restaurantId);
+  return { candidates };
+}

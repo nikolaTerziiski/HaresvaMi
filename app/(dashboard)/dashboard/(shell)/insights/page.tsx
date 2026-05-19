@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 
 import { InsightsOverview } from "@/components/dashboard/insights/InsightsOverview";
-import { getInsightsDashboardData } from "@/lib/insights/dashboard";
+import {
+  getDishTrendData,
+  getInsightsDashboardData,
+} from "@/lib/insights/dashboard";
 import type { InsightPeriodKey } from "@/lib/insights/types";
 
 export const metadata = {
@@ -35,5 +38,7 @@ export default async function InsightsPage({
     redirect("/dashboard/onboarding");
   }
 
-  return <InsightsOverview data={data} />;
+  const { candidates } = await getDishTrendData(data.restaurant.id);
+
+  return <InsightsOverview data={data} trendCandidates={candidates} />;
 }

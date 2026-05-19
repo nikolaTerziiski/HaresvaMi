@@ -1,12 +1,17 @@
+import { DishTrendChart } from "@/components/dashboard/insights/DishTrendChart";
 import { InsightHighlights } from "@/components/dashboard/insights/InsightHighlights";
 import { InsightsEmptyState } from "@/components/dashboard/insights/InsightsEmptyState";
 import { InsightsSummary } from "@/components/dashboard/insights/InsightsSummary";
 import { PeriodSwitcher } from "@/components/dashboard/insights/PeriodSwitcher";
-import type { InsightsDashboardData } from "@/lib/insights/dashboard";
+import type {
+  DishCandidate,
+  InsightsDashboardData,
+} from "@/lib/insights/dashboard";
 import type { InsightPeriodKey } from "@/lib/insights/types";
 
 type InsightsOverviewProps = {
   data: InsightsDashboardData;
+  trendCandidates: DishCandidate[];
 };
 
 function formatDateRange(start: string, end: string) {
@@ -66,7 +71,10 @@ function emptyStateFor(data: InsightsDashboardData) {
   return null;
 }
 
-export function InsightsOverview({ data }: InsightsOverviewProps) {
+export function InsightsOverview({
+  data,
+  trendCandidates,
+}: InsightsOverviewProps) {
   const emptyState = emptyStateFor(data);
   const { period } = data;
   const currentRange = formatDateRange(period.currentFrom, period.currentTo);
@@ -110,6 +118,18 @@ export function InsightsOverview({ data }: InsightsOverviewProps) {
           <div className="mt-5">
             <InsightHighlights data={data} />
           </div>
+
+          {trendCandidates.length > 0 ? (
+            <section className="mt-8 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
+              <p className="mb-2 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
+                Тренд по ястие
+              </p>
+              <h2 className="m-0 mb-5 font-[var(--f-display)] text-2xl font-normal text-[var(--ink)]">
+                Как се движи едно ястие
+              </h2>
+              <DishTrendChart candidates={trendCandidates} />
+            </section>
+          ) : null}
         </>
       )}
     </div>

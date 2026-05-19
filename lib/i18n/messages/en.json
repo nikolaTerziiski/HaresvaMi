@@ -367,6 +367,15 @@
         "week": "The comparison with the previous week will start once there is feedback in both 7-day windows. Until then we show the current week only.",
         "month": "The comparison with the previous month will start once there is feedback in both 30-day windows. Until then we show the current month only.",
         "custom": "The comparison with the previous period of the same length will start once there is feedback in both windows."
+      },
+      "trend": {
+        "eyebrow": "Dish trend",
+        "title": "How a dish is moving",
+        "pickDish": "Pick a dish",
+        "basedOn": "Based on {count} ratings over the last 12 weeks",
+        "noDataYet": "Not enough data for dish trends yet.",
+        "loading": "Loading...",
+        "errorLoading": "Error loading"
       }
     }
   }
