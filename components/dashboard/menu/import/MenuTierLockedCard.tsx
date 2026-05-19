@@ -12,9 +12,10 @@ type MenuTierLockedCardProps = {
 export function MenuTierLockedCard({ entitlement }: MenuTierLockedCardProps) {
   const t = useTranslations("dashboard.menu.import.tierLocked");
 
-  const body = t("body")
-    .replace("{used}", String(entitlement.used))
-    .replace("{limit}", String(entitlement.limit));
+  const body = t("body", {
+    used: entitlement.used,
+    limit: entitlement.limit,
+  });
 
   return (
     <div className="mx-auto mt-10 max-w-lg rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-8">
