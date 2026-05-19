@@ -342,6 +342,64 @@
         "fixBeforeSave": "Fix the highlighted fields before saving.",
         "needMoreItems": "Add at least one item to continue.",
         "save": "We could not save the menu. Please try again."
+      },
+      "import": {
+        "stepper": {
+          "upload": "Upload files",
+          "ai": "AI reads",
+          "review": "Review"
+        },
+        "upload": {
+          "eyebrow": "AI import · step 1 of 3",
+          "title": "Upload your menu — AI reads, you just review.",
+          "subtitle": "Take photos of your menu, upload a PDF, or drop several photos of both sides. They don't have to be perfect — AI handles handwritten prices, abbreviations, and angled shots.",
+          "dropzone": {
+            "title": "Drop files here",
+            "subtitle": "Or choose from your device. Mix photos and PDFs — AI merges them into one menu.",
+            "picker": "Choose files",
+            "camera": "Take photo",
+            "formats": "JPG · PNG · HEIC · PDF · up to 10 MB",
+            "summary": "{count} files · {size} MB total"
+          },
+          "tips": {
+            "label": "Tip",
+            "title": "For best results",
+            "subtitle": "AI handles poor photos too, but a few things greatly improve accuracy:",
+            "tip1": "Glossy menus — avoid glare. Shoot from the side or at an angle so the light doesn't hit the laminate.",
+            "tip2": "One menu = several photos. Capture each sheet separately rather than a single wide shot from far away.",
+            "tip3": "Prices are read from the right edge. Make sure the price column is fully in frame."
+          },
+          "manualFallback": {
+            "title": "Small menu?",
+            "body": "15–20 dishes is faster by hand.",
+            "cta": "Enter manually →"
+          },
+          "actions": {
+            "start": "Start analysis"
+          }
+        },
+        "processing": {
+          "eyebrow": "AI import · step 2 of 3",
+          "title": "AI is reading your menu.",
+          "subtitle": "Usually takes 30 seconds to 2 minutes.",
+          "body": "is reading the menu.",
+          "cancel": "Cancel"
+        },
+        "tierLocked": {
+          "eyebrow": "Limit",
+          "title": "This month's limit has been reached",
+          "body": "Used {used} of {limit} imports this month. The Pro plan gets 10/month.",
+          "cta": "Upgrade to Pro",
+          "backToMenu": "← back to menu"
+        },
+        "errors": {
+          "tooManyFiles": "You can upload up to 8 files at once.",
+          "fileTooLarge": "The file \"{name}\" is larger than 10 MB.",
+          "totalTooLarge": "The total size cannot exceed 30 MB.",
+          "unsupportedType": "The file \"{name}\" is not a photo or PDF.",
+          "uploadFailed": "Upload failed. Please try again.",
+          "aiFailed": "We could not read the menu. Please try again in a moment."
+        }
       }
     },
     "insights": {
