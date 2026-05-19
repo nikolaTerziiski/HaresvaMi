@@ -66,7 +66,10 @@ test("extractMenu has server-only import", () => {
 });
 
 test("extractMenu defines and uses MENU_MODEL constant", () => {
-  assert.match(extractorSource, /const MENU_MODEL\s*=\s*"gemini-2\.5-flash"/);
+  assert.match(
+    extractorSource,
+    /const MENU_MODEL\s*=\s*"gemini-2\.5-flash(-lite)?"/,
+  );
   const modelConstantCount = (extractorSource.match(/MENU_MODEL/g) ?? [])
     .length;
   assert.ok(

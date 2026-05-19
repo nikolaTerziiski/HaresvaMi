@@ -13,7 +13,7 @@ import {
 } from "@/lib/ai/menu-import-internal";
 import type { MenuImportResult } from "@/lib/menu/import-types";
 
-const MENU_MODEL = "gemini-2.5-flash";
+const MENU_MODEL = "gemini-2.5-flash-lite";
 
 export interface ExtractedMenuItem {
   name_bg: string;
@@ -110,7 +110,7 @@ export async function extractMenu(
     console.error("Error extracting menu:", error);
     return { items: [], error: "Failed to parse menu from image" };
   }
-}
+} 
 
 // ---------------------------------------------------------------------------
 // Multi-file extraction (Phase 1+)

@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
           existingItems: existingItems ?? [],
         });
       } catch (aiError) {
-        console.error("Gemini multi-file extraction failed");
+        console.error("Gemini multi-file extraction failed", aiError);
         return NextResponse.json(
           {
             error: "ai_failed",
