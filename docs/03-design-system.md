@@ -11,7 +11,7 @@ HaresvaMi feels like the warm corner of a Bulgarian restaurant. Not corporate. N
 Warm. Honest. Bulgarian. Confident. Quiet. Unfussy.
 
 **Words the brand is NOT:**
-Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary. Gradient-heavy.
+Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary.
 
 ## Color system
 
@@ -49,9 +49,7 @@ The older `--color-coral-*` Tailwind palette is still available for shared shadc
 1. **Terracotta is for one thing per screen.** A primary CTA, a key metric, a notification dot. Never let multiple terracotta elements compete.
 2. **Backgrounds are warm, not white.** Use `--bg` / `--paper` or the cream Tailwind tokens.
 3. **Text is ink, not pure black.** Use `--ink` / `--ink-2` or the ink Tailwind tokens.
-4. **No gradients.** Anywhere. Solid colors only.
-5. **No shadows for "depth."** Use borders (`1px solid var(--rule)`) for separation.
-6. **No glassmorphism, no blur effects.**
+4. **Gradients, shadows, and blur are allowed** — use them intentionally to reinforce hierarchy or add warmth, not as default polish. Stay within the warm cream/terracotta/ink palette; avoid the purple-blue tech-SaaS spectrum.
 
 ## Typography
 
@@ -171,10 +169,10 @@ Three variants, no more.
 
 Rules:
 
-- No drop shadows by default
 - Border on warm paper/background uses `var(--rule)`
 - Card padding is `p-6` (24px) standard, `p-8` for hero cards
 - No nested cards. If you need a "card inside a card," it's a section, not a card.
+- Shadows are fine when they add warmth or hierarchy — keep the color in the ink/terracotta family, never the generic Tailwind gray
 
 ### Inputs
 
@@ -396,14 +394,13 @@ Reference these keyframe names in Tailwind `animate-*` utilities or inline `anim
 
 Before merging any UI code, verify:
 
-- [ ] No purple, blue, or green gradients anywhere
 - [ ] At most one terracotta/accent element per screen as primary
 - [ ] Background is `--bg`, `--paper`, or a cream token, not pure white
 - [ ] Text is `--ink` or an ink token, not pure black
 - [ ] Maximum 3 font sizes on screen
 - [ ] Empty states have human-written copy, not "No data"
 - [ ] Buttons follow primary/secondary/ghost variants
-- [ ] No drop shadows used for depth
+- [ ] Gradients/shadows stay within the warm palette — no purple or generic-gray tech shadows
 - [ ] Bulgarian copy uses informal "ти"
 - [ ] Touch targets in kiosk mode are 64px+ tall
 - [ ] Kiosk scan failure and AI-limit states preserve manual item selection

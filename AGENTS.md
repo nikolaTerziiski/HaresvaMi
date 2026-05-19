@@ -177,7 +177,7 @@ Read these in order when starting fresh:
 ### How to write code in this project
 
 1. **Bulgarian first.** All user-facing strings start in Bulgarian. English is added through i18n keys, never as the primary text.
-2. **No generic SaaS aesthetics.** No purple gradients. No "Welcome to [App]" hero. No 4-stat-card dashboards. Read `docs/03-design-system.md` before any UI work.
+2. **No generic SaaS aesthetics.** No "Welcome to [App]" hero. No 4-stat-card dashboards. Read `docs/03-design-system.md` before any UI work.
 3. **Mobile/tablet first.** The kiosk screen is the most important UI. Design for a 10-inch Android tablet held in landscape.
 4. **AI provider is swappable.** Receipt extraction lives in `lib/ai/extract-receipt.ts` with a clean interface. Currently Gemini 2.5 Flash. Could become Claude or GPT-4o later. Never hard-code provider details outside that file.
 5. **RLS everywhere.** Every Supabase table has Row Level Security policies. No exceptions.
