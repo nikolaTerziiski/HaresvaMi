@@ -504,6 +504,39 @@
         "relativeDays": "{days} days ago",
         "updated": "Updated {relative}"
       }
+    },
+    "push": {
+      "optIn": {
+        "title": "Weekly summaries on your phone?",
+        "body": "Would you like to receive weekly summaries on your phone?",
+        "enable": "Enable",
+        "enabling": "Enabling...",
+        "later": "Later",
+        "success": "Done! You'll receive weekly summaries.",
+        "denied": "Notifications are blocked. Enable them in your browser settings.",
+        "error": "We couldn't enable notifications. Try again."
+      }
+    },
+    "pwa": {
+      "tablet": {
+        "title": "Add tablet to home screen",
+        "body": "It will open as an app and always be ready for receipts.",
+        "dismiss": "Not now",
+        "install": "Install"
+      },
+      "dashboard": {
+        "title": "Add HaresvaMi to your phone",
+        "body": "Receive weekly summaries and never miss anything important.",
+        "dismiss": "Not now",
+        "install": "Install",
+        "iosHint": "On iPhone open in Safari → Share button → 'Add to Home Screen'"
+      }
+    },
+    "insight": {
+      "banner": {
+        "eyebrow": "Weekly summary",
+        "viewAll": "See full data →"
+      }
     }
   }
 }

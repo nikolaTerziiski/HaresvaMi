@@ -165,6 +165,42 @@ Before announcing publicly:
 - [ ] GDPR-compliant cookie banner
 - [ ] Legal: data processing agreement template ready for restaurant owners
 
+## Vercel Cron Jobs
+
+### Weekly insights cron
+
+The route `GET /api/cron/weekly-insights` generates AI insight summaries for
+eligible restaurants and sends push notifications to owners.
+
+| Setting            | Value                                       |
+| ------------------ | ------------------------------------------- |
+| Path               | `/api/cron/weekly-insights`                 |
+| Schedule (UTC)     | `0 7 * * 1` — Mondays 07:00 UTC             |
+| Local time (Sofia) | 09:00 winter (UTC+2) / 10:00 summer (UTC+3) |
+| Config file        | `vercel.json` (root of repo)                |
+
+**Setup steps:**
+
+1. The schedule is already declared in `vercel.json` — no extra Vercel UI config needed for the schedule itself.
+2. Enable **Cron Jobs** in the Vercel project settings (requires Vercel Pro or a project on a team plan).
+3. Set the `CRON_SECRET` environment variable in Vercel project settings (production + preview environments).
+   - Generate a strong random secret: `openssl rand -hex 32`
+   - Never commit this value or expose it to the client.
+4. Vercel will automatically send `Authorization: Bearer <CRON_SECRET>` with each cron invocation.
+5. In local development you can trigger the route without the secret:
+   ```bash
+   curl http://localhost:3000/api/cron/weekly-insights
+   ```
+
+**Required env var:**
+
+```bash
+# Authenticates Vercel Cron invocations of /api/cron/weekly-insights
+CRON_SECRET=<random-hex-string>
+```
+
+Add this to `.env.local` for local testing and to Vercel environment variables for production.
+
 ## Monitoring
 
 ### Phase 1 (free tools, sufficient for first 50 restaurants)

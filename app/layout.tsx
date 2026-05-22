@@ -3,6 +3,8 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
+import { ServiceWorkerRegistrar } from "@/components/shared/ServiceWorkerRegistrar";
+
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -61,6 +63,7 @@ export default async function RootLayout({
     >
       <body className="min-h-dvh antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <ServiceWorkerRegistrar />
           {children}
         </NextIntlClientProvider>
       </body>

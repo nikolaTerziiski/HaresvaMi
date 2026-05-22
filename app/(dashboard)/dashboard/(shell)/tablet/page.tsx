@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { PwaInstallPrompt } from "@/components/shared/PwaInstallPrompt";
 import { TabletSetupActions } from "@/components/dashboard/tablet/TabletSetupActions";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { listKioskSessions } from "@/lib/kiosk/session-token";
+import { hasKioskSession } from "@/lib/dashboard/signals";
 
 async function loadTabletSessions(restaurantId: string, ownerId: string) {
   try {
@@ -37,7 +39,10 @@ export default async function TabletPage() {
     redirect("/dashboard/onboarding");
   }
 
-  const { sessions, error } = await loadTabletSessions(restaurant.id, user.id);
+  const [{ sessions, error }, kioskSessionExists] = await Promise.all([
+    loadTabletSessions(restaurant.id, user.id),
+    hasKioskSession(restaurant.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-10 py-8 pb-20 max-md:px-6 max-md:py-7">
@@ -57,6 +62,9 @@ export default async function TabletPage() {
       </section>
 
       <TabletSetupActions initialSessions={sessions} initialLoadError={error} />
+      <div className="mt-6">
+        <PwaInstallPrompt surface="tablet" show={kioskSessionExists} />
+      </div>
     </div>
   );
 }

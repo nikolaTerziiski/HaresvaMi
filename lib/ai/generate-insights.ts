@@ -85,7 +85,30 @@ ${JSON.stringify(periodData, null, 2)}
 
 Напиши 3-4 изречения максимум. Без markdown. Спомени поне едно конкретно ястие по име. Завърши с едно наблюдение или препоръка. Пиши неформално, на 'ти'.`;
 
-  const result = await model.generateContent(userPrompt);
+  let result: Awaited<ReturnType<typeof model.generateContent>>;
+
+  try {
+    result = await model.generateContent(userPrompt);
+  } catch (aiError) {
+    // Log the failure before re-throwing so we always have an audit trail.
+    const reason = aiError instanceof Error ? aiError.message : String(aiError);
+
+    await insertAiUsageEvent({
+      restaurantId: input.restaurantId,
+      eventType: "insight_generation",
+      model: INSIGHTS_MODEL,
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      success: false,
+      failureReason: reason.slice(0, 500),
+    }).catch((logError) => {
+      console.error("Failed to log AI failure usage event:", logError);
+    });
+
+    throw aiError;
+  }
+
   const responseText = result.response.text().trim();
 
   const usage = readGeminiTokenUsage(
