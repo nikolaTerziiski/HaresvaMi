@@ -932,6 +932,29 @@ export default function LandingPage() {
               </Link>
             </div>
 
+            <div className={styles.priceCard}>
+              <h3 className={styles.pcTier}>Стартер</h3>
+              <p className={styles.pcSub}>За растящи ресторанти.</p>
+              <div className={styles.pcN}>
+                —<em>/месец</em>
+              </div>
+              <ul className={styles.pcFeat}>
+                <li>1 локация</li>
+                <li>
+                  <b>AI сканиране на бон</b> — 150 / месец
+                </li>
+                <li>500 отзива / месец</li>
+                <li>Базово табло</li>
+                <li>Български интерфейс</li>
+              </ul>
+              <Link
+                href="/register"
+                className={`${styles.btn} ${styles.btnGhost}`}
+              >
+                Започни безплатно
+              </Link>
+            </div>
+
             <div className={`${styles.priceCard} ${styles.priceCardFeatured}`}>
               <span className={styles.priceTag}>Препоръчано</span>
               <h3 className={styles.pcTier}>Pro</h3>
@@ -958,24 +981,6 @@ export default function LandingPage() {
               >
                 Пробвай 14 дни безплатно →
               </Link>
-            </div>
-
-            <div className={styles.priceCard}>
-              <h3 className={styles.pcTier}>Верига</h3>
-              <p className={styles.pcSub}>За 2+ локации. Скоро.</p>
-              <div className={styles.pcN}>
-                €40<em>/месец</em>
-              </div>
-              <ul className={styles.pcFeat}>
-                <li>Неограничени локации</li>
-                <li>Сравнения между обекти</li>
-                <li>Представяне на персонал</li>
-                <li>API достъп</li>
-                <li>Приоритетна поддръжка</li>
-              </ul>
-              <a href="#" className={`${styles.btn} ${styles.btnGhost}`}>
-                Напиши ни →
-              </a>
             </div>
           </div>
           <p className={styles.pricingNote}>
