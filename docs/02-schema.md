@@ -253,6 +253,131 @@ CREATE INDEX idx_kiosk_sessions_token_hash ON kiosk_sessions(token_hash);
 CREATE INDEX idx_kiosk_sessions_status_expires_at ON kiosk_sessions(status, expires_at);
 ```
 
+### `plan_overrides`
+
+Per-restaurant admin override that beats `restaurants.tier`. Allows an admin to change the effective tier and/or individual limits for a restaurant without touching the subscription state. All entitlement helpers in `lib/billing/` read from this table and apply it automatically.
+
+- If `override_tier` is set, the restaurant's effective tier is that value; otherwise the restaurant's stored tier is used.
+- If `override_feedback_limit` or `override_scan_limit` is set, those values win over the tier's defaults from `plans.ts`.
+- `expires_at` is nullable — a null value means the override is indefinite.
+- The winning override when multiple exist is the most recently created active row.
+- `reason` must not be empty (`length(btrim(reason)) > 0` — enforced by the constraint added in migration 0014).
+
+**Does not store:** customer names, receipt images, review comments, access tokens, Stripe secrets, or raw receipt text.
+
+```sql
+CREATE TABLE plan_overrides (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id          UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  override_tier          TEXT CHECK (override_tier IN ('free', 'starter', 'pro')),
+  override_feedback_limit INT CHECK (override_feedback_limit IS NULL OR override_feedback_limit >= 0),
+  override_scan_limit    INT CHECK (override_scan_limit IS NULL OR override_scan_limit >= 0),
+  reason                 TEXT NOT NULL,
+  granted_by             UUID NOT NULL REFERENCES auth.users(id),
+  starts_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at             TIMESTAMPTZ,
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (expires_at IS NULL OR expires_at > starts_at)
+);
+
+CREATE INDEX idx_plan_overrides_restaurant_expires
+  ON plan_overrides(restaurant_id, expires_at);
+```
+
+### `push_subscriptions`
+
+Web Push subscription records for restaurant owners who opt in to push notifications (weekly insights). One row per browser push endpoint.
+
+```sql
+CREATE TABLE push_subscriptions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id    UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  user_id          UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  endpoint         TEXT NOT NULL UNIQUE,
+  p256dh           TEXT NOT NULL,
+  auth             TEXT NOT NULL,
+  expiration_time  BIGINT,
+  user_agent       TEXT CHECK (user_agent IS NULL OR length(user_agent) <= 500),
+  last_used_at     TIMESTAMPTZ,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_push_subscriptions_restaurant_user
+  ON push_subscriptions(restaurant_id, user_id);
+```
+
+### `billing_audit_log`
+
+Append-only record of every admin billing change. Every row is immutable — no UPDATE or DELETE is permitted. Each row captures a single field change: what it was, what it became, who changed it, and why.
+
+**Does not store:** customer names, receipt images, review comments, access tokens, Stripe secrets, or raw receipt text.
+
+`previous_value` and `new_value` are JSONB so they can hold a string, number, or null uniformly regardless of the field type being logged. `field` examples: `'tier'`, `'override_scan_limit'`, `'scan_credits_granted'`, `'plan_override'`.
+
+`reason` must not be empty (`length(btrim(reason)) > 0` — enforced by the constraint added in migration 0014).
+
+```sql
+CREATE TABLE billing_audit_log (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_user_id  UUID NOT NULL REFERENCES auth.users(id),
+  restaurant_id  UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  field          TEXT NOT NULL,
+  previous_value JSONB,
+  new_value      JSONB NOT NULL,
+  reason         TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_billing_audit_log_restaurant_created
+  ON billing_audit_log(restaurant_id, created_at DESC);
+```
+
+## RPC functions
+
+### `apply_plan_override`
+
+Atomically inserts a `plan_overrides` row **and** a corresponding `billing_audit_log` row in one implicit Postgres transaction. This is the only safe way to grant a plan override — direct table inserts from application code cannot guarantee both writes succeed.
+
+**Signature:**
+
+```sql
+CREATE OR REPLACE FUNCTION public.apply_plan_override(
+  p_restaurant_id         UUID,
+  p_override_tier         TEXT,         -- 'free' | 'starter' | 'pro' | NULL
+  p_override_feedback_limit INT,        -- NULL to use tier default
+  p_override_scan_limit   INT,          -- NULL to use tier default
+  p_starts_at             TIMESTAMPTZ,  -- NULL defaults to NOW()
+  p_expires_at            TIMESTAMPTZ,  -- NULL means indefinite
+  p_reason                TEXT,         -- required; must not be blank
+  p_granted_by            UUID          -- must equal auth.uid()
+) RETURNS UUID
+```
+
+**Returns:** the new `plan_overrides.id`.
+
+**Security:**
+
+- SECURITY DEFINER — executes with elevated privileges to bypass RLS on both tables.
+- Runtime guards: verifies `auth.uid() = p_granted_by` AND `public.is_admin()`.
+- Raises an exception if either check fails; the transaction is rolled back.
+- EXECUTE permission granted only to the `authenticated` role.
+
+**Audit log entry shape:**
+
+```jsonb
+-- new_value
+{
+  "override_id":              "uuid",
+  "override_tier":            "pro" | null,
+  "override_feedback_limit":  number | null,
+  "override_scan_limit":      number | null,
+  "starts_at":                "ISO-timestamp",
+  "expires_at":               "ISO-timestamp" | null
+}
+```
+
+`field = 'plan_override'`, `previous_value = NULL` (first-time grant).
+
 ## Row Level Security policies
 
 Apply to all tables. Enable RLS first:
@@ -267,6 +392,9 @@ ALTER TABLE usage_counters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scan_credit_grants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_usage_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE kiosk_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_overrides ENABLE ROW LEVEL SECURITY;
+ALTER TABLE billing_audit_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 ```
 
 ### restaurants policies
@@ -419,6 +547,69 @@ CREATE POLICY "owners_read_own_kiosk_sessions"
 -- Service role only creates, updates, revokes, and validates kiosk sessions.
 ```
 
+### plan_overrides policies
+
+```sql
+-- Owners can read their own restaurant's overrides (dashboard visibility).
+CREATE POLICY "plan_overrides_owner_select"
+  ON plan_overrides FOR SELECT
+  USING (
+    restaurant_id IN (
+      SELECT id FROM restaurants WHERE owner_id = auth.uid()
+    )
+  );
+
+-- Admins can read all overrides.
+CREATE POLICY "plan_overrides_admin_select"
+  ON plan_overrides FOR SELECT
+  USING (public.is_admin());
+
+-- INSERT / UPDATE / DELETE: service role only (no policy = denied by default).
+```
+
+### push_subscriptions policies
+
+```sql
+-- Owner can read their own push subscription rows.
+CREATE POLICY "push_subs_owner_select"
+  ON push_subscriptions FOR SELECT
+  USING (user_id = auth.uid());
+
+-- Owner can insert a push subscription for their own restaurant.
+CREATE POLICY "push_subs_owner_insert"
+  ON push_subscriptions FOR INSERT
+  WITH CHECK (
+    user_id = auth.uid()
+    AND restaurant_id IN (
+      SELECT id FROM restaurants WHERE owner_id = auth.uid()
+    )
+  );
+
+-- Owner can delete their own push subscription rows.
+CREATE POLICY "push_subs_owner_delete"
+  ON push_subscriptions FOR DELETE
+  USING (user_id = auth.uid());
+
+-- Admins can read all push subscription rows.
+CREATE POLICY "push_subs_admin_select"
+  ON push_subscriptions FOR SELECT
+  USING (public.is_admin());
+
+-- No UPDATE policy — last_used_at updates come from the cron via service role.
+```
+
+### billing_audit_log policies
+
+```sql
+-- Admins can read the full audit log.
+CREATE POLICY "billing_audit_log_admin_select"
+  ON billing_audit_log FOR SELECT
+  USING (public.is_admin());
+
+-- INSERT: service role only (no policy = denied by default).
+-- UPDATE / DELETE are intentionally never granted — rows are immutable.
+```
+
 ## Triggers
 
 ### Auto-update `updated_at`
@@ -487,6 +678,11 @@ Current migration set in `supabase/migrations/`:
 7. **`0007_kiosk_sessions.sql`** — Hashed kiosk tablet sessions
 8. **`0008_drop_public_feedback_write_policies.sql`** — Removes public feedback write policies; server API routes authorize and write with service role
 9. **`0009_feedback_rating_five_star_scale.sql`** — Aligns `feedback_ratings.rating` to the 1-5 star scale
+10. **`0010_insight_summaries.sql`** — Caches AI-generated plain-Bulgarian insight summaries per restaurant per period
+11. **`0011_tier_enforcement.sql`** — Adds `menu_extraction_count` to `usage_counters` and atomic feedback quota function
+12. **`0012_plan_overrides_and_audit_log.sql`** — Per-restaurant plan overrides and append-only billing audit log
+13. **`0013_push_subscriptions.sql`** — Web Push subscription records for owner push notifications
+14. **`0014_audit_log_atomicity.sql`** — Adds non-empty `reason` constraints to `plan_overrides` and `billing_audit_log`; creates the `apply_plan_override()` SECURITY DEFINER RPC that atomically writes both rows in one transaction
 
 Apply order matters. Run sequentially in Supabase SQL editor.
 

@@ -3,11 +3,19 @@ import { redirect } from "next/navigation";
 import { InsightsOverview } from "@/components/dashboard/insights/InsightsOverview";
 import { hasProAccess } from "@/lib/billing/entitlements";
 import {
+  pickActiveOverride,
+  resolveEffectiveLimits,
+  type PlanOverrideRow,
+} from "@/lib/billing/overrides";
+import {
   getDishTrendData,
   getInsightsDashboardData,
 } from "@/lib/insights/dashboard";
 import type { InsightPeriodKey } from "@/lib/insights/types";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Прозрения | HaresvaMi",
@@ -40,6 +48,22 @@ export default async function InsightsPage({
     redirect("/dashboard/onboarding");
   }
 
+  const serviceClient = createSupabaseServiceClient();
+  const { data: overrideData } = await serviceClient
+    .from("plan_overrides")
+    .select(
+      "id, restaurant_id, override_tier, override_feedback_limit, override_scan_limit, reason, granted_by, starts_at, expires_at, created_at",
+    )
+    .eq("restaurant_id", data.restaurant.id)
+    .order("created_at", { ascending: false });
+
+  const activeOverride = pickActiveOverride(
+    (overrideData ?? []) as PlanOverrideRow[],
+  );
+  const overrideLimits = activeOverride
+    ? resolveEffectiveLimits(data.restaurant.tier, activeOverride)
+    : undefined;
+
   const { candidates } = await getDishTrendData(data.restaurant.id);
 
   const trialActive =
@@ -49,12 +73,7 @@ export default async function InsightsPage({
   let initialAiSummary: { summaryText: string; generatedAt: string } | null =
     null;
 
-  if (
-    hasProAccess({
-      tier: data.restaurant.tier,
-      trial_ends_at: data.restaurant.trial_ends_at,
-    })
-  ) {
+  if (hasProAccess(data.restaurant, overrideLimits)) {
     const supabase = await createSupabaseServerClient();
     const periodStart = data.period.currentFrom.slice(0, 10);
     const periodEnd = data.period.currentTo.slice(0, 10);

@@ -83,6 +83,9 @@ export async function getMonthlyUsage(
 4. **Trial access uses credits.** A trial grants 100 AI scans for 14 days through `scan_credit_grants`; expired trials without paid access fall back to Free on entitlement reads.
 5. **Feedback count is checked before completion.** The feedback API must call `canSubmitFeedback()` before marking a session complete and increment `usage_counters.feedback_count` only when `completed_at` is set.
 6. **Manual selection is never blocked by AI scan limits.** If scans are exhausted, the kiosk falls back to manual item selection.
+7. **Plan overrides are always applied.** All entitlement functions — `canScanReceipt`, `canSubmitFeedback`, `canExtractMenu`, and `consumeAiScanCredit` — fetch the active `plan_overrides` row and resolve effective limits before making any access decision. An override-adjusted limit, not the base plan limit, is used everywhere.
+8. **`subscription_status` is required for Pro access.** `hasProAccess()` returns true only when: an active trial exists, OR an admin override grants `override_tier='pro'`, OR the restaurant's stored tier is `'pro'` **and** `subscription_status IN ('active', 'trialing')`. A canceled or past-due Pro subscription does not grant Pro access.
+9. **Admin overrides are atomic.** Use the `apply_plan_override()` Postgres function (see `docs/02-schema.md`) to write an override and its audit log row atomically. Never INSERT directly into `plan_overrides` from application code without also writing the corresponding `billing_audit_log` row in the same transaction.
 
 ## Receipt extraction logic
 
@@ -324,34 +327,65 @@ Plain-Bulgarian insights are generated weekly by a cron job.
 
 ### Generation flow
 
-Weekly cron → for each restaurant with Pro tier:
+`GET /api/cron/weekly-insights` is called weekly by Vercel Cron. Domain logic
+lives in `lib/insights/cron.ts`. The route itself is a thin orchestration layer.
 
-1. Aggregate last 7 days of ratings vs prior 7 days
-2. Identify dishes with significant changes (statistical significance: ≥5 ratings, change ≥0.75 points)
-3. Use Claude Sonnet to write the insight in natural Bulgarian
-4. Send push notification to owner's PWA + email
+**Authorization:**
 
-### Insight prompt (Claude)
+- In production: requires `Authorization: Bearer <CRON_SECRET>` header
+  (Vercel sets this automatically when `CRON_SECRET` is set in the dashboard).
+- In development: localhost requests are permitted without the secret.
 
+**Eligibility** (`lib/insights/scheduling.ts`):
+
+- Pro tier with `subscription_status = 'active'`, OR
+- Any tier with `subscription_status = 'trialing'` AND `trial_ends_at > NOW()`.
+- Also requires at least 3 rating rows in completed sessions within the current
+  7-day window (`hasEnoughRatings()`).
+
+**Per-restaurant pipeline** (capped at 5 concurrent, wrapped in try/catch):
+
+1. Load sessions, ratings, and menu items for the past 14 days (current + previous window).
+2. Run `buildInsights()` from `lib/insights/aggregation.ts` (deterministic).
+3. Call `generateInsightSummary()` from `lib/ai/generate-insights.ts` (Gemini 2.5 Flash Lite).
+4. UPSERT into `insight_summaries` keyed on `(restaurant_id, period_start, period_end)`.
+   This serves as a cached fallback for the `/dashboard/insights` page.
+5. Fetch all `push_subscriptions` rows for the restaurant.
+6. For each subscription: call `sendPush()` (`lib/push/server.ts`).
+   - Payload: `{ title: restaurant.name, body: summary[0..240], url: '/dashboard/insights', tag: 'weekly-insight' }`.
+   - If the endpoint returns HTTP 404/410 (`gone: true`), delete the subscription row.
+   - If the push succeeds, update `last_used_at = NOW()`.
+7. Log a `weekly_insight_generation` event to `ai_usage_events` (metadata only,
+   no insight text, per AGENTS.md).
+
+**Response:** `{ ok: true, processed: N, push_sent: M, push_pruned: K }`
+
+**Dashboard fallback:** `/dashboard/insights` can read the most recent
+`insight_summaries` row for the restaurant if the owner visits without a pending
+push. The cron always writes before sending, so the cached summary is always up
+to date after a successful cron run.
+
+### Push notification payload shape
+
+```json
+{
+  "title": "Механа Слънце",
+  "body": "Кебапчето ти е с оценка 4.2/5 — добра седмица!",
+  "url": "/dashboard/insights",
+  "tag": "weekly-insight"
+}
 ```
-You are writing a weekly insight for a Bulgarian restaurant owner about their customer feedback.
 
-Restaurant: ${restaurantName}
-This week: ${thisWeekStats}
-Last week: ${lastWeekStats}
-Notable changes: ${notableChanges}
+Constructed by `buildInsightPayload()` in `lib/push/payload.ts`. Body is
+truncated to 240 characters. No PII (owner email, restaurant_id, user_id)
+leaks into the notification body or title.
 
-Write ONE short insight (max 2 sentences) in informal Bulgarian (use "ти", not "Вие").
-Include the dish name, the rating change, and a clear next action if relevant.
-No corporate language. No "we noticed that..." preambles. Direct and human.
+### Insight prompt (Gemini 2.5 Flash Lite)
 
-Examples of good insights:
-- "Кебапчето пада на 2.6/5 от 3 седмици. Виж 12 отзива →"
-- "Шопската ти сега е 4.4/5 — най-добрата ти оценка от началото на годината."
-- "Един клиент даде 1/5 на агнешкото вчера. Прочети защо →"
-
-Return only the insight text, no explanation.
-```
+The prompt lives in `lib/ai/generate-insights.ts` and has not changed from the
+v0.1 deterministic insights implementation. The cron reuses `generateInsightSummary()`
+directly. The model writes 3-4 sentences in informal Bulgarian on 'ти', naming
+at least one specific dish, and ends with an observation or recommendation.
 
 ## Edge cases
 

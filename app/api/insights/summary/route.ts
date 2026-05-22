@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateInsightSummary } from "@/lib/ai/generate-insights";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { hasProAccess } from "@/lib/billing/entitlements";
+import {
+  pickActiveOverride,
+  resolveEffectiveLimits,
+  type PlanOverrideRow,
+} from "@/lib/billing/overrides";
 import { buildWeeklyInsights } from "@/lib/insights/aggregation";
 import {
   countCompletedInsightSessions,
@@ -35,7 +40,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const supabase = await createSupabaseServerClient();
   const { data: restaurantRow, error: restaurantError } = await supabase
     .from("restaurants")
-    .select("id, name, tier, trial_ends_at")
+    .select("id, name, tier, subscription_status, trial_ends_at")
     .eq("id", restaurant.id)
     .single();
 
@@ -46,11 +51,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  if (!hasProAccess(restaurantRow)) {
+  const serviceClient = createSupabaseServiceClient();
+  const { data: overrideData } = await serviceClient
+    .from("plan_overrides")
+    .select(
+      "id, restaurant_id, override_tier, override_feedback_limit, override_scan_limit, reason, granted_by, starts_at, expires_at, created_at",
+    )
+    .eq("restaurant_id", restaurant.id)
+    .order("created_at", { ascending: false });
+
+  const activeOverride = pickActiveOverride(
+    (overrideData ?? []) as PlanOverrideRow[],
+  );
+  const overrideLimits = activeOverride
+    ? resolveEffectiveLimits(restaurantRow.tier, activeOverride)
+    : undefined;
+
+  if (!hasProAccess(restaurantRow, overrideLimits)) {
     return NextResponse.json({ error: "pro_required" }, { status: 402 });
   }
-
-  const serviceClient = createSupabaseServiceClient();
 
   let body: RequestBody;
   try {

@@ -4,6 +4,11 @@ import {
   isPlanTier,
   type PlanTier,
 } from "@/lib/billing/plans";
+export type { PlanOverrideRow, ResolvedLimits } from "@/lib/billing/overrides";
+export {
+  pickActiveOverride,
+  resolveEffectiveLimits,
+} from "@/lib/billing/overrides";
 
 export const FREE_MENU_EXTRACTION_LIMIT = 1;
 export const PRO_MENU_EXTRACTION_LIMIT = 10;
@@ -178,15 +183,19 @@ export function resultForLimit(params: {
 export function getFeedbackEntitlement(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;
+  /** When an active plan_overrides row exists, pass its resolved limits here. */
+  overrideLimits?: { effectiveTier: PlanTier; effectiveFeedbackLimit: number };
   now?: Date;
 }): EntitlementResult {
   const plan = resolvePlanAccess(input.restaurant, input.now);
-  const limit = getFeedbackLimit(plan.tier);
+  const effectiveTier = input.overrideLimits?.effectiveTier ?? plan.tier;
+  const limit =
+    input.overrideLimits?.effectiveFeedbackLimit ?? getFeedbackLimit(plan.tier);
 
   return resultForLimit({
     used: input.usage.feedbackCount,
     limit,
-    tier: plan.tier,
+    tier: effectiveTier,
     paidTierInactive: plan.paidTierInactive,
     trialExpired: plan.trialExpired,
     limitReason: "feedback_limit_reached",
@@ -197,6 +206,8 @@ export function getScanEntitlement(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;
   creditSummary: ScanCreditSnapshot;
+  /** When an active plan_overrides row exists, pass its resolved limits here. */
+  overrideLimits?: { effectiveTier: PlanTier; effectiveScanLimit: number };
   now?: Date;
 }): EntitlementResult {
   const plan = resolvePlanAccess(input.restaurant, input.now);
@@ -223,7 +234,9 @@ export function getScanEntitlement(input: {
     };
   }
 
-  const planLimit = getAiScanLimit(plan.tier);
+  const effectiveTier = input.overrideLimits?.effectiveTier ?? plan.tier;
+  const planLimit =
+    input.overrideLimits?.effectiveScanLimit ?? getAiScanLimit(plan.tier);
   const planRemaining = Math.max(0, planLimit - input.usage.aiScanCount);
   const extraUsedBeyondPlan = Math.max(0, input.usage.aiScanCount - planLimit);
   const limit = planLimit + extraUsedBeyondPlan + input.creditSummary.remaining;
@@ -250,24 +263,46 @@ export function getScanEntitlement(input: {
     limit,
     used: input.usage.aiScanCount,
     remaining: 0,
-    upgradeTarget: nextUpgradeTarget(plan.tier),
+    upgradeTarget: nextUpgradeTarget(effectiveTier),
   };
 }
 
-export function hasProAccess(restaurant: {
-  tier: string;
-  trial_ends_at: string | null;
-}): boolean {
-  if (normalizeTier(restaurant.tier) === "pro") {
+export function hasProAccess(
+  restaurant: {
+    tier: string;
+    subscription_status?: string;
+    trial_ends_at: string | null;
+  },
+  overrideLimits?: { effectiveTier: PlanTier },
+): boolean {
+  const now = new Date();
+
+  // An active trial always grants Pro access regardless of tier or subscription.
+  if (isFuture(restaurant.trial_ends_at, now)) {
     return true;
   }
 
-  return isFuture(restaurant.trial_ends_at, new Date());
+  // When an admin override elevates the tier to Pro, the override itself is the
+  // access grant — no subscription_status check is required.
+  if (overrideLimits?.effectiveTier === "pro") {
+    return true;
+  }
+
+  // For a restaurant with Pro from a real Stripe subscription, require the
+  // subscription to be in good standing (active or trialing).
+  if (normalizeTier(restaurant.tier) !== "pro") {
+    return false;
+  }
+
+  const status = restaurant.subscription_status ?? "none";
+  return status === "active" || status === "trialing";
 }
 
 export function shouldConsumeScanCreditGrant(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;
+  /** When an active plan_overrides row exists, pass its resolved limits here. */
+  overrideLimits?: { effectiveScanLimit: number };
   now?: Date;
 }) {
   const plan = resolvePlanAccess(input.restaurant, input.now);
@@ -276,7 +311,10 @@ export function shouldConsumeScanCreditGrant(input: {
     return true;
   }
 
-  return input.usage.aiScanCount >= getAiScanLimit(plan.tier);
+  const effectiveLimit =
+    input.overrideLimits?.effectiveScanLimit ?? getAiScanLimit(plan.tier);
+
+  return input.usage.aiScanCount >= effectiveLimit;
 }
 
 export function applySuccessfulEntitlementConsumption(
@@ -294,16 +332,19 @@ export function applySuccessfulEntitlementConsumption(
 export function getMenuExtractionEntitlement(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;
+  /** When an active plan_overrides row exists, pass its resolved limits here. */
+  overrideLimits?: { effectiveTier: PlanTier };
   now?: Date;
 }): EntitlementResult {
   const plan = resolvePlanAccess(input.restaurant, input.now);
-  const isPro = plan.tier === "pro" || plan.trialActive;
+  const effectiveTier = input.overrideLimits?.effectiveTier ?? plan.tier;
+  const isPro = effectiveTier === "pro" || plan.trialActive;
   const limit = isPro ? PRO_MENU_EXTRACTION_LIMIT : FREE_MENU_EXTRACTION_LIMIT;
 
   return resultForLimit({
     used: input.usage.menuExtractionCount,
     limit,
-    tier: plan.tier,
+    tier: effectiveTier,
     paidTierInactive: plan.paidTierInactive,
     trialExpired: plan.trialExpired,
     limitReason: "menu_extraction_limit_reached",

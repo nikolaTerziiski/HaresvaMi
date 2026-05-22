@@ -400,6 +400,117 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          restaurant_id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          expiration_time: number | null;
+          user_agent: string | null;
+          last_used_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          restaurant_id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          expiration_time?: number | null;
+          user_agent?: string | null;
+          last_used_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          restaurant_id?: string;
+          user_id?: string;
+          endpoint?: string;
+          p256dh?: string;
+          auth?: string;
+          expiration_time?: number | null;
+          user_agent?: string | null;
+          last_used_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      plan_overrides: {
+        Row: {
+          id: string;
+          restaurant_id: string;
+          override_tier: string | null;
+          override_feedback_limit: number | null;
+          override_scan_limit: number | null;
+          reason: string;
+          granted_by: string;
+          starts_at: string;
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          restaurant_id: string;
+          override_tier?: string | null;
+          override_feedback_limit?: number | null;
+          override_scan_limit?: number | null;
+          reason: string;
+          granted_by: string;
+          starts_at?: string;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          restaurant_id?: string;
+          override_tier?: string | null;
+          override_feedback_limit?: number | null;
+          override_scan_limit?: number | null;
+          reason?: string;
+          granted_by?: string;
+          starts_at?: string;
+          expires_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      billing_audit_log: {
+        Row: {
+          id: string;
+          admin_user_id: string;
+          restaurant_id: string;
+          field: string;
+          previous_value: Json | null;
+          new_value: Json;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_user_id: string;
+          restaurant_id: string;
+          field: string;
+          previous_value?: Json | null;
+          new_value: Json;
+          reason: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          admin_user_id?: string;
+          restaurant_id?: string;
+          field?: string;
+          previous_value?: Json | null;
+          new_value?: Json;
+          reason?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
