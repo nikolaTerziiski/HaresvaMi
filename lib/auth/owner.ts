@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
@@ -16,7 +17,7 @@ export type OwnerRestaurant = {
   trial_ends_at: string | null;
 };
 
-export async function getCurrentOwnerState() {
+export const getCurrentOwnerState = cache(async () => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -56,7 +57,7 @@ export async function getCurrentOwnerState() {
     user,
     restaurant: (restaurant as OwnerRestaurant | null) ?? null,
   };
-}
+});
 
 export function getOwnerDestination(restaurant: OwnerRestaurant | null) {
   return restaurant ? "/dashboard" : "/dashboard/onboarding";

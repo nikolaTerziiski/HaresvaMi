@@ -415,6 +415,7 @@
             "expandAll": "Expand all"
           },
           "uncategorized": "Uncategorised",
+          "moveTo": "Move to category",
           "warn": {
             "fixChip": "fix"
           },

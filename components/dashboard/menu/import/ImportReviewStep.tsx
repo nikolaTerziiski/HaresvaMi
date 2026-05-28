@@ -53,10 +53,15 @@ export function ImportReviewStep({
     [],
   );
 
-  // Mutable edited name/price per client_id
+  // Mutable edited name/price per client_id (refs — don't trigger re-render)
   const editsRef = useRef<Record<string, { name_bg?: string; price?: string }>>(
     {},
   );
+
+  // Category overrides per client_id (state — affects grouping, must re-render)
+  const [categoryOverrides, setCategoryOverrides] = useState<
+    Record<string, string>
+  >({});
 
   function handleNameChange(id: string, value: string) {
     editsRef.current[id] = { ...editsRef.current[id], name_bg: value };
@@ -66,18 +71,24 @@ export function ImportReviewStep({
     editsRef.current[id] = { ...editsRef.current[id], price: value };
   }
 
+  function handleCategoryChange(id: string, category: string) {
+    setCategoryOverrides((prev) => ({ ...prev, [id]: category }));
+  }
+
   // Toolbar state
   const [searchQuery, setSearchQuery] = useState("");
   const [showFlaggedOnly, setShowFlaggedOnly] = useState(false);
   const [sortByConfidence, setSortByConfidence] = useState(false);
 
-  // Group items by category — Uncategorized always last
+  // Group items by category — Uncategorized always last.
+  // Applies categoryOverrides so the move-to-category action regroups items.
   const categories = useMemo(() => {
     const groups = new Map<string, ItemWithId[]>();
     const uncategorizedKey = "Некласифицирано";
 
     for (const item of itemsWithIds) {
-      const cat = item.category || uncategorizedKey;
+      const overridden = categoryOverrides[item.client_id];
+      const cat = overridden || item.category || uncategorizedKey;
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat)!.push(item);
     }
@@ -93,7 +104,7 @@ export function ImportReviewStep({
     }
     if (uncategorized) ordered.push(uncategorized);
     return ordered;
-  }, [itemsWithIds]);
+  }, [itemsWithIds, categoryOverrides]);
 
   // Expanded state per category — all expanded by default
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(
@@ -170,7 +181,7 @@ export function ImportReviewStep({
       }
       return {
         name_bg: edits?.name_bg ?? item.name_bg,
-        category: item.category,
+        category: categoryOverrides[item.client_id] ?? item.category,
         price,
         description_bg: item.description_bg,
         confidence: item.confidence,
@@ -242,6 +253,7 @@ export function ImportReviewStep({
               onToggle={() => toggleCategory(cat.name)}
               onNameChange={handleNameChange}
               onPriceChange={handlePriceChange}
+              onCategoryChange={handleCategoryChange}
             />
           ))
         )}

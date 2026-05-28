@@ -10,6 +10,19 @@ export const SUGGESTED_MANUAL_CATEGORIES = [
   "Алкохол",
 ] as const;
 
+// AI menu import extracts food only — drinks are filtered out at the prompt
+// level. The popover in the review screen uses this list (plus
+// "Некласифицирано" when relevant) for the "move to category" options.
+export const AI_IMPORT_FOOD_CATEGORIES = [
+  "Салати",
+  "Супи",
+  "Предястия",
+  "Основни",
+  "Скара",
+  "Гарнитури",
+  "Десерти",
+] as const;
+
 export const CATEGORY_COLORS = [
   "#7A9B5A",
   "#C24D2C",

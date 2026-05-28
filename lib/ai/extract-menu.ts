@@ -110,7 +110,7 @@ export async function extractMenu(
     console.error("Error extracting menu:", error);
     return { items: [], error: "Failed to parse menu from image" };
   }
-} 
+}
 
 // ---------------------------------------------------------------------------
 // Multi-file extraction (Phase 1+)
