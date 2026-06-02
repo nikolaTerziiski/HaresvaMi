@@ -31,6 +31,7 @@ export function AliasManagerPopover({
   const [inputValue, setInputValue] = useState("");
   const [adding, setAdding] = useState(false);
   const [duplicateError, setDuplicateError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load aliases when the popover mounts
@@ -46,7 +47,7 @@ export function AliasManagerPopover({
         const data = (await res.json()) as { aliases: AliasRow[] };
         if (!cancelled) setAliases(data.aliases);
       } catch {
-        // Silently fail — user can still add aliases
+        if (!cancelled) setErrorMessage(t("aliasesLoadError"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -65,6 +66,7 @@ export function AliasManagerPopover({
 
     setAdding(true);
     setDuplicateError(false);
+    setErrorMessage(null);
 
     try {
       const res = await fetch("/api/receipt-aliases", {
@@ -87,20 +89,31 @@ export function AliasManagerPopover({
       setAliases((prev) => [...prev, data.alias]);
       setInputValue("");
     } catch {
-      // Network error — leave input intact so user can retry
+      setErrorMessage(t("aliasesSaveError"));
     } finally {
       setAdding(false);
     }
   }
 
   async function handleDelete(aliasId: string) {
+    setErrorMessage(null);
+
     try {
-      await fetch(`/api/receipt-aliases/${encodeURIComponent(aliasId)}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/receipt-aliases/${encodeURIComponent(aliasId)}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!res.ok) {
+        setErrorMessage(t("aliasesDeleteError"));
+        return;
+      }
+
       setAliases((prev) => prev.filter((a) => a.id !== aliasId));
     } catch {
-      // Silently fail
+      setErrorMessage(t("aliasesDeleteError"));
     }
   }
 
@@ -118,6 +131,7 @@ export function AliasManagerPopover({
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInputValue(e.target.value);
     if (duplicateError) setDuplicateError(false);
+    if (errorMessage) setErrorMessage(null);
   }
 
   return (
@@ -201,6 +215,14 @@ export function AliasManagerPopover({
         {duplicateError ? (
           <p className="mt-1 font-[var(--f-ui)] text-[11px] text-[var(--bad)]">
             {t("aliasesDuplicateError")}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p
+            role="alert"
+            className="mt-1 font-[var(--f-ui)] text-[11px] leading-[1.4] text-[var(--bad)]"
+          >
+            {errorMessage}
           </p>
         ) : null}
       </div>

@@ -100,6 +100,20 @@ Owner sees in dashboard:
 - No credit card required upfront
 - After trial: features lock back to Free unless they subscribe
 
+### Dashboard plan visibility
+
+Owners should never see a stale or contradictory plan label. The dashboard shell
+chip and the home plan card both show the restaurant's effective access, not the
+raw `restaurants.tier` value alone.
+
+- Active Pro subscription, active Pro trial, or active Pro override -> `Pro план`
+- Active Starter subscription or active Starter override -> `Стартер план`
+- Canceled, inactive, or expired paid access -> `Безплатен план`
+
+The home plan card must also show the matching feedback limit for that effective
+tier. For example, a Pro restaurant should see `0 / 10000`, not the Free
+`0 / 50` limit.
+
 **Restaurant Group** (post-MVP):
 
 - Multiple locations

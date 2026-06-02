@@ -165,6 +165,37 @@ Before announcing publicly:
 - [ ] GDPR-compliant cookie banner
 - [ ] Legal: data processing agreement template ready for restaurant owners
 
+## Telegram alerts
+
+Restaurant owners on the Pro plan can connect their Telegram account to receive
+real-time alerts whenever a customer submits an unhappy rating.
+
+### Setup steps (do once per environment)
+
+1. **Create a Telegram bot** via [@BotFather](https://t.me/BotFather) and copy
+   the token it provides.
+2. **Register the webhook** so Telegram pushes updates to your server:
+   ```bash
+   curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "url": "https://<YOUR_DOMAIN>/api/telegram/webhook",
+       "secret_token": "<TELEGRAM_WEBHOOK_SECRET>"
+     }'
+   ```
+3. **Set the four environment variables** in Vercel (production + preview):
+
+| Variable                            | Description                                                                        |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`                | Token from @BotFather — keep server-only                                           |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Bot @username (without @), exposed to client for deep-link                         |
+| `TELEGRAM_WEBHOOK_SECRET`           | Random hex; validated in `X-Telegram-Bot-Api-Secret-Token` header                  |
+| `TELEGRAM_LINK_SECRET`              | HMAC key for signing `/start` payload tokens; generate with `openssl rand -hex 32` |
+
+4. In local development, skip the webhook and test the webhook handler directly
+   (the route validates the secret header only when `TELEGRAM_WEBHOOK_SECRET` is
+   set, so it remains open without it in local dev).
+
 ## Vercel Cron Jobs
 
 ### Weekly insights cron

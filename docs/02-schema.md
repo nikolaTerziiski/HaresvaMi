@@ -37,6 +37,8 @@ CREATE TABLE restaurants (
   stripe_customer_id TEXT UNIQUE,
   stripe_subscription_id TEXT UNIQUE,
   onboarding_completed_at TIMESTAMPTZ,
+  google_review_url TEXT,
+  google_place_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -116,6 +118,7 @@ CREATE TABLE feedback_sessions (
   customer_language TEXT NOT NULL DEFAULT 'bg' CHECK (customer_language IN ('bg', 'en')),
   overall_rating TEXT CHECK (overall_rating IN ('like', 'dislike')),
   overall_comment TEXT,
+  recovery_comment TEXT CHECK (recovery_comment IS NULL OR length(recovery_comment) <= 1000),
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -306,6 +309,30 @@ CREATE INDEX idx_push_subscriptions_restaurant_user
   ON push_subscriptions(restaurant_id, user_id);
 ```
 
+### `telegram_links`
+
+Stores the mapping between a restaurant and a Telegram chat that has been linked via the bot. A restaurant can be linked to at most one chat at a time (enforced by the unique constraint on `restaurant_id, chat_id`).
+
+```sql
+CREATE TABLE telegram_links (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  restaurant_id UUID NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+  chat_id       BIGINT NOT NULL,
+  username      TEXT,
+  linked_by     UUID REFERENCES auth.users(id),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  UNIQUE (restaurant_id, chat_id)
+);
+
+CREATE INDEX idx_telegram_links_restaurant_id ON telegram_links(restaurant_id);
+```
+
+RLS:
+
+- Owner `SELECT` / `DELETE` their own rows (matched via `restaurant_id IN (SELECT id FROM restaurants WHERE owner_id = auth.uid())`).
+- Service role `INSERT` only (the bot callback API uses the service client; no policy required for service role).
+
 ### `billing_audit_log`
 
 Append-only record of every admin billing change. Every row is immutable — no UPDATE or DELETE is permitted. Each row captures a single field change: what it was, what it became, who changed it, and why.
@@ -410,16 +437,39 @@ CREATE POLICY "owners_create_restaurant"
   ON restaurants FOR INSERT
   WITH CHECK (auth.uid() = owner_id);
 
--- Owner can update their own
+-- Owner can update their own (hardened in 0016 with WITH CHECK so ownership is
+-- re-verified after the write, blocking row-hijack via owner_id reassignment)
 CREATE POLICY "owners_update_own_restaurant"
   ON restaurants FOR UPDATE
-  USING (auth.uid() = owner_id);
+  USING (auth.uid() = owner_id)
+  WITH CHECK (auth.uid() = owner_id);
 
 -- Owner can delete their own
 CREATE POLICY "owners_delete_own_restaurant"
   ON restaurants FOR DELETE
   USING (auth.uid() = owner_id);
 ```
+
+**Column-level UPDATE lockdown (migration `0016`).** The row policy above only
+controls _which rows_ an owner may update — not _which columns_. Without a column
+restriction an owner could call the public API and `UPDATE restaurants SET tier='pro'`
+to self-grant Pro. Migration `0016` closes this by revoking the broad UPDATE
+privilege and re-granting it on safe profile columns only:
+
+```sql
+REVOKE UPDATE ON public.restaurants FROM authenticated, anon;
+GRANT UPDATE (
+  name, city, address, phone,
+  language_default, customer_languages, logo_url,
+  google_review_url, google_place_id
+) ON public.restaurants TO authenticated;
+```
+
+Billing/subscription columns — `tier`, `subscription_status`, `trial_started_at`,
+`trial_ends_at`, `trial_used_at`, `stripe_customer_id`, `stripe_subscription_id`,
+`current_period_ends_at` — are **deliberately excluded** and may only be written by
+the service role (Stripe webhook, trial start, checkout session, admin tooling).
+The service role bypasses both RLS and column grants.
 
 ### menu_items policies
 
@@ -683,6 +733,8 @@ Current migration set in `supabase/migrations/`:
 12. **`0012_plan_overrides_and_audit_log.sql`** — Per-restaurant plan overrides and append-only billing audit log
 13. **`0013_push_subscriptions.sql`** — Web Push subscription records for owner push notifications
 14. **`0014_audit_log_atomicity.sql`** — Adds non-empty `reason` constraints to `plan_overrides` and `billing_audit_log`; creates the `apply_plan_override()` SECURITY DEFINER RPC that atomically writes both rows in one transaction
+15. **`0015_reputation_engine.sql`** — Reputation engine: adds `restaurants.google_review_url` / `google_place_id`, `feedback_sessions.recovery_comment` (≤1000 chars), and the `telegram_links` table with owner SELECT/DELETE RLS (service-role INSERT only)
+16. **`0016_restaurants_update_column_grants.sql`** — Security hardening: `REVOKE UPDATE` on `restaurants` from `authenticated`/`anon`, then re-`GRANT UPDATE` on only the safe owner-editable profile columns, and tightens `owners_update_own_restaurant` with a `WITH CHECK` clause. Billing/subscription columns become service-role-only writes (see RLS section below)
 
 Apply order matters. Run sequentially in Supabase SQL editor.
 

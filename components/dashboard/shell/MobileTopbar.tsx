@@ -14,6 +14,8 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import type { PlanTier } from "@/lib/billing/plans";
+
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
 import { NavLink } from "./NavLink";
@@ -21,6 +23,7 @@ import { NavLink } from "./NavLink";
 type MobileTopbarProps = {
   restaurantName: string;
   ownerFirstName: string;
+  tier: PlanTier;
 };
 
 const ICON_PROPS = { className: "h-4 w-4", strokeWidth: 1.75 } as const;
@@ -28,6 +31,7 @@ const ICON_PROPS = { className: "h-4 w-4", strokeWidth: 1.75 } as const;
 export function MobileTopbar({
   restaurantName,
   ownerFirstName,
+  tier,
 }: MobileTopbarProps) {
   const [open, setOpen] = useState(false);
   const nav = useTranslations("dashboard.nav");
@@ -85,7 +89,7 @@ export function MobileTopbar({
                   {restaurantName}
                 </div>
                 <span className="ml-2 mt-2 inline-block w-fit rounded-full border border-[var(--rule)] px-2 py-[3px] font-[var(--f-mono)] text-[10px] uppercase tracking-[0.08em] text-[var(--ink-mute)]">
-                  {shell("tierChipFree")}
+                  {shell(`tierChip.${tier}`)}
                 </span>
               </div>
               <button

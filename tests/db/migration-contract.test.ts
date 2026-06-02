@@ -127,3 +127,45 @@ test("RLS is enabled for kiosk_sessions", () => {
     ),
   );
 });
+
+test("migration 0015 adds google_review_url to restaurants", () => {
+  const migration = migrations.find(
+    (m) => m.name === "0015_reputation_engine.sql",
+  );
+  assert.ok(migration, "migration 0015_reputation_engine.sql must exist");
+  assert.ok(
+    hasStatement(
+      migration!.sql,
+      /ALTER\s+TABLE\s+public\.restaurants\s+ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\s+google_review_url\s+TEXT/i,
+    ),
+    "0015 must add google_review_url column to restaurants",
+  );
+});
+
+test("migration 0015 adds recovery_comment to feedback_sessions", () => {
+  const migration = migrations.find(
+    (m) => m.name === "0015_reputation_engine.sql",
+  );
+  assert.ok(migration, "migration 0015_reputation_engine.sql must exist");
+  assert.ok(
+    hasStatement(
+      migration!.sql,
+      /ALTER\s+TABLE\s+public\.feedback_sessions\s+ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\s+recovery_comment\s+TEXT/i,
+    ),
+    "0015 must add recovery_comment column to feedback_sessions",
+  );
+});
+
+test("migration 0015 creates telegram_links table", () => {
+  const migration = migrations.find(
+    (m) => m.name === "0015_reputation_engine.sql",
+  );
+  assert.ok(migration, "migration 0015_reputation_engine.sql must exist");
+  assert.ok(
+    hasStatement(
+      migration!.sql,
+      /CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+public\.telegram_links\s*\(/i,
+    ),
+    "0015 must create the telegram_links table",
+  );
+});

@@ -68,7 +68,14 @@
       "thanksSecondsSuffix": "sec.",
       "thanksNewReviewNow": "New feedback now",
       "reset": "New customer",
-      "ownerUpgradeHint": "Scanning is paused because of the limit. Manual selection is still available."
+      "ownerUpgradeHint": "Scanning is paused because of the limit. Manual selection is still available.",
+      "reputationUnhappyTitle": "We're sorry. What went wrong?",
+      "reputationUnhappyBody": "Tell us what to improve — it goes straight to the owner.",
+      "recoveryPlaceholder": "Briefly describe what happened...",
+      "recoverySubmit": "Send",
+      "recoverySubmitting": "Sending...",
+      "recoverySkip": "Skip",
+      "recoveryThanks": "Thanks for telling us. We'll take care of it."
     },
     "exit": {
       "button": "Exit",
@@ -105,7 +112,11 @@
       "profile": "Profile"
     },
     "shell": {
-      "tierChipFree": "Free plan",
+      "tierChip": {
+        "free": "Free plan",
+        "starter": "Starter plan",
+        "pro": "Pro plan"
+      },
       "role": {
         "owner": "Owner"
       },
@@ -159,11 +170,19 @@
         }
       },
       "tier": {
-        "title": "Free plan",
+        "plans": {
+          "free": "Free plan",
+          "starter": "Starter plan",
+          "pro": "Pro plan"
+        },
         "current": "Current",
         "usage": "{used} / {limit} ratings this month",
-        "blurb": "The trial unlocks AI receipt scanning and unlimited feedback for 14 days.",
-        "cta": "Start 14-day trial"
+        "blurbs": {
+          "free": "The free plan is enough for a first test. Once the menu is ready, unlock AI receipt scanning from settings.",
+          "starter": "Starter fits a small restaurant collecting steady feedback and AI scans without extra complexity.",
+          "pro": "Pro is active. Keep collecting feedback on the tablet and watch which dishes move the room."
+        },
+        "cta": "Plan settings"
       },
       "tutorial": {
         "title": "How HaresvaMi works",
@@ -204,8 +223,12 @@
       },
       "actions": {
         "startTrial": "Start Pro trial",
+        "startTrialLoading": "Starting...",
         "upgrade": "Upgrade to Pro",
-        "note": "Stripe payment will be added in the next step."
+        "upgradeLoading": "Opening checkout...",
+        "genericError": "We could not complete the action. Try again.",
+        "checkoutMissingUrl": "Checkout did not return a link. Try again.",
+        "note": "Payment runs through Stripe. Pro access turns on after Stripe confirms the payment."
       },
       "scanLimit": {
         "availableTitle": "AI scanning is active",
@@ -213,6 +236,38 @@
         "exhaustedTitle": "AI scans are exhausted",
         "exhaustedBody": "{used} of {limit} AI scans have been used. Scanning pauses until the next period or a higher plan is added.",
         "manualFallback": "Manual dish selection remains available in tablet mode so service does not stop."
+      }
+    },
+    "settings": {
+      "reputation": {
+        "title": "Google reviews",
+        "description": "Show happy customers a QR code right after they rate, so they can leave a Google review.",
+        "urlLabel": "Google review link",
+        "urlPlaceholder": "https://g.page/r/...",
+        "urlHelp": "Get it from your Google Business profile → \"Ask for reviews\".",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Saved.",
+        "error": "Couldn't save. Try again.",
+        "invalidUrl": "Enter a valid link (https://).",
+        "lockedTitle": "Pro only",
+        "lockedBody": "Upgrade to Pro to collect Google reviews and real-time alerts.",
+        "lockedCta": "Upgrade to Pro",
+        "qrTitle": "Table QR code",
+        "qrHint": "Print and place on tables or the counter. Customers scan with their phone and leave a Google review.",
+        "qrPrint": "Print / save"
+      },
+      "telegram": {
+        "title": "Telegram alerts",
+        "description": "Get an alert the moment a customer is unhappy — so you can react before they leave.",
+        "connect": "Connect Telegram",
+        "connecting": "Opening Telegram...",
+        "connected": "Connected",
+        "connectedAs": "Connected as {username}",
+        "disconnect": "Disconnect",
+        "notConnected": "No Telegram connected yet.",
+        "help": "We'll open the bot in Telegram. Tap Start to finish linking.",
+        "error": "Couldn't update the connection. Try again."
       }
     },
     "menu": {
@@ -310,6 +365,9 @@
       "aliasesAddButton": "Add",
       "aliasesLearnedLabel": "learned",
       "aliasesDuplicateError": "This alias already exists.",
+      "aliasesLoadError": "We could not load aliases.",
+      "aliasesSaveError": "We could not save the alias. Try again.",
+      "aliasesDeleteError": "We could not delete the alias. Try again.",
       "aliasesNotSavedHint": "Save the menu first to add aliases.",
       "aliasesLoading": "Loading...",
       "editToggle": {

@@ -24,13 +24,17 @@ export const getCurrentOwnerState = cache(async () => {
     error: userError,
   } = await supabase.auth.getUser();
 
+  // getUser() can fail for a missing session OR a stale/invalid JWT (e.g. a
+  // deleted user → "User from sub claim in JWT does not exist"). Neither is a
+  // server fault: treat both as signed-out so callers redirect to login rather
+  // than throwing a 500. Log non-session-missing errors for visibility.
   if (userError && userError.name !== "AuthSessionMissingError") {
-    throw new Error(
-      `Unable to read the current auth user: ${userError.message}`,
+    console.warn(
+      `Auth user read failed; treating as signed out: ${userError.message}`,
     );
   }
 
-  if (!user) {
+  if (userError || !user) {
     return {
       user: null,
       restaurant: null,

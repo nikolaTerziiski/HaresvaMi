@@ -37,14 +37,20 @@ export async function extractReceiptForKiosk(
   };
 }
 
+type SubmitKioskFeedbackResult = {
+  ok: boolean;
+  status: number;
+  sessionId: string | null;
+};
+
 export async function submitKioskFeedback({
   restaurantId,
   selectedItems,
   extractedItems,
   itemRatings,
   overallRating,
-}: SubmitKioskFeedbackInput): Promise<Response> {
-  return fetch("/api/feedback", {
+}: SubmitKioskFeedbackInput): Promise<SubmitKioskFeedbackResult> {
+  const response = await fetch("/api/feedback", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -60,6 +66,35 @@ export async function submitKioskFeedback({
       extractedItems: toFeedbackItems(extractedItems),
     }),
   });
+  const body = await response.json().catch(() => ({}));
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    sessionId: typeof body?.sessionId === "string" ? body.sessionId : null,
+  };
+}
+
+type SubmitRecoveryCommentInput = {
+  restaurantId: string;
+  sessionId: string;
+  comment: string;
+};
+
+export async function submitRecoveryComment({
+  restaurantId,
+  sessionId,
+  comment,
+}: SubmitRecoveryCommentInput): Promise<{ ok: boolean }> {
+  const response = await fetch("/api/feedback/recovery", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ restaurantId, sessionId, comment }),
+  });
+
+  return { ok: response.ok };
 }
 
 export async function learnReceiptAliasesForKiosk(

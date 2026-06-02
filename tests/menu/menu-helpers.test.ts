@@ -212,7 +212,10 @@ test("getDirtyRows returns only rows that differ from baseline or are new non-bl
   assert.equal(getDirtyRows(withBlank, initial).length, 0);
 
   // Non-blank new row is dirty
-  const withNew = [...rows, row({ id: "new1", name_bg: "Soup", category: "Soups", price: "4" })];
+  const withNew = [
+    ...rows,
+    row({ id: "new1", name_bg: "Soup", category: "Soups", price: "4" }),
+  ];
   assert.equal(getDirtyRows(withNew, initial).length, 1);
   assert.equal(getDirtyRows(withNew, initial)[0].id, "new1");
 

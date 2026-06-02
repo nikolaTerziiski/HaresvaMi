@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { KioskScanScreen } from "@/components/kiosk/KioskScanScreen";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
-import { canScanReceipt } from "@/lib/billing/entitlements";
+import { canScanReceipt, canUseReputation } from "@/lib/billing/entitlements";
 import {
   KIOSK_SESSION_COOKIE,
   verifyKioskToken,
@@ -70,7 +70,7 @@ async function loadKioskRestaurant(restaurantId: string) {
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
     .from("restaurants")
-    .select("id, name")
+    .select("id, name, tier, subscription_status, trial_ends_at")
     .eq("id", restaurantId)
     .maybeSingle();
 
@@ -78,7 +78,17 @@ async function loadKioskRestaurant(restaurantId: string) {
     throw new Error(`Unable to load kiosk restaurant: ${error.message}`);
   }
 
-  return data as KioskRestaurant | null;
+  if (!data) {
+    return null;
+  }
+
+  const reputationEnabled = await canUseReputation(data.id);
+
+  return {
+    id: data.id,
+    name: data.name,
+    reputationEnabled,
+  } satisfies KioskRestaurant;
 }
 
 async function loadKioskMenu(restaurantId: string) {
@@ -188,6 +198,13 @@ export default async function KioskScanPage() {
         thanksNewReviewNow: t("thanksNewReviewNow"),
         reset: t("reset"),
         ownerUpgradeHint: t("ownerUpgradeHint"),
+        reputationUnhappyTitle: t("reputationUnhappyTitle"),
+        reputationUnhappyBody: t("reputationUnhappyBody"),
+        recoveryPlaceholder: t("recoveryPlaceholder"),
+        recoverySubmit: t("recoverySubmit"),
+        recoverySubmitting: t("recoverySubmitting"),
+        recoverySkip: t("recoverySkip"),
+        recoveryThanks: t("recoveryThanks"),
       }}
     />
   );

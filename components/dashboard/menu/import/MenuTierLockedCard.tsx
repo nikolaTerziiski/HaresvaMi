@@ -31,7 +31,7 @@ export function MenuTierLockedCard({ entitlement }: MenuTierLockedCardProps) {
 
       <div className="flex flex-wrap items-center gap-4">
         <Link
-          href="/dashboard/billing"
+          href="/dashboard/settings"
           className="inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 text-[14px] font-medium text-[var(--paper)] no-underline transition-opacity hover:opacity-90"
           style={{
             boxShadow: "0 8px 20px -8px rgba(194,77,44,0.5)",

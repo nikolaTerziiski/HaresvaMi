@@ -144,6 +144,21 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - `/kiosk/scan` should show `Таблетът не е свързан.`
     - the old connect link should show the invalid/expired tablet-link page
 
+## Dashboard Plan Label Smoke Check
+
+Run this whenever billing entitlement or plan-display code changes.
+
+1. Create or use a restaurant with active Pro access (`tier = 'pro'` and
+   `subscription_status = 'active'`), an active Pro trial, or an active
+   `plan_overrides.override_tier = 'pro'`.
+2. Log in as that owner and open `/dashboard`.
+3. Verify the sidebar/mobile drawer chip says `Pro план`.
+4. Verify the home plan card says `Pro план` and shows the Pro feedback limit
+   (`0 / 10000 отзива този месец` when there is no current usage).
+5. Verify the same screen does not show `Безплатен план`.
+6. Repeat with an inactive/canceled paid restaurant when touching fallback
+   logic; it should fall back to the Free label and Free limit.
+
 ## Optional Receipt Scan Flow
 
 Only run this if `GOOGLE_GEMINI_API_KEY` is configured in `.env.local`.

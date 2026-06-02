@@ -34,6 +34,8 @@ export type Database = {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           onboarding_completed_at: string | null;
+          google_review_url: string | null;
+          google_place_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -57,6 +59,8 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           onboarding_completed_at?: string | null;
+          google_review_url?: string | null;
+          google_place_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -80,6 +84,8 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           onboarding_completed_at?: string | null;
+          google_review_url?: string | null;
+          google_place_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -179,6 +185,7 @@ export type Database = {
           customer_language: string;
           overall_rating: string | null;
           overall_comment: string | null;
+          recovery_comment: string | null;
           started_at: string;
           completed_at: string | null;
           created_at: string;
@@ -192,6 +199,7 @@ export type Database = {
           customer_language?: string;
           overall_rating?: string | null;
           overall_comment?: string | null;
+          recovery_comment?: string | null;
           started_at?: string;
           completed_at?: string | null;
           created_at?: string;
@@ -205,6 +213,7 @@ export type Database = {
           customer_language?: string;
           overall_rating?: string | null;
           overall_comment?: string | null;
+          recovery_comment?: string | null;
           started_at?: string;
           completed_at?: string | null;
           created_at?: string;
@@ -435,6 +444,33 @@ export type Database = {
           expiration_time?: number | null;
           user_agent?: string | null;
           last_used_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      telegram_links: {
+        Row: {
+          id: string;
+          restaurant_id: string;
+          chat_id: number;
+          username: string | null;
+          linked_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          restaurant_id: string;
+          chat_id: number;
+          username?: string | null;
+          linked_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          restaurant_id?: string;
+          chat_id?: number;
+          username?: string | null;
+          linked_by?: string | null;
           created_at?: string;
         };
         Relationships: [];

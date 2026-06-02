@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { submitKioskFeedback } from "@/lib/kiosk/client-api";
+import { classifyFeedbackSentiment } from "@/lib/feedback/sentiment";
+import type { Sentiment } from "@/lib/feedback/sentiment";
 import type {
   KioskScanCopy,
   OverallRating,
@@ -13,23 +15,29 @@ import type {
 type UseKioskFeedbackSubmitInput = {
   copy: KioskScanCopy;
   restaurantId: string;
+  reputationEnabled: boolean;
   selectedItems: SelectedItem[];
   extractedItems: SelectedItem[];
   itemRatings: Record<string, number>;
   overallRating: OverallRating | null;
   setMode: (mode: ScreenMode) => void;
   setStatusMessage: (message: string | null) => void;
+  setSentiment: (sentiment: Sentiment | null) => void;
+  setSessionId: (sessionId: string | null) => void;
 };
 
 export function useKioskFeedbackSubmit({
   copy,
   restaurantId,
+  reputationEnabled,
   selectedItems,
   extractedItems,
   itemRatings,
   overallRating,
   setMode,
   setStatusMessage,
+  setSentiment,
+  setSessionId,
 }: UseKioskFeedbackSubmitInput) {
   const [isSavingFeedback, setIsSavingFeedback] = useState(false);
 
@@ -63,8 +71,17 @@ export function useKioskFeedbackSubmit({
         return;
       }
 
+      const sentiment = classifyFeedbackSentiment(
+        overallRating,
+        Object.values(itemRatings),
+      );
+
+      setSentiment(sentiment);
+      setSessionId(response.sessionId);
       setStatusMessage(null);
-      setMode("thanks");
+      setMode(
+        reputationEnabled && sentiment === "unhappy" ? "reputation" : "thanks",
+      );
     } catch {
       setStatusMessage(copy.feedbackFailed);
     } finally {

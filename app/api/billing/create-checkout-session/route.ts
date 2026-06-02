@@ -6,6 +6,9 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+const CHECKOUT_FAILED_MESSAGE =
+  "Не успяхме да отворим плащането. Опитай отново след малко.";
+
 type RestaurantBillingRow = {
   id: string;
   owner_id: string;
@@ -108,12 +111,21 @@ export async function POST() {
     const { user, restaurant: ownerRestaurant } = await getCurrentOwnerState();
 
     if (!user) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        {
+          error: "unauthorized",
+          message: "Влез в акаунта си, за да продължиш към плащане.",
+        },
+        { status: 401 },
+      );
     }
 
     if (!ownerRestaurant) {
       return NextResponse.json(
-        { error: "restaurant_not_found" },
+        {
+          error: "restaurant_not_found",
+          message: "Първо създай ресторант, после избери Pro план.",
+        },
         { status: 404 },
       );
     }
@@ -125,7 +137,10 @@ export async function POST() {
 
     if (!restaurant) {
       return NextResponse.json(
-        { error: "restaurant_not_found" },
+        {
+          error: "restaurant_not_found",
+          message: "Не намерихме ресторанта за този акаунт.",
+        },
         { status: 404 },
       );
     }
@@ -137,7 +152,10 @@ export async function POST() {
       )
     ) {
       return NextResponse.json(
-        { error: "subscription_already_exists" },
+        {
+          error: "subscription_already_exists",
+          message: "Този ресторант вече има активен или чакащ Pro абонамент.",
+        },
         { status: 409 },
       );
     }
@@ -183,8 +201,8 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Unable to create checkout.",
+        error: "checkout_failed",
+        message: CHECKOUT_FAILED_MESSAGE,
       },
       { status: 500 },
     );

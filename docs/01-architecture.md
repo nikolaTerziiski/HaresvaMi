@@ -186,7 +186,14 @@ haresvami/
    - optional overall "Харесва ми / Не ми харесва" kept secondary
 11. Submit -> POST /api/feedback
    - Creates feedback_session + feedback_ratings rows
-12. Thank-you mode auto-resets back to the staff preparation screen after a short delay.
+   - Classifies sentiment; if the restaurant is Pro and the sentiment is unhappy,
+     fires a fire-and-forget Telegram low-rating alert (never blocks the save)
+12. Post-submit branch (Pro reputation engine only):
+   - Unhappy -> on-tablet private recovery form (POST /api/feedback/recovery)
+   - Happy / neutral / non-Pro -> straight to thank-you
+   - The kiosk never shows a Google review link/QR (no review-gating). The Google
+     QR is an owner-facing printable asset in Settings. See docs/04-business-logic.md.
+13. Thank-you mode auto-resets back to the staff preparation screen after a short delay.
 ```
 
 The owner dashboard shell redirects `/` to `/dashboard` when an owner session is already active. The kiosk cookie is independent from the owner session so a checkout tablet can stay in kiosk mode without showing the public landing page again.
@@ -195,32 +202,63 @@ After a new restaurant is created via `RestaurantSetupForm`, the owner is automa
 
 ## Notable helpers
 
+- **`lib/billing/entitlements.ts#getVisiblePlanTier`** - Server-side helper for
+  dashboard plan labels. It loads the restaurant plus active `plan_overrides`,
+  applies the same entitlement rules as feature gates, and returns the effective
+  `free | starter | pro` tier that UI components may render.
+
 - **`lib/menu/currency.ts`** — BGN↔EUR conversion at the legally-mandated fixed ratio (1 EUR = 1.95583 BGN). Exports `BGN_PER_EUR`, `bgnToEur`, `formatBgn`, `formatEur`. Use this helper everywhere prices are displayed; do not redefine the constant in components.
 - **`components/dashboard/menu/MenuSaveBanner.tsx`** — Client component that renders a top-of-viewport success banner after menu save. Receives a `show: boolean` prop and handles enter/exit animation internally. Uses the `banner-enter` / `banner-exit` CSS classes defined in `app/globals.css`.
+- **`app/(marketing)/_components/`** — The landing page is split into route-local sections so the route stays thin while the expressive one-off marketing CSS remains colocated with the marketing route.
 
 The `components/dashboard/menu/design-preview/` scaffolding folder and the `/dashboard/menu-preview` route were transient design exploration artifacts. Both were removed once the real hybrid-card components were integrated.
 
 ## Environment variables
 
+`.env.example` is the canonical, committed list — copy it to `.env.local` and fill
+in real values. The current set, grouped by subsystem:
+
 ```
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=     # server-only; bypasses RLS
 
-# AI providers
+# AI (Gemini does receipt + menu extraction and insight summaries)
 GOOGLE_GEMINI_API_KEY=
-ANTHROPIC_API_KEY=             # Backup / for insights later
+ANTHROPIC_API_KEY=             # backup provider
 
-# Stripe (Phase 2)
+# Kiosk
+EXTRACT_RECEIPT_RATE_LIMIT_PER_MINUTE=20
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME=HaresvaMi
+
+# Stripe
 STRIPE_SECRET_KEY=
 STRIPE_PRO_PRICE_ID=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Web Push (VAPID) — weekly insight notifications
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:you@example.com
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=  # must equal VAPID_PUBLIC_KEY
+
+# Telegram alerts (Pro reputation engine — low-rating alerts)
+TELEGRAM_BOT_TOKEN=
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=
+TELEGRAM_WEBHOOK_SECRET=
+TELEGRAM_LINK_SECRET=
+
+# Vercel Cron — authenticates GET /api/cron/* invocations
+CRON_SECRET=
 ```
+
+See `docs/06-deployment.md` for how the Telegram, Push, and Cron secrets are
+provisioned per environment.
 
 ## Build order (Phase 0)
 

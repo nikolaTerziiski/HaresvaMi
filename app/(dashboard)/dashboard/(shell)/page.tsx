@@ -47,7 +47,11 @@ export default async function DashboardHomePage() {
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-5 max-[900px]:grid-cols-1">
-        <TierCard used={data.usage.used} limit={data.usage.limit} />
+        <TierCard
+          tier={data.tier}
+          used={data.usage.used}
+          limit={data.usage.limit}
+        />
         <TutorialCard />
       </div>
     </div>

@@ -23,6 +23,7 @@ import type {
   ScreenMode,
   SelectedItem,
 } from "@/lib/kiosk/types";
+import type { Sentiment } from "@/lib/feedback/sentiment";
 
 type UseKioskScanFlowInput = {
   restaurant: KioskRestaurant;
@@ -52,6 +53,8 @@ export function useKioskScanFlow({
   const [query, setQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [sentiment, setSentiment] = useState<Sentiment | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const canScan = entitlement.remaining > 0 && menuItems.length > 0;
   const filteredMenuItems = useMemo(
@@ -66,12 +69,15 @@ export function useKioskScanFlow({
   const { isSavingFeedback, submitCustomerFeedback } = useKioskFeedbackSubmit({
     copy,
     restaurantId: restaurant.id,
+    reputationEnabled: restaurant.reputationEnabled,
     selectedItems,
     extractedItems,
     itemRatings,
     overallRating,
     setMode,
     setStatusMessage,
+    setSentiment,
+    setSessionId,
   });
 
   function openCamera() {
@@ -245,6 +251,8 @@ export function useKioskScanFlow({
     setOverallRating(null);
     setQuery("");
     setStatusMessage(null);
+    setSentiment(null);
+    setSessionId(null);
     setMode(entitlement.remaining > 0 ? "scan" : "manual");
   }
 
@@ -268,12 +276,15 @@ export function useKioskScanFlow({
     resetFlow,
     selectedIds,
     selectedItems,
+    sentiment,
+    sessionId,
     setQuery,
     setItemRating,
     setOverallRating: toggleOverallRating,
     showCustomerStep: () => setMode("customer"),
     showManualSelection: () => setMode("manual"),
     showScanSelection: () => setMode("scan"),
+    showThanks: () => setMode("thanks"),
     statusMessage,
     submitCustomerFeedback,
     toggleMenuItem,

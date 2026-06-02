@@ -298,6 +298,20 @@ export function hasProAccess(
   return status === "active" || status === "trialing";
 }
 
+export function resolveVisiblePlanTier(
+  restaurant: RestaurantEntitlementState,
+  overrideLimits?: { effectiveTier: PlanTier },
+  now = new Date(),
+): PlanTier {
+  const plan = resolvePlanAccess(restaurant, now);
+
+  if (plan.trialActive) {
+    return "pro";
+  }
+
+  return overrideLimits?.effectiveTier ?? plan.tier;
+}
+
 export function shouldConsumeScanCreditGrant(input: {
   restaurant: RestaurantEntitlementState;
   usage: MonthlyUsageSnapshot;

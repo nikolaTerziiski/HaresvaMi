@@ -10,11 +10,14 @@ import {
   tryIncrementFeedbackUsage,
 } from "@/lib/billing/usage";
 import type { FeedbackSubmissionInput } from "@/lib/feedback/schema";
+import { classifyFeedbackSentiment } from "@/lib/feedback/sentiment";
 import {
   assertFeedbackHasContent,
   assertRatingsBelongToSelectedItems,
   FeedbackSubmitError,
 } from "@/lib/feedback/validation";
+import { canUseReputation } from "@/lib/billing/entitlements";
+import { sendLowRatingAlert } from "@/lib/reputation/notify";
 import type { Json } from "@/lib/supabase/types";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
@@ -101,7 +104,7 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
       const { data } = await supabase
         .from("restaurants")
         .select(
-          "id, tier, subscription_status, current_period_ends_at, trial_ends_at",
+          "id, name, tier, subscription_status, current_period_ends_at, trial_ends_at",
         )
         .eq("id", input.restaurantId)
         .maybeSingle();
@@ -197,6 +200,24 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
         `Unable to create feedback ratings: ${ratingsError.message}`,
       );
     }
+  }
+
+  const sentiment = classifyFeedbackSentiment(
+    input.overallRating,
+    Object.values(input.ratings),
+  );
+
+  if (sentiment === "unhappy") {
+    canUseReputation(input.restaurantId)
+      .then((allowed) => {
+        if (allowed) {
+          return sendLowRatingAlert({
+            restaurantId: input.restaurantId,
+            restaurantName: restaurant.name ?? "",
+          });
+        }
+      })
+      .catch((e) => console.error("low-rating alert failed", e));
   }
 
   return {

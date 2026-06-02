@@ -4,10 +4,10 @@ import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { getCurrentOwnerState, type OwnerRestaurant } from "@/lib/auth/owner";
+import { getVisiblePlanTier } from "@/lib/billing/entitlements";
+import { getFeedbackLimit, type PlanTier } from "@/lib/billing/plans";
 import { MIN_MENU_ITEMS_FOR_NEXT_STEP } from "@/lib/menu/constants";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-export const FREE_TIER_FEEDBACK_LIMIT = 50;
 
 export type ChecklistStatus = "done" | "current" | "locked";
 
@@ -26,7 +26,7 @@ export type DashboardHomeData = {
   menuCount: number;
   feedbackCount: number;
   tabletPaired: boolean;
-  tier: string;
+  tier: PlanTier;
   trialEndsAt: string | null;
   usage: {
     used: number;
@@ -97,7 +97,7 @@ export const getDashboardHomeData = cache(
     const supabase = await createSupabaseServerClient();
     const period = currentPeriod();
 
-    const [menuResult, feedbackResult, usageResult, restaurantMetaResult] =
+    const [menuResult, feedbackResult, usageResult, visiblePlanTier] =
       await Promise.all([
         supabase
           .from("menu_items")
@@ -114,11 +114,7 @@ export const getDashboardHomeData = cache(
           .eq("restaurant_id", restaurant.id)
           .eq("period", period)
           .maybeSingle(),
-        supabase
-          .from("restaurants")
-          .select("tier, trial_ends_at")
-          .eq("id", restaurant.id)
-          .maybeSingle(),
+        getVisiblePlanTier(restaurant.id),
       ]);
 
     if (menuResult.error) {
@@ -136,17 +132,11 @@ export const getDashboardHomeData = cache(
         `Unable to read usage counters: ${usageResult.error.message}`,
       );
     }
-    if (restaurantMetaResult.error) {
-      throw new Error(
-        `Unable to read restaurant tier: ${restaurantMetaResult.error.message}`,
-      );
-    }
-
     const menuCount = menuResult.count ?? 0;
     const feedbackCount = feedbackResult.count ?? 0;
     const usageUsed = usageResult.data?.feedback_count ?? feedbackCount;
-    const tier = restaurantMetaResult.data?.tier ?? "free";
-    const trialEndsAt = restaurantMetaResult.data?.trial_ends_at ?? null;
+    const tier = visiblePlanTier;
+    const trialEndsAt = restaurant.trial_ends_at;
 
     // Tablet/device table does not exist yet — treat as never-paired until the
     // tablet feature ships.
@@ -196,7 +186,7 @@ export const getDashboardHomeData = cache(
       trialEndsAt,
       usage: {
         used: usageUsed,
-        limit: FREE_TIER_FEEDBACK_LIMIT,
+        limit: getFeedbackLimit(tier),
       },
       state,
       steps,

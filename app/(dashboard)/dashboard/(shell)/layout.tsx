@@ -18,11 +18,12 @@ export default async function DashboardShellLayout({
 
   return (
     <div className="flex min-h-dvh">
-      <Sidebar restaurantName={data.restaurant.name} />
+      <Sidebar restaurantName={data.restaurant.name} tier={data.tier} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileTopbar
           restaurantName={data.restaurant.name}
           ownerFirstName={data.ownerFirstName}
+          tier={data.tier}
         />
         <Topbar
           ownerFirstName={data.ownerFirstName}

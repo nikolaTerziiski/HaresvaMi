@@ -86,6 +86,17 @@ export async function getMonthlyUsage(
 7. **Plan overrides are always applied.** All entitlement functions — `canScanReceipt`, `canSubmitFeedback`, `canExtractMenu`, and `consumeAiScanCredit` — fetch the active `plan_overrides` row and resolve effective limits before making any access decision. An override-adjusted limit, not the base plan limit, is used everywhere.
 8. **`subscription_status` is required for Pro access.** `hasProAccess()` returns true only when: an active trial exists, OR an admin override grants `override_tier='pro'`, OR the restaurant's stored tier is `'pro'` **and** `subscription_status IN ('active', 'trialing')`. A canceled or past-due Pro subscription does not grant Pro access.
 9. **Admin overrides are atomic.** Use the `apply_plan_override()` Postgres function (see `docs/02-schema.md`) to write an override and its audit log row atomically. Never INSERT directly into `plan_overrides` from application code without also writing the corresponding `billing_audit_log` row in the same transaction.
+10. **Billing columns are service-role-only writes.** Migration `0016` revokes the broad UPDATE privilege on `restaurants` from the `authenticated`/`anon` roles and re-grants UPDATE on safe profile columns only. Tier, subscription, trial, and Stripe columns can never be written through the public API — only through server routes that use the service role. This is the column-level enforcement layer behind rule 8; do not bypass it by widening the grant. See `docs/02-schema.md` → restaurants policies.
+11. **Dashboard plan labels use effective access.** The dashboard shell chip and home plan card are derived server-side through the same entitlement/override rules: active trial or Pro override shows Pro, active Starter shows Starter, and inactive/canceled paid access falls back instead of showing a stale paid label. The home plan card's visible feedback limit must match the effective tier instead of a hard-coded Free limit, and its CTA should route to `/dashboard/settings` rather than rendering a dead billing button.
+
+### Billing action errors
+
+Owner-triggered billing actions on `/dashboard/settings` call server routes and must surface a visible Bulgarian message when the action is blocked:
+
+- `POST /api/billing/start-trial` returns a Bulgarian `message` for missing auth, missing restaurant, already-used trial, non-free tier, incomplete menu, and unexpected failures.
+- `POST /api/billing/create-checkout-session` returns a Bulgarian `message` for missing auth, missing restaurant, existing subscription, and unexpected failures.
+- Internal provider or environment details such as Stripe keys or app URL configuration are logged server-side, but the client receives only a generic Bulgarian failure message.
+- Pro upsell links should point to `/dashboard/settings`, the existing plan and limits screen.
 
 ## Receipt extraction logic
 
@@ -206,6 +217,7 @@ The first 1–2 weeks of a restaurant's usage are "training" the system on their
 6. If the alias already exists for the restaurant, updates `menu_item_id`, sets `confidence = 'manual'`, increments `times_seen`, and updates `last_seen_at`.
 7. If the alias is new, inserts it with `confidence = 'manual'` and `times_seen = 1`.
 8. Returns a learned alias summary for the caller.
+9. The owner-facing alias manager must show visible Bulgarian errors when alias load, save, or delete calls fail. A deleted alias is removed from the screen only after the DELETE request succeeds.
 
 ### Product flow
 
@@ -386,6 +398,167 @@ The prompt lives in `lib/ai/generate-insights.ts` and has not changed from the
 v0.1 deterministic insights implementation. The cron reuses `generateInsightSummary()`
 directly. The model writes 3-4 sentences in informal Bulgarian on 'ти', naming
 at least one specific dish, and ends with an observation or recommendation.
+
+## Reputation engine (Pro-only)
+
+The reputation engine turns the kiosk's existing feedback signal into two owner
+outcomes: **recover unhappy customers privately and in real time**, and **make it
+easy for happy customers to leave a public Google review** — without ever gating,
+hiding, or discouraging negative reviews.
+
+### Compliance rule (non-negotiable)
+
+**No review-gating.** The customer kiosk never shows a Google review link, QR, or
+call-to-action — to anyone, happy or unhappy. We never route only happy customers
+to Google, and we never suppress or intercept a negative review. The Google review
+QR is an **owner-facing printable asset** (see below); customers scan it with their
+own phones, on their own time. This keeps us compliant with Google's review policies
+and avoids the kiosk-IP spam filter that flags many reviews written on one device.
+
+This is implemented as "Option B": all in-app Google prompting was removed from the
+kiosk. The kiosk's only sentiment behaviour is **unhappy → private recovery**.
+
+### Gating
+
+The whole engine is **Pro-only** and gated by the override-aware async check
+`canUseReputation(restaurantId)` in `lib/billing/entitlements.ts`. It loads the
+restaurant row plus any `plan_overrides`, resolves the effective tier, and delegates
+to `hasProAccess()` — so an admin `override_tier='pro'` on a Free restaurant unlocks
+reputation, exactly like every other entitlement (rule 7). It is enforced in four
+places: the kiosk scan page (`reputationEnabled`), the settings page (QR + Telegram
+section), the low-rating alert gate in `submit-feedback.ts`, and the recovery API
+route. `lib/reputation/entitlement.ts` exports a pure, non-override-aware
+`restaurantHasReputationAccess()` for in-memory checks and tests only — never use it
+for live gating.
+
+### Sentiment classification
+
+`lib/feedback/sentiment.ts` → `classifyFeedbackSentiment(overallRating, ratings[])`
+returns `"happy" | "unhappy" | "neutral"`:
+
+1. Overall `"like"` → `happy` (regardless of stars).
+2. Overall `"dislike"` → `unhappy` (overrides even 5-star item ratings).
+3. No overall rating: empty ratings → `neutral`; average `>= 4.5` → `happy`;
+   average `<= 2.5` → `unhappy`; otherwise `neutral`.
+
+### Kiosk flow (Option B)
+
+On submit (`hooks/useKioskFeedbackSubmit.ts`), after the feedback is saved:
+
+- `reputationEnabled && sentiment === "unhappy"` → enter **reputation** mode, which
+  renders only the on-tablet **recovery form** (`ReputationPanel` → `RecoveryForm`).
+- Everything else (happy, neutral, or non-Pro) → straight to the existing
+  **thank-you** screen. No QR, no Google link, no extra step.
+
+The recovery form asks the customer, privately on the tablet, what went wrong. It is
+optional. The form only advances to thank-you on (a) a successful submit or (b) an
+explicit Skip — never on a network error (the error is shown and retry is allowed).
+A 45-second safety auto-advance runs **only while the textarea is untouched**, so it
+can never discard a draft the customer is mid-typing.
+
+### Recovery comment persistence and gating
+
+`POST /api/feedback/recovery` (`lib/feedback/recovery.ts` → `saveRecoveryComment`):
+
+1. Validates the payload with `recoveryCommentSchema`.
+2. Authorizes the caller for the restaurant via `authorizeKioskOrOwnerRestaurant`
+   (kiosk cookie or owner session).
+3. Requires `canUseReputation(restaurantId)` → **403** if not Pro.
+4. Writes `recovery_comment` only to a row that matches **all** of:
+   `id = sessionId`, `restaurant_id`, `overall_rating = 'dislike'`,
+   `completed_at IS NOT NULL`, and `created_at > now() - 24h`. No matching row →
+   `{ ok: false }` → **404**. This prevents a forged request from writing a comment
+   to an old, other-restaurant, or non-dislike session.
+
+> Note: the persistence gate requires an explicit `overall_rating = 'dislike'`.
+> A session that became `unhappy` only via a low star average (no thumbs-down) is
+> routed to the recovery form but its comment will not persist (404). If we want to
+> capture those, the gate must be widened to include low-average sessions.
+
+`recovery_comment` is capped at 1000 characters by a DB CHECK constraint (migration
+`0015`).
+
+### Real-time Telegram low-rating alert
+
+When sentiment is `unhappy` **and** `canUseReputation` is true,
+`submit-feedback.ts` fires `sendLowRatingAlert()` (`lib/reputation/notify.ts`) as a
+fire-and-forget `.then/.catch` — it can never throw into or delay the feedback save.
+
+- It sends a **PII-free** Bulgarian message ("⚠️ Нов отрицателен отзив в „<name>".
+  Виж таблото: <url>") — no customer name, comment, email, or UUIDs — to every chat
+  in `telegram_links` for the restaurant. The dashboard URL points at
+  `/dashboard/feedback`.
+- `sendTelegramMessage` (`lib/telegram/send.ts`) is a no-op that returns
+  `{ ok: false }` when `TELEGRAM_BOT_TOKEN` is unset, so unconfigured environments
+  degrade silently.
+
+### Telegram linking
+
+Owners connect Telegram from the settings reputation section:
+
+1. The server signs a short-lived HMAC token with `signLinkToken(restaurantId)`
+   (`lib/telegram/link-token.ts`): `<rid_hex>.<exp_base36>.<sig>`, ≤64 chars, 15-min
+   TTL, signed with `TELEGRAM_LINK_SECRET`. It builds the deep link
+   `https://t.me/<NEXT_PUBLIC_TELEGRAM_BOT_USERNAME>?start=<token>`.
+2. The owner taps it, opening their Telegram and sending `/start <token>` to the bot.
+3. `POST /api/telegram/webhook` validates the `X-Telegram-Bot-Api-Secret-Token`
+   header (when `TELEGRAM_WEBHOOK_SECRET` is set), verifies the token, and upserts
+   `telegram_links` (service role, `onConflict: restaurant_id,chat_id`) with the
+   chat id and username. It replies with a Bulgarian confirmation.
+4. The webhook **always returns HTTP 200** to Telegram, even on validation failure or
+   error, so Telegram does not retry-storm. An invalid/expired token gets a Bulgarian
+   "generate a new link" reply.
+
+See `docs/06-deployment.md` → Telegram alerts for the one-time bot/webhook setup and
+the four env vars.
+
+### Owner-facing Google review QR (the only place Google appears)
+
+When a Pro restaurant has saved a `google_review_url` (validated to a Google host —
+see Google review URL allow-list below), the settings page server-renders an inline
+SVG QR with `renderReviewQrSvg()` (`lib/reputation/qr.ts`, the `qrcode` package) and
+offers a print affordance. The owner prints it and places it on tables/receipts.
+This is the **only** surface that renders the Google QR; it never appears in the
+customer kiosk.
+
+### Google review URL allow-list
+
+`lib/validations/restaurant.ts` restricts `google_review_url` to Google hosts only
+(empty is allowed): host `g.page`, any `*.google.com` (covers
+`search.google.com`, `www.google.com/maps`), `maps.app.goo.gl`, or `goo.gl`.
+Everything else is rejected with the existing `"invalid"` message, so owners can't
+paste an arbitrary off-platform link into a column the kiosk/print path trusts.
+
+## AI menu import
+
+Pro restaurants (and trial/override Pro) can build their menu by uploading photos or
+PDFs of an existing printed menu instead of typing every dish. The flow lives under
+`/dashboard/menu/import-ai` and is gated by `canExtractMenu()` (override-aware; see
+rule 7) with `MenuTierLockedCard` shown to ineligible tiers.
+
+### Flow
+
+1. **Upload** — owner adds one or more image/PDF files (`ImportUploadStep`).
+2. **Process** — files are posted to the multi-file extraction API, which calls
+   Gemini 2.5 Flash Lite with `buildMultiFileMenuPrompt(fileNames)`
+   (`lib/ai/prompts.ts`). Each extracted item carries `source_file_name`.
+3. **Review** — extracted dishes are shown grouped by category in an editable review
+   screen (`ImportReviewStep` / `ImportCategoryAccordion`), where the owner can edit,
+   delete, or move dishes between categories before committing.
+4. **Commit** — confirmed dishes are written to `menu_items`; `menu_extraction_count`
+   in `usage_counters` tracks usage against the tier limit.
+
+### Extraction rules (food-only)
+
+The menu-import prompt is deliberately **food-only** and category-constrained — this
+differs from receipt extraction (which extracts food _and_ drink line items):
+
+- **Skip all beverages unconditionally** — alcohol, soft drinks, hot drinks, and
+  water — even when they appear with a price. Extract only dishes and desserts.
+- Use only the fixed Bulgarian categories: Салати, Супи, Предястия, Основни, Скара,
+  Гарнитури, Десерти. Unknown → `Некласифицирано`; never invent new categories.
+- Prices are returned as bare numbers (no `лв.`/`€`).
+- Unreadable / non-menu files contribute no items.
 
 ## Edge cases
 

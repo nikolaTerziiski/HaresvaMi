@@ -1,14 +1,20 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-
+import { BillingActions } from "@/components/dashboard/billing/BillingActions";
+import { ReputationSettings } from "@/components/dashboard/settings/ReputationSettings";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
-import { canScanReceipt } from "@/lib/billing/entitlements";
+import { canScanReceipt, canUseReputation } from "@/lib/billing/entitlements";
 import { getPlanLimits, isPlanTier, type PlanTier } from "@/lib/billing/plans";
 import {
   getActiveScanCreditSummary,
   getMonthlyUsage,
 } from "@/lib/billing/usage";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { renderReviewQrSvg } from "@/lib/reputation/qr";
+import {
+  createSupabaseServerClient,
+  createSupabaseServiceClient,
+} from "@/lib/supabase/server";
+import { signLinkToken } from "@/lib/telegram/link-token";
 
 export const metadata = {
   title: "План и лимити | HaresvaMi",
@@ -100,19 +106,42 @@ export default async function SettingsBillingPage() {
 
   const t = await getTranslations("dashboard.billing");
   const supabase = await createSupabaseServerClient();
+  const serviceClient = createSupabaseServiceClient();
 
-  const [billingResult, usage, creditSummary, scanEntitlement] =
+  const isPro = await canUseReputation(restaurant.id);
+
+  // Build the Telegram connect URL server-side (token is HMAC-signed, secret stays server-only)
+  const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "";
+  let connectUrl = "";
+  if (isPro && botUsername) {
+    try {
+      const linkToken = signLinkToken(restaurant.id);
+      connectUrl = `https://t.me/${botUsername}?start=${linkToken}`;
+    } catch {
+      // TELEGRAM_LINK_SECRET not configured in this environment — skip
+    }
+  }
+
+  const [billingResult, usage, creditSummary, scanEntitlement, telegramResult] =
     await Promise.all([
+      // Single restaurants read covers billing + google_review_url
       supabase
         .from("restaurants")
         .select(
-          "tier, subscription_status, trial_started_at, trial_ends_at, trial_used_at",
+          "tier, subscription_status, trial_started_at, trial_ends_at, trial_used_at, google_review_url",
         )
         .eq("id", restaurant.id)
         .maybeSingle(),
       getMonthlyUsage(restaurant.id),
       getActiveScanCreditSummary(restaurant.id),
       canScanReceipt(restaurant.id),
+      // Telegram link runs in parallel (service client) — no extra round-trip
+      serviceClient
+        .from("telegram_links")
+        .select("username")
+        .eq("restaurant_id", restaurant.id)
+        .limit(1)
+        .maybeSingle(),
     ]);
 
   if (billingResult.error) {
@@ -134,6 +163,13 @@ export default async function SettingsBillingPage() {
     !billing?.trial_used_at;
   const canUpgradeToPro = tier === "free" || trialExpired;
   const scansExhausted = scanEntitlement.remaining <= 0;
+
+  const googleReviewUrl = billing?.google_review_url ?? null;
+  const telegramConnected = Boolean(telegramResult.data);
+  const telegramUsername = telegramResult.data?.username ?? null;
+
+  const reviewQrSvg =
+    isPro && googleReviewUrl ? await renderReviewQrSvg(googleReviewUrl) : null;
 
   return (
     <div className="mx-auto max-w-5xl px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
@@ -170,27 +206,10 @@ export default async function SettingsBillingPage() {
             ) : null}
           </div>
 
-          <div className="flex flex-col items-start justify-center gap-3">
-            {canStartTrial ? (
-              <button
-                type="button"
-                className="inline-flex rounded-lg bg-[var(--accent)] px-5 py-3 text-[14px] font-medium text-white transition hover:brightness-95"
-              >
-                {t("actions.startTrial")}
-              </button>
-            ) : null}
-            {canUpgradeToPro ? (
-              <button
-                type="button"
-                className="inline-flex rounded-lg border border-[var(--ink)] bg-transparent px-5 py-3 text-[14px] font-medium text-[var(--ink)] transition hover:bg-[var(--ink)] hover:text-[var(--paper)]"
-              >
-                {t("actions.upgrade")}
-              </button>
-            ) : null}
-            <p className="m-0 max-w-[300px] text-[13px] leading-[1.5] text-[var(--ink-mute)]">
-              {t("actions.note")}
-            </p>
-          </div>
+          <BillingActions
+            canStartTrial={canStartTrial}
+            canUpgradeToPro={canUpgradeToPro}
+          />
         </div>
       </section>
 
@@ -266,6 +285,16 @@ export default async function SettingsBillingPage() {
           ) : null}
         </div>
       </section>
+
+      {/* ── Репутация (Google отзиви + Telegram) ──────────────────────────── */}
+      <ReputationSettings
+        isPro={isPro}
+        googleReviewUrl={googleReviewUrl}
+        reviewQrSvg={reviewQrSvg}
+        telegramConnected={telegramConnected}
+        telegramUsername={telegramUsername}
+        connectUrl={connectUrl}
+      />
     </div>
   );
 }

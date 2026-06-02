@@ -9,6 +9,7 @@ import { ManualPanel } from "@/components/kiosk/scan/ManualPanel";
 import { ProcessingOverlay } from "@/components/kiosk/scan/ProcessingOverlay";
 import { ReadyPanel } from "@/components/kiosk/scan/ReadyPanel";
 import { ReceiptPreview } from "@/components/kiosk/scan/ReceiptPreview";
+import { ReputationPanel } from "@/components/kiosk/scan/ReputationPanel";
 import { ReviewPanel } from "@/components/kiosk/scan/ReviewPanel";
 import { ScanHeader } from "@/components/kiosk/scan/ScanHeader";
 import { ScanPanel } from "@/components/kiosk/scan/ScanPanel";
@@ -32,9 +33,12 @@ export function KioskScanScreen({
     copy,
   });
   const remainingText = `${flow.entitlement.remaining} / ${flow.entitlement.limit} ${copy.remainingScansLabel}`;
-  const isCustomerFacing = flow.mode === "customer" || flow.mode === "thanks";
+  const isCustomerFacing =
+    flow.mode === "customer" ||
+    flow.mode === "reputation" ||
+    flow.mode === "thanks";
   const audience: "staff" | "customer" | "thanks" =
-    flow.mode === "customer"
+    flow.mode === "customer" || flow.mode === "reputation"
       ? "customer"
       : flow.mode === "thanks"
         ? "thanks"
@@ -79,6 +83,16 @@ export function KioskScanScreen({
               onFinish={flow.submitCustomerFeedback}
               onItemRatingChange={flow.setItemRating}
               onOverallRatingChange={flow.setOverallRating}
+            />
+          ) : null}
+
+          {flow.mode === "reputation" ? (
+            <ReputationPanel
+              copy={copy}
+              restaurantId={restaurant.id}
+              sentiment={flow.sentiment}
+              sessionId={flow.sessionId}
+              onDone={flow.showThanks}
             />
           ) : null}
 

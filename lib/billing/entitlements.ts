@@ -9,6 +9,8 @@ import {
   hasProAccess,
   pickActiveOverride,
   resolveEffectiveLimits,
+  resolvePlanAccess,
+  resolveVisiblePlanTier,
   shouldConsumeScanCreditGrant,
   type EntitlementReason,
   type EntitlementResult,
@@ -23,10 +25,56 @@ import {
   incrementAiScanUsage,
   incrementFeedbackUsage as incrementMonthlyFeedbackUsage,
 } from "@/lib/billing/usage";
+import type { PlanTier } from "@/lib/billing/plans";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 export { getCurrentUsagePeriod, getMonthlyUsage, hasProAccess };
 export type { EntitlementReason, EntitlementResult };
+
+/**
+ * Override-aware Pro access check for reputation features.
+ *
+ * Loads the restaurant row and any plan_overrides, resolves the effective tier
+ * (respecting admin overrides), then delegates to hasProAccess.
+ *
+ * A FREE restaurant with an active override_tier='pro' override returns true.
+ * A FREE restaurant with no override returns false.
+ * An active Pro subscription returns true.
+ */
+export async function canUseReputation(restaurantId: string): Promise<boolean> {
+  const [restaurant, overrideRows] = await Promise.all([
+    getRestaurantEntitlementRow(restaurantId),
+    getPlanOverrideRows(restaurantId),
+  ]);
+
+  if (!restaurant) return false;
+
+  const activeOverride = pickActiveOverride(overrideRows);
+  const overrideLimits = activeOverride
+    ? resolveEffectiveLimits(restaurant.tier, activeOverride)
+    : undefined;
+
+  return hasProAccess(restaurant, overrideLimits);
+}
+
+export async function getVisiblePlanTier(
+  restaurantId: string,
+): Promise<PlanTier> {
+  const [restaurant, overrideRows] = await Promise.all([
+    getRestaurantEntitlementRow(restaurantId),
+    getPlanOverrideRows(restaurantId),
+  ]);
+
+  if (!restaurant) return "free";
+
+  const activeOverride = pickActiveOverride(overrideRows);
+  const basePlan = resolvePlanAccess(restaurant);
+  const overrideLimits = activeOverride
+    ? resolveEffectiveLimits(basePlan.tier, activeOverride)
+    : undefined;
+
+  return resolveVisiblePlanTier(restaurant, overrideLimits);
+}
 
 /**
  * Fetches all plan_overrides rows for a restaurant that may currently be active.

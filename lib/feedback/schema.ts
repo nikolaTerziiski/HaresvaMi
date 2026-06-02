@@ -20,3 +20,11 @@ export const feedbackSubmissionSchema = z.object({
 });
 
 export type FeedbackSubmissionInput = z.infer<typeof feedbackSubmissionSchema>;
+
+export const recoveryCommentSchema = z.object({
+  restaurantId: z.string().uuid(),
+  sessionId: z.string().uuid(),
+  comment: z.string().trim().min(1).max(1000),
+});
+
+export type RecoveryCommentInput = z.infer<typeof recoveryCommentSchema>;

@@ -147,16 +147,25 @@ test("extract-menu route calls extractMenuFromFiles and returns result wrapper",
 });
 
 test("extract-menu route increments usage only after successful extraction", () => {
-  assert.ok(routeSource.includes("incrementMenuExtractionUsage"), "Missing incrementMenuExtractionUsage");
+  assert.ok(
+    routeSource.includes("incrementMenuExtractionUsage"),
+    "Missing incrementMenuExtractionUsage",
+  );
   assert.ok(routeSource.includes("status: 502"), "Missing 502 for AI failure");
   // The ai_failed error guard must not be followed by an increment call before
   // control returns — verify that "await incrementMenuExtractionUsage" (the call)
   // never appears inside the catch block that returns 502.
   const aiFailedIndex = routeSource.indexOf('"ai_failed"');
   // Find the await call (not the import)
-  const awaitIncrementIndex = routeSource.indexOf("await incrementMenuExtractionUsage");
+  const awaitIncrementIndex = routeSource.indexOf(
+    "await incrementMenuExtractionUsage",
+  );
   assert.notEqual(aiFailedIndex, -1, "Missing ai_failed error key");
-  assert.notEqual(awaitIncrementIndex, -1, "Missing await incrementMenuExtractionUsage call");
+  assert.notEqual(
+    awaitIncrementIndex,
+    -1,
+    "Missing await incrementMenuExtractionUsage call",
+  );
   // The 502 block ends before the await increment call — confirmed by index ordering
   assert.ok(
     awaitIncrementIndex > aiFailedIndex,
@@ -169,5 +178,7 @@ test("extract-menu route validates mime type per-file", () => {
 });
 
 test("extractMenuFromFiles is exported from extract-menu.ts", () => {
-  assert.ok(extractorSource.includes("export async function extractMenuFromFiles"));
+  assert.ok(
+    extractorSource.includes("export async function extractMenuFromFiles"),
+  );
 });

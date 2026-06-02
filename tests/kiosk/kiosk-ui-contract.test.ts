@@ -86,13 +86,13 @@ test("KioskScanScreen separates staff and customer visual states", () => {
   );
 });
 
-test("KioskScanScreen does not render ReceiptPreview during customer or thanks modes", () => {
+test("KioskScanScreen does not render ReceiptPreview during customer, reputation or thanks modes", () => {
   assert.match(
     kioskScanScreenSource,
-    /const isCustomerFacing\s*=\s*flow\.mode === "customer"\s*\|\|\s*flow\.mode === "thanks"/,
+    /flow\.mode === "customer"\s*\|\|\s*flow\.mode === "reputation"\s*\|\|\s*flow\.mode === "thanks"/,
   );
   assert.match(
     kioskScanScreenSource,
-    /\{isCustomerFacing \? \([\s\S]*<CustomerPanel[\s\S]*<ThanksPanel[\s\S]*\) : \([\s\S]*<ReceiptPreview/,
+    /\{isCustomerFacing \? \([\s\S]*<CustomerPanel[\s\S]*<ReputationPanel[\s\S]*<ThanksPanel[\s\S]*\) : \([\s\S]*<ReceiptPreview/,
   );
 });

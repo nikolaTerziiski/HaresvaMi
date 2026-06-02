@@ -1,6 +1,7 @@
 export type KioskRestaurant = {
   id: string;
   name: string;
+  reputationEnabled: boolean;
 };
 
 export type KioskMenuItem = {
@@ -112,6 +113,13 @@ export type KioskScanCopy = {
   thanksNewReviewNow: string;
   reset: string;
   ownerUpgradeHint: string;
+  reputationUnhappyTitle: string;
+  reputationUnhappyBody: string;
+  recoveryPlaceholder: string;
+  recoverySubmit: string;
+  recoverySubmitting: string;
+  recoverySkip: string;
+  recoveryThanks: string;
 };
 
 export type ScreenMode =
@@ -120,6 +128,7 @@ export type ScreenMode =
   | "review"
   | "ready"
   | "customer"
+  | "reputation"
   | "thanks";
 
 export type KioskScanScreenProps = {

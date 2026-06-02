@@ -79,7 +79,10 @@ test("MenuManualStarter renders chip cloud, custom input, and continue/back cont
   assert.match(menuManualStarterSource, /onContinue/);
   assert.match(menuManualStarterSource, /onBack/);
   assert.match(menuManualStarterSource, /customInput/);
-  assert.match(menuManualStarterSource, /t\("manualStarter\.continue"\)|t\("continue"\)/);
+  assert.match(
+    menuManualStarterSource,
+    /t\("manualStarter\.continue"\)|t\("continue"\)/,
+  );
 });
 
 test("MenuReviewToolbar renders the edit toggle button with Pencil/Check icon import", () => {
@@ -87,7 +90,10 @@ test("MenuReviewToolbar renders the edit toggle button with Pencil/Check icon im
   assert.match(menuToolbarSource, /onToggleEditMode/);
   assert.match(menuToolbarSource, /Pencil/);
   assert.match(menuToolbarSource, /Check/);
-  assert.match(menuToolbarSource, /t\("editToggle\.edit"\)|t\("editToggle\.done"\)/);
+  assert.match(
+    menuToolbarSource,
+    /t\("editToggle\.edit"\)|t\("editToggle\.done"\)/,
+  );
 });
 
 test("MenuGroupCard renders a collapsible chevron and accepts readOnly + expanded props", () => {

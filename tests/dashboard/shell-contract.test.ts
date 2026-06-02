@@ -8,11 +8,19 @@ function source(path: string) {
 }
 
 const marketingLayoutSource = source("app/(marketing)/layout.tsx");
+const dashboardShellLayoutSource = source(
+  "app/(dashboard)/dashboard/(shell)/layout.tsx",
+);
+const dashboardHomePageSource = source(
+  "app/(dashboard)/dashboard/(shell)/page.tsx",
+);
+const dashboardHomeDataSource = source("lib/dashboard/home.ts");
 const topbarSource = source("components/dashboard/shell/Topbar.tsx");
 const sidebarSource = source("components/dashboard/shell/Sidebar.tsx");
 const mobileTopbarSource = source(
   "components/dashboard/shell/MobileTopbar.tsx",
 );
+const tierCardSource = source("components/dashboard/home/TierCard.tsx");
 const feedbackOverviewSource = source(
   "components/dashboard/feedback/FeedbackOverview.tsx",
 );
@@ -68,6 +76,27 @@ test("team and profile stubs are hidden from dashboard navigation", () => {
   assert.doesNotMatch(mobileTopbarSource, /href="\/dashboard\/staff"/);
   assert.doesNotMatch(mobileTopbarSource, /href="\/dashboard\/profile"/);
   assert.doesNotMatch(topbarSource, /href="\/dashboard\/profile"/);
+});
+
+test("dashboard shell renders the effective tier chip from server data", () => {
+  assert.match(dashboardShellLayoutSource, /tier=\{data\.tier\}/);
+  assert.match(sidebarSource, /tier: PlanTier/);
+  assert.match(mobileTopbarSource, /tier: PlanTier/);
+  assert.match(sidebarSource, /shell\(`tierChip\.\$\{tier\}`\)/);
+  assert.match(mobileTopbarSource, /shell\(`tierChip\.\$\{tier\}`\)/);
+  assert.doesNotMatch(sidebarSource, /tierChipFree/);
+  assert.doesNotMatch(mobileTopbarSource, /tierChipFree/);
+});
+
+test("dashboard home plan card uses the effective tier and limit", () => {
+  assert.match(dashboardHomeDataSource, /getFeedbackLimit\(tier\)/);
+  assert.doesNotMatch(dashboardHomeDataSource, /FREE_TIER_FEEDBACK_LIMIT/);
+  assert.match(dashboardHomePageSource, /tier=\{data\.tier\}/);
+  assert.match(tierCardSource, /tier: PlanTier/);
+  assert.match(tierCardSource, /t\(`plans\.\$\{tier\}`\)/);
+  assert.match(tierCardSource, /t\(`blurbs\.\$\{tier\}`\)/);
+  assert.match(tierCardSource, /href="\/dashboard\/settings"/);
+  assert.doesNotMatch(tierCardSource, /t\("title"\)/);
 });
 
 test("feedback overview uses the full dashboard content width", () => {

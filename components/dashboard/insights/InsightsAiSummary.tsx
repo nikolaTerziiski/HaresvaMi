@@ -161,7 +161,7 @@ function LockedCard() {
       </p>
       <div className="mt-5 flex items-center gap-4">
         <a
-          href="/dashboard/billing"
+          href="/dashboard/settings"
           className="inline-block rounded-lg bg-[var(--accent)] px-5 py-2.5 font-[var(--f-ui)] text-[14px] font-medium text-[var(--paper)] no-underline transition-opacity hover:opacity-90"
         >
           Обнови до Pro
