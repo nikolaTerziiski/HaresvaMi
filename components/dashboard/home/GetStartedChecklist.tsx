@@ -117,7 +117,7 @@ export async function GetStartedChecklist({ data }: GetStartedChecklistProps) {
   const rows = [restaurantRow, menuRow, tabletRow, feedbackRow];
 
   return (
-    <section className="mt-10 overflow-hidden rounded-[14px] border border-[var(--rule)] bg-[var(--paper)] shadow-[0_30px_60px_-40px_rgba(26,21,18,0.2)]">
+    <section className="mt-10 overflow-hidden rounded-xl border border-[var(--rule)] bg-[var(--paper)] shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]">
       <header className="flex items-center border-b border-[var(--rule)] px-8 py-[14px] font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)] max-md:px-5 max-md:py-3">
         {t("eyebrow")}
         <span className="ml-auto font-[var(--f-ui)] text-[12px] normal-case tracking-normal text-[var(--ink-mute)]">

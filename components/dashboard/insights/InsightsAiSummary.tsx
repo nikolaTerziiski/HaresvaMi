@@ -231,7 +231,7 @@ function ProseCard({
   return (
     <CardShell>
       <CardHeader />
-      <p className="mt-4 border-l-2 border-[var(--accent)] pl-4 text-[16px] leading-[1.6] text-[var(--ink-2)]">
+      <p className="mt-4 max-w-[640px] border-l-2 border-[var(--accent)] pl-4 text-[16px] leading-[1.6] text-[var(--ink-2)]">
         {summaryText}
       </p>
       <div className="mt-4 flex items-center gap-4">

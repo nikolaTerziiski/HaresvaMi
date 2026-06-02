@@ -5,15 +5,11 @@ import { useTranslations } from "next-intl";
 type MenuReviewHeaderProps = {
   totalItems: number;
   categoryCount: number;
-  canEditCategories: boolean;
-  onEditCategories: () => void;
 };
 
 export function MenuReviewHeader({
   totalItems,
   categoryCount,
-  canEditCategories,
-  onEditCategories,
 }: MenuReviewHeaderProps) {
   const t = useTranslations("dashboard.menu");
 
@@ -35,28 +31,18 @@ export function MenuReviewHeader({
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-4 max-md:items-start">
-          {canEditCategories ? (
-            <button
-              type="button"
-              onClick={onEditCategories}
-              className="rounded border border-[var(--rule)] bg-[var(--paper)] px-4 py-2 font-[var(--f-ui)] text-[13px] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)]"
-            >
-              {t("editCategories")}
-            </button>
-          ) : null}
-
           <div className="flex items-center gap-6 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--ink-mute)]">
             <div className="text-right max-md:text-left">
               <span className="block font-[var(--f-display)] text-[36px] font-normal leading-none text-[var(--ink)]">
                 {totalItems}
               </span>
-              {t("statProducts")}
+              {t("statProducts", { count: totalItems })}
             </div>
             <div className="text-right max-md:text-left">
               <span className="block font-[var(--f-display)] text-[36px] font-normal leading-none text-[var(--ink)]">
                 {categoryCount}
               </span>
-              {t("statCategories")}
+              {t("statCategories", { count: categoryCount })}
             </div>
           </div>
         </div>

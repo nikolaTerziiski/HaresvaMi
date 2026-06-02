@@ -2,17 +2,11 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { GetStartedChecklist } from "@/components/dashboard/home/GetStartedChecklist";
+import { HomeAppNudge } from "@/components/dashboard/home/HomeAppNudge";
 import { LatestInsightBanner } from "@/components/dashboard/LatestInsightBanner";
-import { PushOptIn } from "@/components/dashboard/PushOptIn";
-import { TierCard } from "@/components/dashboard/home/TierCard";
-import { TutorialCard } from "@/components/dashboard/home/TutorialCard";
 import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
-import { PwaInstallPrompt } from "@/components/shared/PwaInstallPrompt";
 import { getDashboardHomeData } from "@/lib/dashboard/home";
-import {
-  getLatestInsightSummary,
-  hasCompletedFeedback,
-} from "@/lib/dashboard/signals";
+import { getLatestInsightSummary } from "@/lib/dashboard/signals";
 
 export default async function DashboardHomePage() {
   const data = await getDashboardHomeData();
@@ -21,10 +15,7 @@ export default async function DashboardHomePage() {
     redirect("/dashboard/onboarding");
   }
 
-  const [completedFeedback, latestInsight] = await Promise.all([
-    hasCompletedFeedback(data.restaurant.id),
-    getLatestInsightSummary(data.restaurant.id),
-  ]);
+  const latestInsight = await getLatestInsightSummary(data.restaurant.id);
 
   const t = await getTranslations("dashboard.home");
 
@@ -42,19 +33,7 @@ export default async function DashboardHomePage() {
 
       <GetStartedChecklist data={data} />
 
-      <div className="mt-6 grid gap-4">
-        <PushOptIn show={completedFeedback} />
-        <PwaInstallPrompt surface="dashboard" show={completedFeedback} />
-      </div>
-
-      <div className="mt-5 grid grid-cols-2 gap-5 max-[900px]:grid-cols-1">
-        <TierCard
-          tier={data.tier}
-          used={data.usage.used}
-          limit={data.usage.limit}
-        />
-        <TutorialCard />
-      </div>
+      <HomeAppNudge />
     </div>
   );
 }

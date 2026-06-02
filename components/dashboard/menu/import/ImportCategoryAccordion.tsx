@@ -5,6 +5,13 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, ArrowRightLeft, Check, FileText } from "lucide-react";
 
 import { AI_IMPORT_FOOD_CATEGORIES } from "@/lib/menu/constants";
+import {
+  Menu,
+  MenuContent,
+  MenuGroupLabel,
+  MenuItem,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import type {
   ImportItemConfidence,
   MenuImportItem,
@@ -79,11 +86,8 @@ export function DishRow({
   const [localPrice, setLocalPrice] = useState(
     item.price !== null ? String(item.price) : "",
   );
-  const [moveOpen, setMoveOpen] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const moveButtonRef = useRef<HTMLButtonElement>(null);
 
   const hasWarn = Boolean(item.warn);
 
@@ -95,19 +99,8 @@ export function DishRow({
     }
   }
 
-  function handleMoveBlur(e: React.FocusEvent) {
-    if (
-      popoverRef.current &&
-      !popoverRef.current.contains(e.relatedTarget as Node) &&
-      moveButtonRef.current !== e.relatedTarget
-    ) {
-      setMoveOpen(false);
-    }
-  }
-
   function handleSelectCategory(cat: string) {
     onCategoryChange(item.client_id, cat);
-    setMoveOpen(false);
   }
 
   const availableCategories = AI_IMPORT_FOOD_CATEGORIES.filter(
@@ -154,50 +147,33 @@ export function DishRow({
           </span>
         </div>
 
-        <div className="relative">
-          <button
-            ref={moveButtonRef}
-            type="button"
-            onClick={() => setMoveOpen((o) => !o)}
-            onBlur={handleMoveBlur}
-            title={t("moveTo")}
-            aria-label={t("moveTo")}
-            className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+        <Menu modal={false}>
+          <MenuTrigger
+            render={
+              <button
+                type="button"
+                title={t("moveTo")}
+                aria-label={t("moveTo")}
+                className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+              />
+            }
           >
             <ArrowRightLeft size={16} strokeWidth={1.5} />
-          </button>
-
-          {moveOpen ? (
-            <div
-              ref={popoverRef}
-              onBlur={handleMoveBlur}
-              tabIndex={-1}
-              className="absolute right-0 top-9 z-50 min-w-[180px] rounded-lg border border-[var(--rule)] bg-[var(--paper)] py-1 shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]"
-            >
-              <p className="px-3 py-1.5 font-[var(--f-ui)] text-[11px] uppercase tracking-[0.12em] text-[var(--ink-mute)]">
-                {t("moveTo")}
-              </p>
-              {availableCategories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSelectCategory(cat);
-                  }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left font-[var(--f-ui)] text-[13px] text-[var(--ink)] hover:bg-[var(--bg)]"
-                >
-                  <span
-                    className="size-2 shrink-0 rounded-full"
-                    style={{ background: getCategoryColor(cat) }}
-                    aria-hidden
-                  />
-                  {cat}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
+          </MenuTrigger>
+          <MenuContent>
+            <MenuGroupLabel>{t("moveTo")}</MenuGroupLabel>
+            {availableCategories.map((cat) => (
+              <MenuItem key={cat} onClick={() => handleSelectCategory(cat)}>
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={{ background: getCategoryColor(cat) }}
+                  aria-hidden
+                />
+                {cat}
+              </MenuItem>
+            ))}
+          </MenuContent>
+        </Menu>
       </div>
 
       {hasWarn ? (

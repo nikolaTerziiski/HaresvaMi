@@ -1,32 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
+import { getSectionKey, PARENT_SECTIONS } from "./sections";
 
 type TopbarProps = {
   restaurantName: string;
   ownerFirstName: string;
 };
-
-const SECTION_KEYS = [
-  { prefix: "/dashboard/menu/import-ai", key: "menuImport" },
-  { prefix: "/dashboard/insights", key: "insights" },
-  { prefix: "/dashboard/feedback", key: "feedback" },
-  { prefix: "/dashboard/menu", key: "menu" },
-  { prefix: "/dashboard/tablet", key: "tablet" },
-  { prefix: "/dashboard/settings", key: "settings" },
-] as const;
-
-function getSectionKey(pathname: string) {
-  const match = SECTION_KEYS.find((section) =>
-    pathname.startsWith(section.prefix),
-  );
-
-  return match?.key ?? "home";
-}
 
 export function Topbar({ restaurantName, ownerFirstName }: TopbarProps) {
   const shell = useTranslations("dashboard.shell");
@@ -34,14 +19,31 @@ export function Topbar({ restaurantName, ownerFirstName }: TopbarProps) {
 
   const avatarInitial = ownerFirstName ? ownerFirstName.charAt(0) : "?";
   const sectionKey = getSectionKey(pathname);
+  const parent = PARENT_SECTIONS[sectionKey];
+  // The menu master-detail is full-bleed, so its topbar spans the full width to
+  // align with the content; every other page centers to the max-w-5xl column.
+  const isFullBleed = pathname === "/dashboard/menu";
 
   return (
     <div className="sticky top-0 z-20 border-b border-[var(--rule)] bg-[color-mix(in_oklab,var(--bg)_85%,transparent)] backdrop-blur max-md:hidden">
-      <div className="flex w-full items-center gap-6 px-10 py-[14px]">
+      <div
+        className={`flex w-full items-center gap-6 px-10 py-[14px] ${
+          isFullBleed ? "" : "mx-auto max-w-5xl"
+        }`}
+      >
         <div className="min-w-0 flex-1">
-          <p className="m-0 truncate font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)]">
-            {restaurantName}
-          </p>
+          {parent ? (
+            <Link
+              href={parent.href}
+              className="m-0 inline-flex items-center gap-1 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+            >
+              ← {shell(`sections.${parent.key}.title`)}
+            </Link>
+          ) : (
+            <p className="m-0 truncate font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--ink-mute)]">
+              {restaurantName}
+            </p>
+          )}
           <h1 className="m-0 mt-1 font-[var(--f-display)] text-[30px] leading-[1.05] tracking-[-0.01em] text-[var(--ink)]">
             {shell(`sections.${sectionKey}.title`)}
           </h1>

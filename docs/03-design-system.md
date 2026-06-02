@@ -42,7 +42,7 @@ Sleek. Futuristic. Premium. Enterprise. AI-powered. Revolutionary.
 --color-error: #c82f35;
 ```
 
-The older `--color-coral-*` Tailwind palette is still available for shared shadcn-style utility components, but it is not the brand source of truth. For new marketing, auth, dashboard, and kiosk surfaces, use `var(--accent)` for the brand action color.
+The brand primary is terracotta. `--primary` and `--primary-foreground` are unified to the terracotta brand values, so the shared `<Button>` (`components/ui/button.tsx`, default variant) renders terracotta — matching hand-styled `var(--accent)` actions. The older `--color-coral-*` Tailwind palette remains **only** for the marketing landing page and legacy shadcn utilities; it is not the brand source of truth. For every app surface (auth, dashboard, kiosk), use `var(--accent)` or the `<Button>` default for the brand action color.
 
 ### Color rules
 
@@ -109,6 +109,37 @@ gap-12 (48px)  — between major page sections
 ```
 
 Avoid `gap-3`, `gap-5`, `gap-7` — these are reach values that often signal indecision.
+
+## Layout & page width
+
+Every page derives its width from one source of truth:
+`components/dashboard/shell/page-frame.ts`. Do not hand-write `max-w-*` / `px-*`
+wrappers on a page — import a frame constant so widths never drift apart.
+
+- `DASHBOARD_PAGE_FRAME_CLASS` — the standard **centered column** frame
+  (`mx-auto max-w-5xl px-10 py-10 pb-20`, `px-6 py-8` on mobile). **Home, Insights,
+  Feedback, Settings, Tablet** use this: content sits in a centered ~1024px column
+  with balanced margins on both sides. The Topbar's inner row centers to the
+  **same** `max-w-5xl` width so the section title lines up with the content (no
+  detached/misaligned header). Sparse focal content (e.g. an empty-state hero) may
+  center itself further.
+- `DASHBOARD_PAGE_X_CLASS` — same centered max-width, horizontal padding only
+  (for pages that own their vertical rhythm, e.g. the AI import flow).
+- `DASHBOARD_PAGE_FULL_CLASS` — documented full-bleed (`flex h-full w-full`).
+  The **menu category board** (`/dashboard/menu`) is the deliberate exception:
+  it needs the full content width. Opting out of the centered frame is allowed
+  only with a one-line comment explaining why.
+
+`tests/dashboard/shell-contract.test.ts` enforces this: standard overviews must
+reference `DASHBOARD_PAGE_FRAME_CLASS`; the menu page must reference
+`DASHBOARD_PAGE_FULL_CLASS`.
+
+**Hero & card consistency.** A page hero (eyebrow + serif `h1` + description) caps
+its text column at `max-w-[720px]` for readable line length (Feedback, Insights);
+the Home greeting is a deliberately compact `max-w-[520px]`. Cards use `p-6`
+(`p-5` for dense summary cards), `rounded-xl`, and — only when intentionally
+elevated — the standard `shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]`. Avoid
+one-off paddings (`px-[26px]`), radii (`rounded-[14px]`), or dramatic shadows.
 
 ## Border radius
 
@@ -190,6 +221,29 @@ Rules:
 - Spacing between fields: `gap-4` (16px)
 - Submit button: full-width on mobile, auto-width on desktop
 - Loading states: disable button, show "Запазване..." text, no spinner
+
+### Overlays (menus & popovers)
+
+Never hand-roll dropdown/popover markup with absolute positioning and manual
+blur handling. Use the shared Base UI wrappers — they provide focus management,
+Escape-to-close, outside-click dismissal, keyboard navigation, and ARIA roles
+for free:
+
+- `components/ui/menu.tsx` — action menus and checkbox menus (`Menu`,
+  `MenuTrigger`, `MenuContent`, `MenuItem`, `MenuGroupLabel`, `MenuSeparator`,
+  `MenuCheckboxItem`). Use for "move to category", filters, and any list of
+  actions. Pass `closeOnClick={false}` on items that toggle state (e.g.
+  multi-select filters) so the menu stays open.
+- `components/ui/popover.tsx` — anchored form panels (`Popover`,
+  `PopoverTrigger`, `PopoverContent`). Use for richer content like the alias
+  manager.
+- `components/ui/dialog.tsx` — centered modals with a backdrop (validation,
+  destructive confirmation).
+
+All three share the same warm shell: `var(--rule)` border, `var(--paper)`
+background, and the `shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]` drop shadow.
+A hover-revealed trigger should add `aria-expanded:opacity-100` so it stays
+visible while its overlay is open.
 
 ### Dashboard setup flows
 
@@ -376,12 +430,22 @@ band by default. Use a category board first:
 - Mobile: one category card per row.
 - Category cards show category name, dish count, a short 2-3 dish preview, and a
   small warning chip when rows in that category have validation problems.
+- Empty starter rows from manual category selection keep the category visible,
+  but they do not count as dishes or render as `Нов продукт`; show the empty
+  preview copy instead.
 - Clicking a category opens a focused category editor with a clear
   `Всички категории` back path.
 - Do not expand category cards in place; uneven dish counts create broken
   two-column rows and wasted space.
 - The board, focused editor, and bottom save bar align to the shared `max-w-6xl`
   dashboard content width so rows do not stretch across very wide monitors.
+- Category actions live together in the review toolbar. `Редактирай
+категориите` and `Нова категория` are neutral outline actions; `Започни
+отначало` is the only destructive toolbar action. The edit-mode toggle must
+  not read like save completion: use copy such as `Спри редакция`, not `Готово`.
+- The review header stats and toolbar are overview chrome. Hide them when a
+  category is opened so the focused screen has one purpose: edit that category
+  and return via `Всички категории`.
 
 ### Focused category card
 
@@ -393,6 +457,9 @@ rounded card with:
 - **Divider-separated item rows inside** — each item sits in a row separated by a 1 px `var(--rule)` line. No nested card borders.
 - **Contained width** — matches the focused editor width, not the entire
   viewport. This keeps dish names, prices, and actions visually connected.
+- **Focused save context** — the bottom bar still saves the full menu, but in
+  focused category mode its CTA uses `Запази промените` rather than `Запази
+категорията`, because persistence is not category-only.
 
 ### Price display
 

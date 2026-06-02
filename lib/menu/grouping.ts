@@ -3,6 +3,7 @@ import {
   categoryKey,
   isBlankNewRow,
 } from "@/lib/menu/format";
+import { hasEnteredDishData } from "@/lib/menu/row-state";
 import type {
   CategoryFilter,
   CategoryGroup,
@@ -28,16 +29,17 @@ export function buildCategoryFilters(items: MenuItemRow[]): CategoryFilter[] {
 
     const name = item.category.trim();
     const key = categoryKey(name);
+    const dishCount = hasEnteredDishData(item) ? 1 : 0;
     const existing = map.get(key);
 
     if (existing) {
-      existing.count += 1;
+      existing.count += dishCount;
     } else {
       map.set(key, {
         key,
         displayName: name,
         color: categoryColorFor(name),
-        count: 1,
+        count: dishCount,
       });
     }
   }
@@ -56,6 +58,8 @@ export function buildGroupedItems({
 }): CategoryGroup[] {
   const query = searchQuery.trim().toLocaleLowerCase("bg-BG");
   const filtered = items.filter((item) => {
+    if (isBlankNewRow(item)) return false;
+
     const key = categoryKey(item.category);
 
     if (selectedCategoryKeys !== null && !selectedCategoryKeys.includes(key)) {

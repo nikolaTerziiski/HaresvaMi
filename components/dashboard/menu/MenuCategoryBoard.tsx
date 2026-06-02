@@ -4,14 +4,13 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 
 import { MenuNoItemsState } from "@/components/dashboard/menu/MenuNoItemsState";
-import { isBlankNewRow } from "@/lib/menu/format";
+import { countEnteredDishRows, hasEnteredDishData } from "@/lib/menu/row-state";
 import type { CategoryGroup, ValidationResult } from "@/lib/menu/types";
 
 type MenuCategoryBoardProps = {
   groupedItems: CategoryGroup[];
   isFiltering: boolean;
   validation: ValidationResult;
-  readOnly: boolean;
   onOpenCategory: (key: string) => void;
   onAddItem: () => void;
 };
@@ -20,10 +19,8 @@ function countProblems(group: CategoryGroup, validation: ValidationResult) {
   return group.items.filter((item) => validation.rowErrors[item.id]).length;
 }
 
-function previewItems(group: CategoryGroup, readOnly: boolean) {
-  const items = readOnly
-    ? group.items.filter((item) => !isBlankNewRow(item))
-    : group.items;
+function previewItems(group: CategoryGroup) {
+  const items = group.items.filter(hasEnteredDishData);
 
   return items.slice(0, 3);
 }
@@ -32,7 +29,6 @@ export function MenuCategoryBoard({
   groupedItems,
   isFiltering,
   validation,
-  readOnly,
   onOpenCategory,
   onAddItem,
 }: MenuCategoryBoardProps) {
@@ -50,11 +46,9 @@ export function MenuCategoryBoard({
     <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
       {groupedItems.map((group) => {
         const groupLabel = group.displayName || t("uncategorized");
-        const visibleItems = previewItems(group, readOnly);
-        const hiddenCount = Math.max(
-          group.items.length - visibleItems.length,
-          0,
-        );
+        const dishCount = countEnteredDishRows(group.items);
+        const visibleItems = previewItems(group);
+        const hiddenCount = Math.max(dishCount - visibleItems.length, 0);
         const problemCount = countProblems(group, validation);
 
         return (
@@ -78,7 +72,7 @@ export function MenuCategoryBoard({
                   {groupLabel}
                 </h2>
                 <p className="mt-2 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.14em] text-[var(--ink-mute)]">
-                  {t("itemCountPlural", { count: group.items.length })}
+                  {t("itemCountPlural", { count: dishCount })}
                 </p>
               </div>
 

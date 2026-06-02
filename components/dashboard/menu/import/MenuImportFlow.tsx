@@ -1,6 +1,7 @@
 "use client";
 
 import type { EntitlementResult } from "@/lib/billing/entitlements-core";
+import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
 import { useMenuImportFlow } from "@/hooks/useMenuImportFlow";
 
 import { ImportProcessingStep } from "./ImportProcessingStep";
@@ -48,7 +49,7 @@ export function MenuImportFlow({
         : 3;
 
   return (
-    <div className="w-full px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
+    <div className={DASHBOARD_PAGE_FRAME_CLASS}>
       <ImportStepper current={stepperStep} />
 
       {mode === "tier_locked" && (

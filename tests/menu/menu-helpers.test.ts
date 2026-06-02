@@ -12,14 +12,30 @@ import {
   rowsDifferFromInitial,
 } from "@/lib/menu/format";
 import { buildCategoryFilters, buildGroupedItems } from "@/lib/menu/grouping";
+import {
+  countEnteredDishRows,
+  hasEnteredDishData,
+  isCategoryOnlyDraft,
+} from "@/lib/menu/row-state";
 import type { InitialMenuItem, MenuItemRow } from "@/lib/menu/types";
 import { validateRows } from "@/lib/menu/validation";
+import { buildMenuValidationSummary } from "@/lib/menu/validation-summary";
 
 const validationMessages = {
   nameRequired: "Name is required",
   priceRequired: "Price is required",
   invalidPrice: "Invalid price",
   duplicateName: "Duplicate name",
+};
+
+const summaryCopy = {
+  uncategorizedCategory: "Uncategorized",
+  needOneItem: "Add at least one dish",
+  emptyCategory: (c: string) => `Empty: ${c}`,
+  missingName: (c: string) => `Missing name: ${c}`,
+  missingPrice: (c: string, d: string) => `Missing price: ${c}/${d}`,
+  invalidPrice: (c: string) => `Invalid price: ${c}`,
+  duplicateProducts: (n: string) => `Duplicates: ${n}`,
 };
 
 function row(overrides: Partial<MenuItemRow>): MenuItemRow {
@@ -137,6 +153,29 @@ test("category filters count non-empty rows and merge category keys", () => {
   );
 });
 
+test("manual category starter rows stay visible without counting as dishes", () => {
+  const starter = row({ id: "starter", category: "Desserts" });
+  const named = row({
+    id: "named",
+    name_bg: "Cake",
+    category: "Desserts",
+    price: "6",
+  });
+
+  assert.equal(isCategoryOnlyDraft(starter), true);
+  assert.equal(hasEnteredDishData(starter), false);
+  assert.equal(hasEnteredDishData(named), true);
+  assert.equal(countEnteredDishRows([starter, named]), 1);
+
+  assert.deepEqual(
+    buildCategoryFilters([starter]).map(({ displayName, count }) => ({
+      displayName,
+      count,
+    })),
+    [{ displayName: "Desserts", count: 0 }],
+  );
+});
+
 test("grouped menu items support category filters and Bulgarian-aware search", () => {
   const items = [
     row({ id: "1", name_bg: "Kebapche", category: "Grill" }),
@@ -161,6 +200,55 @@ test("grouped menu items support category filters and Bulgarian-aware search", (
     }).map((group) => group.items.map((item) => item.id)),
     [["1"]],
   );
+});
+
+test("grouped menu items exclude blank new rows so no ghost category appears", () => {
+  // A default empty new row (createEmptyRow("")) has every field blank.
+  // buildCategoryFilters already skips these via isBlankNewRow; buildGroupedItems
+  // must do the same, otherwise the board renders a ghost unnamed "uncategorized"
+  // tile for the trailing empty input row.
+  const groups = buildGroupedItems({
+    items: [
+      row({ id: "1", name_bg: "Kebapche", category: "Grill" }),
+      row({ id: "blank" }),
+    ],
+    searchQuery: "",
+    selectedCategoryKeys: null,
+  });
+
+  assert.deepEqual(
+    groups.map(({ key, displayName }) => ({ key, displayName })),
+    [{ key: "grill", displayName: "Grill" }],
+  );
+});
+
+test("validation summary reports only missing name for an unnamed row with a bad price", () => {
+  const rows = [row({ id: "r1", category: "Grill", price: "abc" })];
+  const validation = validateRows(rows, validationMessages);
+
+  const messages = buildMenuValidationSummary({
+    rows,
+    validation,
+    copy: summaryCopy,
+  });
+
+  // No name yet → only the missing-name message, not also an invalid-price one.
+  assert.deepEqual(messages, ["Missing name: Grill"]);
+});
+
+test("validation summary still reports invalid price once a dish is named", () => {
+  const rows = [
+    row({ id: "r2", name_bg: "Soup", category: "Soups", price: "abc" }),
+  ];
+  const validation = validateRows(rows, validationMessages);
+
+  const messages = buildMenuValidationSummary({
+    rows,
+    validation,
+    copy: summaryCopy,
+  });
+
+  assert.deepEqual(messages, ["Invalid price: Soups"]);
 });
 
 test("row diffs ignore untouched blanks but catch real menu changes", () => {

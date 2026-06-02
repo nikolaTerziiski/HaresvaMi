@@ -21,9 +21,18 @@ const mobileTopbarSource = source(
   "components/dashboard/shell/MobileTopbar.tsx",
 );
 const bgMessagesSource = source("lib/i18n/messages/bg.json");
-const tierCardSource = source("components/dashboard/home/TierCard.tsx");
+const getStartedChecklistSource = source(
+  "components/dashboard/home/GetStartedChecklist.tsx",
+);
+const pageFrameSource = source("components/dashboard/shell/page-frame.ts");
 const feedbackOverviewSource = source(
   "components/dashboard/feedback/FeedbackOverview.tsx",
+);
+const insightsOverviewSource = source(
+  "components/dashboard/insights/InsightsOverview.tsx",
+);
+const menuPageSource = source(
+  "app/(dashboard)/dashboard/(shell)/menu/page.tsx",
 );
 
 function assertSourceOrder(haystack: string, needles: string[]) {
@@ -104,18 +113,68 @@ test("dashboard shell renders the effective tier chip from server data", () => {
   assert.doesNotMatch(mobileTopbarSource, /tierChipFree/);
 });
 
-test("dashboard home plan card uses the effective tier and limit", () => {
+test("dashboard home data uses the effective tier and limit", () => {
   assert.match(dashboardHomeDataSource, /getFeedbackLimit\(tier\)/);
   assert.doesNotMatch(dashboardHomeDataSource, /FREE_TIER_FEEDBACK_LIMIT/);
-  assert.match(dashboardHomePageSource, /tier=\{data\.tier\}/);
-  assert.match(tierCardSource, /tier: PlanTier/);
-  assert.match(tierCardSource, /t\(`plans\.\$\{tier\}`\)/);
-  assert.match(tierCardSource, /t\(`blurbs\.\$\{tier\}`\)/);
-  assert.match(tierCardSource, /href="\/dashboard\/settings"/);
-  assert.doesNotMatch(tierCardSource, /t\("title"\)/);
 });
 
-test("feedback overview uses the full dashboard content width", () => {
-  assert.match(feedbackOverviewSource, /className="w-full px-10/);
-  assert.doesNotMatch(feedbackOverviewSource, /max-w-6xl/);
+test("home checklist card uses standard radius and a subtle shadow", () => {
+  assert.match(getStartedChecklistSource, /rounded-xl/);
+  assert.doesNotMatch(getStartedChecklistSource, /rounded-\[14px\]/);
+  assert.doesNotMatch(getStartedChecklistSource, /shadow-\[0_30px_60px/);
+});
+
+test("home page is simplified: checklist + app nudge, no plan/tutorial cards", () => {
+  assert.match(dashboardHomePageSource, /GetStartedChecklist/);
+  assert.match(dashboardHomePageSource, /HomeAppNudge/);
+  assert.doesNotMatch(dashboardHomePageSource, /TierCard/);
+  assert.doesNotMatch(dashboardHomePageSource, /TutorialCard/);
+});
+
+test("standard dashboard overviews use the shared content frame", () => {
+  for (const overviewSource of [
+    feedbackOverviewSource,
+    insightsOverviewSource,
+  ]) {
+    assert.match(
+      overviewSource,
+      /import \{ DASHBOARD_PAGE_FRAME_CLASS \} from "@\/components\/dashboard\/shell\/page-frame"/,
+    );
+    assert.match(overviewSource, /className=\{DASHBOARD_PAGE_FRAME_CLASS\}/);
+    assert.doesNotMatch(overviewSource, /className="w-full px-10/);
+  }
+});
+
+test("nested-page breadcrumb logic is shared between desktop and mobile shells", () => {
+  assert.match(topbarSource, /from "\.\/sections"/);
+  assert.match(mobileTopbarSource, /from "\.\/sections"/);
+  assert.match(
+    mobileTopbarSource,
+    /PARENT_SECTIONS\[getSectionKey\(pathname\)\]/,
+  );
+  assert.doesNotMatch(
+    mobileTopbarSource,
+    /startsWith\("\/dashboard\/menu\/import-ai"\)/,
+  );
+});
+
+test("standard dashboard frame is a centered column with an aligned topbar", () => {
+  // Pages sit in a centered max-w-5xl column; the topbar's inner row centers to
+  // the SAME width so the section title lines up with the content (no detached
+  // header, no lopsided empty gap).
+  assert.match(
+    pageFrameSource,
+    /DASHBOARD_PAGE_FRAME_CLASS =\s*"mx-auto w-full max-w-5xl/,
+  );
+  // Topbar centers to the same width by default; the full-bleed menu page opts out.
+  assert.match(topbarSource, /mx-auto max-w-5xl/);
+  assert.match(topbarSource, /isFullBleed = pathname === "\/dashboard\/menu"/);
+});
+
+test("menu page is a documented full-bleed exception", () => {
+  assert.match(
+    menuPageSource,
+    /import \{ DASHBOARD_PAGE_FULL_CLASS \} from "@\/components\/dashboard\/shell\/page-frame"/,
+  );
+  assert.match(menuPageSource, /className=\{DASHBOARD_PAGE_FULL_CLASS\}/);
 });

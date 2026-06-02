@@ -43,7 +43,7 @@ export function PeriodSwitcher({
   }
 
   return (
-    <div className="mt-6">
+    <div>
       <div className="flex flex-wrap gap-2">
         {pills.map((pill) => {
           const active = currentKey === pill.key;

@@ -2,6 +2,7 @@
 
 import {
   ChartNoAxesColumnIncreasing,
+  ChevronLeft,
   Home,
   Menu,
   MessageSquare,
@@ -11,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -19,6 +21,7 @@ import type { PlanTier } from "@/lib/billing/plans";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { LogoutButton } from "./LogoutButton";
 import { NavLink } from "./NavLink";
+import { getSectionKey, PARENT_SECTIONS } from "./sections";
 
 type MobileTopbarProps = {
   restaurantName: string;
@@ -37,6 +40,7 @@ export function MobileTopbar({
   const nav = useTranslations("dashboard.nav");
   const shell = useTranslations("dashboard.shell");
   const pathname = usePathname();
+  const parent = PARENT_SECTIONS[getSectionKey(pathname)];
   const avatarInitial = ownerFirstName ? ownerFirstName.charAt(0) : "?";
 
   useEffect(() => {
@@ -63,9 +67,19 @@ export function MobileTopbar({
         >
           <Menu className="h-5 w-5" strokeWidth={1.75} />
         </button>
-        <div className="min-w-0 flex-1 truncate text-center font-[var(--f-display)] text-[18px] leading-none tracking-[-0.01em] text-[var(--ink)]">
-          {restaurantName}
-        </div>
+        {parent ? (
+          <Link
+            href={parent.href}
+            className="inline-flex min-w-0 flex-1 items-center justify-center gap-0.5 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.08em] text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+          >
+            <ChevronLeft className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+            {shell(`sections.${parent.key}.title`)}
+          </Link>
+        ) : (
+          <div className="min-w-0 flex-1 truncate text-center font-[var(--f-display)] text-[18px] leading-none tracking-[-0.01em] text-[var(--ink)]">
+            {restaurantName}
+          </div>
+        )}
         <div
           aria-label={shell("role.owner")}
           className="grid h-9 w-9 place-items-center rounded-full bg-[var(--plum)] font-[var(--f-display)] text-[16px] italic leading-none text-[var(--paper)] transition hover:opacity-90"

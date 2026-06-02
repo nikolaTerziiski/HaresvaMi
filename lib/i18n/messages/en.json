@@ -321,8 +321,8 @@
       "helpBody2": "No need to type \"Shopska = SH\" now — we'll add those the first time a receipt comes in.",
       "helpTitle3": "No photos for now.",
       "helpBody3": "Customers don't see the menu — they rate what they've already eaten. Just name, category, price.",
-      "statProducts": "products",
-      "statCategories": "categories",
+      "statProducts": "{count, plural, one {ready product} other {ready products}}",
+      "statCategories": "{count, plural, one {category} other {categories}}",
       "magicImportBtn": "Scan or upload menu",
       "magicImportDesc": "Use a menu photo or PDF. Then review and fix anything that needs it.",
       "manualBtn": "Enter manually",
@@ -345,8 +345,9 @@
       "noMatchTitle": "No matches",
       "noMatchDesc": "Try a different search or category.",
       "unsavedTitle": "Unsaved changes",
-      "unsavedUndo": "Undo",
+      "unsavedUndo": "Undo changes",
       "saveMenu": "Save menu",
+      "saveChanges": "Save changes",
       "savedJustNow": "Saved · just now",
       "savedBanner": "Successfully saved",
       "eurAbbrev": "≈ {value} €",
@@ -402,7 +403,7 @@
       "aliasesLoading": "Loading...",
       "editToggle": {
         "edit": "Edit menu",
-        "done": "Done"
+        "done": "Stop editing"
       },
       "hiddenChangesHint": "Changes in a hidden category",
       "showAll": "Show all",
@@ -420,7 +421,7 @@
         "body": "Fix these things and try again.",
         "close": "Got it",
         "uncategorizedCategory": "uncategorised",
-        "needOneItem": "Add at least one item to save the menu.",
+        "needOneItem": "Add at least one ready dish to save the menu.",
         "emptyCategory": "Category “{category}” does not have a dish filled in.",
         "missingName": "Category “{category}” has an item without a name.",
         "missingPrice": "Category “{category}” has “{dish}” without a price.",
@@ -440,6 +441,34 @@
         "protectedLabel": "has dishes",
         "minOne": "Pick at least one category."
       },
+      "rail": {
+        "title": "Categories",
+        "totalCount": "{count} dishes",
+        "addCategory": "New category"
+      },
+      "detail": {
+        "subtitle": "Customers rate these dishes after they pay. Prices are in BGN with an informational EUR rate.",
+        "searchPlaceholder": "Search in {category}…",
+        "moreActions": "More actions"
+      },
+      "editor": {
+        "ariaLabel": "Edit dish",
+        "eyebrow": "Edit dish",
+        "close": "Close",
+        "photoLabel": "Dish photo",
+        "photoPlaceholder": "Photo · coming soon",
+        "nameLabel": "Dish name",
+        "descLabel": "Description",
+        "descOptional": "(optional)",
+        "priceLabel": "Price (BGN)",
+        "categoryLabel": "Category",
+        "aliasesSection": "Aliases",
+        "aliasesHint": "Abbreviations staff use for this dish on receipts."
+      },
+      "dishRow": {
+        "noDescription": "No description",
+        "editAria": "Edit dish"
+      },
       "errors": {
         "upload": "Failed to read menu. Try a clearer photo.",
         "fileTooLarge": "The file is too large. Upload an image or PDF up to 10 MB.",
@@ -449,7 +478,7 @@
         "invalidPrice": "Price must be a number, for example 8.90.",
         "duplicateName": "This item is already added.",
         "fixBeforeSave": "Fix the highlighted fields before saving.",
-        "needMoreItems": "Add at least one item to continue.",
+        "needMoreItems": "Add at least one ready dish to continue.",
         "save": "We could not save the menu. Please try again."
       },
       "import": {

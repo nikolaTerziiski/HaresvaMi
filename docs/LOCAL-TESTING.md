@@ -107,6 +107,11 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
    - On the manual starter, verify default categories are large selectable tiles: 3 per row on desktop/tablet, 2 per row on mobile, selected tiles turn green with a check state, and the final dashed `+` tile can add a custom category.
    - Continue to the review step, enter text in one dish row, click **"Редактирай категориите"**, and verify the category with entered dish data stays selected while empty categories can be removed safely.
 5. On the review step, verify categories render as a board: 2 cards per row on desktop/tablet and 1 per row on mobile. Click a category card and verify it opens a focused editor with a **"Всички категории"** back button instead of expanding in place.
+   - Verify empty starter categories show as categories with `0` dishes/ready products, not as fake `Нов продукт` rows.
+   - Verify the header product stat counts only valid ready dishes, while the category stat still counts selected categories.
+   - Verify **"Редактирай категориите"** and **"Нова категория"** sit together in the toolbar, and the edit-mode toggle says **"Спри редакция"** rather than **"Готово"**.
+   - Inside the focused category editor, verify the overview header stats, search, category filter, **"Редактирай категориите"**, **"Нова категория"**, **"Започни отначало"**, and **"Спри редакция"** are hidden.
+   - While focused in one category, verify the bottom bar CTA says **"Запази промените"**; return to **"Всички категории"** and verify overview controls come back.
 6. Test new category creation: click **"+ Нова категория"** in the toolbar, verify a new category card appears, then open it from the board.
 7. Test category rename: open a category, click its name inline, rename it, return to **"Всички категории"**, and verify the board shows the new name.
 8. Test item move-to-category: inside the focused category editor, use the per-row "move to category" popover to reassign an item; verify it appears under the new category without delete-and-re-add.

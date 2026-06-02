@@ -1,4 +1,5 @@
 import { categoryKey, createEmptyRow } from "@/lib/menu/format";
+import { hasEnteredDishData } from "@/lib/menu/row-state";
 import type { MenuItemRow } from "@/lib/menu/types";
 
 function normalizeCategories(categories: string[]) {
@@ -14,15 +15,6 @@ function normalizeCategories(categories: string[]) {
   }
 
   return normalized;
-}
-
-function hasEnteredDishData(row: MenuItemRow) {
-  return Boolean(
-    row.persistedId ||
-    row.name_bg.trim() ||
-    row.price.trim() ||
-    row.description_bg.trim(),
-  );
 }
 
 function uniqueRowCategories(rows: MenuItemRow[], onlyProtected: boolean) {

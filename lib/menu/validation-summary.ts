@@ -1,4 +1,5 @@
 import { categoryKey, normalizeText } from "@/lib/menu/format";
+import { isCategoryOnlyDraft } from "@/lib/menu/row-state";
 import type { MenuItemRow, ValidationResult } from "@/lib/menu/types";
 
 export type MenuValidationSummaryCopy = {
@@ -19,16 +20,6 @@ type BuildMenuValidationSummaryInput = {
 
 function displayCategory(row: MenuItemRow, fallback: string) {
   return normalizeText(row.category) || fallback;
-}
-
-function isCategoryOnlyDraft(row: MenuItemRow) {
-  return Boolean(
-    !row.persistedId &&
-    normalizeText(row.category) &&
-    !normalizeText(row.name_bg) &&
-    !normalizeText(row.price) &&
-    !normalizeText(row.description_bg),
-  );
 }
 
 function addCategoryMessage(
@@ -93,17 +84,20 @@ export function buildMenuValidationSummary({
       continue;
     }
 
-    if (rowError.name_bg && !normalizeText(row.name_bg)) {
+    const dishName = normalizeText(row.name_bg);
+    const price = normalizeText(row.price);
+
+    if (rowError.name_bg && !dishName) {
+      // The row has no dish name yet — report only that. Don't also pile on a
+      // price error for the same half-entered row; it resolves once it's named.
       addCategoryMessage(
         messages,
         missingNameCategories,
         category,
         copy.missingName,
       );
+      continue;
     }
-
-    const dishName = normalizeText(row.name_bg);
-    const price = normalizeText(row.price);
 
     if (rowError.price && dishName && !price) {
       const missingPriceKey = `${categoryKey(category)}:${dishName.toLocaleLowerCase("bg-BG")}`;

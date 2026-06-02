@@ -23,12 +23,18 @@ const menuManualStarterSource = source(
 const menuReviewPanelSource = source(
   "components/dashboard/menu/MenuReviewPanel.tsx",
 );
-const menuCategoryBoardSource = source(
-  "components/dashboard/menu/MenuCategoryBoard.tsx",
+// New master-detail sub-components
+const menuCategoryRailSource = source(
+  "components/dashboard/menu/MenuCategoryRail.tsx",
 );
-const menuCategoryFocusedEditorSource = source(
-  "components/dashboard/menu/MenuCategoryFocusedEditor.tsx",
+const menuCategoryDetailSource = source(
+  "components/dashboard/menu/MenuCategoryDetail.tsx",
 );
+const menuDishEditorSource = source(
+  "components/dashboard/menu/MenuDishEditor.tsx",
+);
+const menuDishRowSource = source("components/dashboard/menu/MenuDishRow.tsx");
+// Still-referenced existing components
 const menuUnsavedBarSource = source(
   "components/dashboard/menu/MenuUnsavedBar.tsx",
 );
@@ -38,18 +44,13 @@ const menuValidationDialogSource = source(
 const menuStartOverDialogSource = source(
   "components/dashboard/menu/MenuStartOverDialog.tsx",
 );
-const menuReviewHeaderSource = source(
-  "components/dashboard/menu/MenuReviewHeader.tsx",
-);
-const menuToolbarSource = source(
-  "components/dashboard/menu/MenuReviewToolbar.tsx",
-);
-const menuGroupCardSource = source(
-  "components/dashboard/menu/MenuGroupCard.tsx",
-);
 const menuItemRowSource = source(
   "components/dashboard/menu/MenuItemEditorRow.tsx",
 );
+const menuImportFlowSource = source(
+  "components/dashboard/menu/import/MenuImportFlow.tsx",
+);
+const uiMenuSource = source("components/ui/menu.tsx");
 const restaurantSetupSource = source(
   "components/dashboard/RestaurantSetupForm.tsx",
 );
@@ -84,29 +85,100 @@ test("first-time menu AI path is entitlement-aware and links Pro lock to setting
   assert.match(menuEmptyStateSource, /t\("aiLockedCta"\)/);
 });
 
-test("menu review surface has category tools and save feedback states", () => {
+// ── Master-detail review layout ──────────────────────────────────────────────
+
+test("menu review renders master-detail layout with rail, detail, and dish editor", () => {
+  // Panel renders the save banner and the batch save bar unchanged
   assert.match(
     menuReviewPanelSource,
     /<MenuSaveBanner show=\{flow\.showSaveBanner\}/,
   );
   assert.match(menuReviewPanelSource, /<MenuUnsavedBar/);
-  assert.match(menuToolbarSource, /onAddCategory/);
-  assert.match(menuToolbarSource, /selectedCategoryKeys/);
-  assert.match(menuToolbarSource, /t\("searchPlaceholder"\)/);
+
+  // Panel renders the new master-detail sub-components
+  assert.match(menuReviewPanelSource, /MenuCategoryRail/);
+  assert.match(menuReviewPanelSource, /MenuCategoryDetail/);
+
+  // Category rail exists as a standalone component
+  assert.match(menuCategoryRailSource, /onAddCategory/);
+  assert.match(menuCategoryRailSource, /activeCategoryKey/);
+  assert.match(menuCategoryRailSource, /rail\.title/);
+  assert.match(menuCategoryRailSource, /rail\.addCategory/);
+
+  // Detail exists and uses dish row + editor
+  assert.match(menuCategoryDetailSource, /MenuDishRow/);
+  assert.match(menuCategoryDetailSource, /MenuDishEditor/);
+  assert.match(menuCategoryDetailSource, /onAddItemInCategory/);
+  assert.match(menuCategoryDetailSource, /onRenameCategory/);
 });
 
-test("menu review uses a two-column category board and focused category editor", () => {
-  assert.match(menuReviewPanelSource, /MenuCategoryBoard/);
-  assert.match(menuReviewPanelSource, /MenuCategoryFocusedEditor/);
-  assert.match(menuReviewPanelSource, /activeCategoryKey/);
-  assert.match(menuReviewPanelSource, /allGroupedItems/);
-  assert.match(menuReviewPanelSource, /max-w-6xl/);
-  assert.match(menuCategoryBoardSource, /lg:grid-cols-2/);
-  assert.match(menuCategoryBoardSource, /grid-cols-1/);
-  assert.match(menuCategoryBoardSource, /categoryBoard\.open/);
-  assert.match(menuCategoryBoardSource, /categoryBoard\.problems/);
-  assert.match(menuCategoryFocusedEditorSource, /categoryBoard\.back/);
-  assert.match(menuCategoryFocusedEditorSource, /showCollapseToggle=\{false\}/);
+test("dish row shows name, description, BGN price, and EUR equivalent", () => {
+  assert.match(menuDishRowSource, /import \{ bgnToEur, formatEur \}/);
+  assert.match(menuDishRowSource, /parsePrice\(item\.price\)/);
+  assert.match(menuDishRowSource, /dishRow\.noDescription/);
+  // Edit and delete hover icons
+  assert.match(menuDishRowSource, /dishRow\.editAria/);
+  assert.match(menuDishRowSource, /table\.remove/);
+});
+
+test("dish editor holds a local draft and applies changes via handleItemChange on save", () => {
+  // Editor is a separate component — local draft pattern
+  assert.match(menuDishEditorSource, /draftName/);
+  assert.match(menuDishEditorSource, /draftPrice/);
+  assert.match(menuDishEditorSource, /draftDesc/);
+  assert.match(menuDishEditorSource, /onSave/);
+  assert.match(menuDishEditorSource, /onDiscard/);
+  // Photo slot must be disabled/placeholder — no upload
+  assert.match(menuDishEditorSource, /editor\.photoPlaceholder/);
+  // Live EUR conversion
+  assert.match(menuDishEditorSource, /bgnToEur/);
+  assert.match(menuDishEditorSource, /formatEur/);
+  // Category move selector is inside the editor
+  assert.match(menuDishEditorSource, /setDraftCategory/);
+});
+
+test("dish editor keeps aliases accessible via AliasManagerPopover", () => {
+  assert.match(menuDishEditorSource, /AliasManagerPopover/);
+  // Popover still gated on hasPersisted && aliasOpen — no eager fetch
+  assert.match(menuDishEditorSource, /hasPersisted && aliasOpen/);
+  assert.match(menuDishEditorSource, /editor\.aliasesSection/);
+});
+
+test("dish editor does not save to DB — onSave only calls handleItemChange fields", () => {
+  // Editor receives onSave callback (not a direct DB call) — the caller wires
+  // it to flow.handleItemChange per field. The global MenuUnsavedBar remains
+  // the single DB commit path.
+  assert.match(menuCategoryDetailSource, /flow\.handleItemChange|onItemChange/);
+  assert.match(menuCategoryDetailSource, /handleEditorSave/);
+  // The panel itself still wires handleSave → flow.handleSave
+  assert.match(menuReviewPanelSource, /flow\.handleSave/);
+});
+
+test("category rename is inline click-to-edit in the detail pane", () => {
+  assert.match(menuCategoryDetailSource, /onRenameCategory/);
+  assert.match(menuCategoryDetailSource, /editingName/);
+  assert.match(menuCategoryDetailSource, /commitRename/);
+  assert.match(menuCategoryDetailSource, /draftName/);
+});
+
+test("start-over is accessible from the detail overflow menu and wired destructively", () => {
+  // Detail pane exposes start-over via an overflow menu
+  assert.match(menuCategoryDetailSource, /onStartOverClick/);
+  assert.match(menuCategoryDetailSource, /RotateCcw/);
+  // Panel passes it to MenuStartOverDialog
+  assert.match(menuReviewPanelSource, /MenuStartOverDialog/);
+  assert.match(menuReviewPanelSource, /flow\.setConfirmStartOverOpen/);
+  assert.match(menuReviewPanelSource, /flow\.handleStartOver/);
+  // Dialog still has destructive styling
+  assert.match(menuStartOverDialogSource, /bg-\[var\(--bad\)\]/);
+});
+
+test("review panel drops the old board/toolbar chrome for the master-detail layout", () => {
+  // The redesign replaces the board + focused editor + toolbar with the rail +
+  // detail + slide-over editor. Category management is absorbed into those.
+  assert.doesNotMatch(menuReviewPanelSource, /MenuCategoryBoard/);
+  assert.doesNotMatch(menuReviewPanelSource, /MenuReviewToolbar/);
+  assert.doesNotMatch(menuReviewPanelSource, /MenuCategoryFocusedEditor/);
 });
 
 test("menu review save remains clickable and opens a validation dialog", () => {
@@ -116,6 +188,9 @@ test("menu review save remains clickable and opens a validation dialog", () => {
   assert.match(menuReviewPanelSource, /setValidationDialogOpen\(true\)/);
   assert.match(menuUnsavedBarSource, /disabled=\{isSaving\}/);
   assert.match(menuUnsavedBarSource, /max-w-6xl/);
+  assert.match(menuUnsavedBarSource, /isFocusedCategory/);
+  assert.match(menuUnsavedBarSource, /saveChanges/);
+  assert.match(menuUnsavedBarSource, /saveMenu/);
   assert.doesNotMatch(menuUnsavedBarSource, /disabled=\{!canSave\}/);
   assert.doesNotMatch(menuUnsavedBarSource, /canSave/);
   assert.match(menuValidationDialogSource, /validationDialog/);
@@ -123,14 +198,15 @@ test("menu review save remains clickable and opens a validation dialog", () => {
   assert.match(menuValidationDialogSource, /t\("close"\)/);
 });
 
-test("menu review toolbar uses neutral new category and destructive start-over styling", () => {
-  assert.match(menuToolbarSource, /FolderPlus/);
-  assert.match(menuToolbarSource, /border-\[var\(--rule\)\]/);
-  assert.match(menuToolbarSource, /bg-\[var\(--paper\)\]/);
-  assert.match(menuToolbarSource, /RotateCcw/);
-  assert.match(menuToolbarSource, /text-\[var\(--bad\)\]/);
-  assert.match(menuStartOverDialogSource, /bg-\[var\(--bad\)\]/);
+test("menu page is full-bleed and the two-pane layout fills available height", () => {
+  assert.match(menuPageSource, /DASHBOARD_PAGE_FULL_CLASS/);
+  // Panel fills the container without a constrained max-w column
+  assert.match(menuReviewPanelSource, /h-full w-full|flex.*h-full/);
+  // Rail has a fixed width column on desktop
+  assert.match(menuCategoryRailSource, /md:w-\[264px\]/);
 });
+
+// ── Existing stable assertions (unaffected by layout change) ─────────────────
 
 test("item rows expose accessible move controls and derived EUR pricing", () => {
   assert.match(menuItemRowSource, /import \{ bgnToEur, formatEur \}/);
@@ -138,6 +214,34 @@ test("item rows expose accessible move controls and derived EUR pricing", () => 
   assert.match(menuItemRowSource, /aria-label=\{t\("moveItemAria"\)\}/);
   assert.match(menuItemRowSource, /aria-label=\{t\("table\.remove"\)\}/);
   assert.match(menuItemRowSource, /flash-error/);
+});
+
+test("AI import page uses the shared centered dashboard frame", () => {
+  assert.match(menuImportFlowSource, /DASHBOARD_PAGE_FRAME_CLASS/);
+  assert.doesNotMatch(menuImportFlowSource, /className="w-full px-10/);
+});
+
+test("MenuGroupLabel is a plain element so it works without a Menu.Group ancestor", () => {
+  // Base UI's Menu.GroupLabel throws "MenuGroupRootContext is missing" unless it
+  // is wrapped in Menu.Group. Our labels render bare inside MenuContent (the
+  // move-to-category menu), so MenuGroupLabel must NOT use the context-bound
+  // primitive, or opening that menu crashes at runtime.
+  assert.doesNotMatch(uiMenuSource, /MenuPrimitive\.GroupLabel/);
+});
+
+test("alias popover only mounts when open so it does not fetch eagerly per row", () => {
+  // Regression guard: AliasManagerPopover fetches /api/receipt-aliases in a mount
+  // effect. It must be gated behind a controlled open state, otherwise it mounts
+  // for every persisted row on menu load and fires one API call per row.
+  assert.match(menuItemRowSource, /<Popover open=\{aliasOpen\}/);
+  assert.match(
+    menuItemRowSource,
+    /hasPersisted && aliasOpen \?[\s\S]{0,80}<AliasManagerPopover/,
+  );
+  assert.doesNotMatch(
+    menuItemRowSource,
+    /\{hasPersisted \?\s*\(?\s*<AliasManagerPopover/,
+  );
 });
 
 test("MenuManager renders manual_starter branch wired to handleManualStart and handleManualBack", () => {
@@ -173,33 +277,6 @@ test("MenuManualStarter renders category card grid, custom add card, and continu
     menuManualStarterSource,
     /t\("manualStarter\.continue"\)|t\("continue"\)/,
   );
-});
-
-test("menu review exposes safe category revisit for manual-start drafts", () => {
-  assert.match(menuReviewPanelSource, /flow\.canEditManualCategories/);
-  assert.match(menuReviewPanelSource, /flow\.handleEditManualCategories/);
-  assert.match(menuReviewHeaderSource, /canEditCategories/);
-  assert.match(menuReviewHeaderSource, /onEditCategories/);
-  assert.match(menuReviewHeaderSource, /t\("editCategories"\)/);
-});
-
-test("MenuReviewToolbar renders the edit toggle button with Pencil/Check icon import", () => {
-  assert.match(menuToolbarSource, /editMode/);
-  assert.match(menuToolbarSource, /onToggleEditMode/);
-  assert.match(menuToolbarSource, /Pencil/);
-  assert.match(menuToolbarSource, /Check/);
-  assert.match(
-    menuToolbarSource,
-    /t\("editToggle\.edit"\)|t\("editToggle\.done"\)/,
-  );
-});
-
-test("MenuGroupCard renders a collapsible chevron and accepts readOnly + expanded props", () => {
-  assert.match(menuGroupCardSource, /ChevronDown/);
-  assert.match(menuGroupCardSource, /readOnly/);
-  assert.match(menuGroupCardSource, /expanded/);
-  assert.match(menuGroupCardSource, /onToggleExpand/);
-  assert.match(menuGroupCardSource, /transition-transform/);
 });
 
 test("docs describe the implemented menu activation and manual QA path", () => {

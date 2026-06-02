@@ -47,7 +47,7 @@ function DishInsightBody({
         {dish.name}
       </h3>
       <div className="mt-3 flex flex-wrap items-end gap-3">
-        <span className="font-[var(--f-display)] text-[44px] leading-none text-[var(--ink)]">
+        <span className="font-[var(--f-display)] text-[28px] leading-none text-[var(--ink)]">
           {formatRating(dish.currentAverage)}
         </span>
         <span className="pb-2 text-[14px] text-[var(--ink-mute)]">
@@ -94,9 +94,9 @@ function CommentBody({ comment }: { comment: CommentOfWeek | null }) {
 function InsightCard({ title, children }: InsightCardProps) {
   return (
     <article className="rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-5">
-      <h2 className="m-0 font-[var(--f-display)] text-[27px] font-normal leading-tight text-[var(--ink)]">
+      <h3 className="m-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.08em] text-[var(--ink-mute)]">
         {title}
-      </h2>
+      </h3>
       {children}
     </article>
   );

@@ -7,7 +7,6 @@ import { MIN_MENU_ITEMS_FOR_NEXT_STEP } from "@/lib/menu/constants";
 import {
   categoryKey,
   getDirtyRows,
-  isBlankNewRow,
   rowsDifferFromInitial,
 } from "@/lib/menu/format";
 import { buildCategoryFilters, buildGroupedItems } from "@/lib/menu/grouping";
@@ -85,8 +84,8 @@ export function useMenuReviewDerivedState({
   );
 
   const totalItems = useMemo(
-    () => items.filter((item) => !isBlankNewRow(item)).length,
-    [items],
+    () => validation.validItems.length,
+    [validation.validItems.length],
   );
 
   const allCategories = useMemo(() => buildCategoryFilters(items), [items]);

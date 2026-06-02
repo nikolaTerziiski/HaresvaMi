@@ -121,8 +121,8 @@
   --popover: #fbfaf7;
   --popover-foreground: #1a1814;
 
-  --primary: #ff5a5f; /* coral-500 */
-  --primary-foreground: #fbfaf7;
+  --primary: #c24d2c; /* terracotta brand (unified with --accent) */
+  --primary-foreground: #fdf9f1;
 
   --secondary: #e8e4dc; /* ink-100 */
   --secondary-foreground: #1a1814;

@@ -3,6 +3,7 @@ import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { canExtractMenu } from "@/lib/billing/entitlements";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MenuManager } from "@/components/dashboard/menu/MenuManager";
+import { DASHBOARD_PAGE_FULL_CLASS } from "@/components/dashboard/shell/page-frame";
 
 export const metadata = {
   title: "Меню | Haresva Mi",
@@ -38,7 +39,8 @@ export default async function MenuPage() {
   }
 
   return (
-    <div className="flex h-full w-full">
+    // Full-bleed: the category board needs horizontal room (documented exception).
+    <div className={DASHBOARD_PAGE_FULL_CLASS}>
       <MenuManager
         restaurantId={restaurant.id}
         initialItems={menuItems || []}

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
+import { PopoverContent } from "@/components/ui/popover";
+
 type AliasRow = {
   id: string;
   alias_text: string;
@@ -14,15 +16,11 @@ type AliasRow = {
 type AliasManagerPopoverProps = {
   menuItemId: string;
   menuItemName: string;
-  onBlur: (e: React.FocusEvent) => void;
-  containerRef: React.RefObject<HTMLDivElement | null>;
 };
 
 export function AliasManagerPopover({
   menuItemId,
   menuItemName,
-  onBlur,
-  containerRef,
 }: AliasManagerPopoverProps) {
   const t = useTranslations("dashboard.menu");
 
@@ -122,10 +120,6 @@ export function AliasManagerPopover({
       e.preventDefault();
       void handleAdd();
     }
-    if (e.key === "Escape") {
-      // Blur will close — let the parent handle it
-      inputRef.current?.blur();
-    }
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -135,12 +129,7 @@ export function AliasManagerPopover({
   }
 
   return (
-    <div
-      ref={containerRef}
-      onBlur={onBlur}
-      tabIndex={-1}
-      className="absolute right-0 top-9 z-50 w-[280px] rounded-lg border border-[var(--rule)] bg-[var(--paper)] shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]"
-    >
+    <PopoverContent className="w-[280px] p-0">
       {/* Title */}
       <p className="border-b border-[var(--rule)] px-3 py-2.5 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--ink-mute)]">
         {t("aliasesTitle", { name: menuItemName })}
@@ -226,6 +215,6 @@ export function AliasManagerPopover({
           </p>
         ) : null}
       </div>
-    </div>
+    </PopoverContent>
   );
 }

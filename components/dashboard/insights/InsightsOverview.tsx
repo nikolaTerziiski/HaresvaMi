@@ -5,6 +5,7 @@ import { InsightsAiSummary } from "@/components/dashboard/insights/InsightsAiSum
 import { InsightsEmptyState } from "@/components/dashboard/insights/InsightsEmptyState";
 import { InsightsSummary } from "@/components/dashboard/insights/InsightsSummary";
 import { PeriodSwitcher } from "@/components/dashboard/insights/PeriodSwitcher";
+import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
 import type {
   DishCandidate,
   InsightsDashboardData,
@@ -89,71 +90,95 @@ export function InsightsOverview({
   const currentRange = formatDateRange(period.currentFrom, period.currentTo);
 
   return (
-    <div className="w-full px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
-      <section className="max-w-[760px]">
-        <p className="mb-3 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
-          Статистика
-        </p>
-        <h1 className="m-0 font-[var(--f-display)] text-[44px] font-normal leading-[1.02] text-[var(--ink)] max-md:text-[34px]">
-          {periodTitle[period.key]}
-        </h1>
-        <p className="m-0 mt-4 text-[16px] leading-[1.6] text-[var(--ink-2)]">
-          {periodSubtitle(period.key, data.restaurant.name, currentRange)}
-        </p>
-      </section>
-
-      <PeriodSwitcher
-        currentKey={period.key}
-        currentFrom={period.currentFrom}
-        currentTo={period.currentTo}
-      />
-
-      <section className="mt-8 max-w-[760px]">
-        <InsightsAiSummary
-          period={period}
-          tier={data.restaurant.tier ?? "free"}
-          trialActive={trialActive}
-          initialSummary={initialAiSummary}
+    <div className={DASHBOARD_PAGE_FRAME_CLASS}>
+      {/* Tier 0 — header + period control as one toolbar row */}
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <section className="max-w-[720px]">
+          <p className="mb-3 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
+            Статистика
+          </p>
+          <h1 className="m-0 font-[var(--f-display)] text-[44px] font-normal leading-[1.02] text-[var(--ink)] max-md:text-[34px]">
+            {periodTitle[period.key]}
+          </h1>
+          <p className="m-0 mt-4 text-[16px] leading-[1.6] text-[var(--ink-2)]">
+            {periodSubtitle(period.key, data.restaurant.name, currentRange)}
+          </p>
+        </section>
+        <PeriodSwitcher
+          currentKey={period.key}
+          currentFrom={period.currentFrom}
+          currentTo={period.currentTo}
         />
-      </section>
+      </header>
 
       {emptyState ? (
-        <InsightsEmptyState kind={emptyState} />
+        <div className="mt-10">
+          <InsightsEmptyState kind={emptyState} />
+        </div>
       ) : (
         <>
-          {!data.hasPreviousComparison ? (
-            <section className="mt-8 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-5">
-              <p className="m-0 text-[15px] leading-[1.6] text-[var(--ink-2)]">
-                {comparisonHint(period.key)}
-              </p>
-            </section>
-          ) : null}
-
-          <div className="mt-8">
+          {/* Tier 1 — the headline number row (focal point) */}
+          <div className="mt-10">
             <InsightsSummary data={data} />
           </div>
+          {!data.hasPreviousComparison ? (
+            <p className="mt-3 text-[13px] leading-[1.5] text-[var(--ink-mute)]">
+              {comparisonHint(period.key)}
+            </p>
+          ) : null}
 
-          <div className="mt-5">
-            <InsightHighlights data={data} />
+          {/* Tier 1b — narrative directly under the numbers */}
+          <div className="mt-8">
+            <InsightsAiSummary
+              period={period}
+              tier={data.restaurant.tier ?? "free"}
+              trialActive={trialActive}
+              initialSummary={initialAiSummary}
+            />
           </div>
 
-          {trendCandidates.length > 0 ? (
-            <section className="mt-8 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
-              <p className="mb-2 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
-                Тренд по ястие
-              </p>
-              <h2 className="m-0 mb-5 font-[var(--f-display)] text-2xl font-normal text-[var(--ink)]">
-                Как се движи едно ястие
-              </h2>
-              <DishTrendChart candidates={trendCandidates} />
-            </section>
-          ) : null}
+          {/* Tier 2 — notable dishes (quiet supporting cards) */}
+          <section className="mt-12">
+            <p className="m-0 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--ink-mute)]">
+              Ястия за внимание
+            </p>
+            <div className="mt-4">
+              <InsightHighlights data={data} />
+            </div>
+          </section>
 
-          {data.dishRanking.length > 0 ? (
-            <section className="mt-8 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
-              <DishRankingTable rows={data.dishRanking} minSample={3} />
-            </section>
-          ) : null}
+          {/* Tier 3 — deep dive (grouped, predictable) */}
+          <section className="mt-12">
+            <p className="m-0 font-[var(--f-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--ink-mute)]">
+              Подробно
+            </p>
+            <div className="mt-4 space-y-8">
+              {trendCandidates.length > 0 ? (
+                <section className="rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
+                  <p className="mb-2 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
+                    Тренд по ястие
+                  </p>
+                  <h2 className="m-0 mb-5 font-[var(--f-display)] text-2xl font-normal text-[var(--ink)]">
+                    Как се движи едно ястие
+                  </h2>
+                  <DishTrendChart candidates={trendCandidates} />
+                </section>
+              ) : null}
+
+              {data.dishRanking.length > 0 ? (
+                <section className="rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-6">
+                  <DishRankingTable rows={data.dishRanking} minSample={3} />
+                </section>
+              ) : null}
+
+              {trendCandidates.length === 0 && data.dishRanking.length === 0 ? (
+                <p className="m-0 text-[14px] leading-[1.6] text-[var(--ink-mute)]">
+                  Няма достатъчно данни за подробен преглед. Ще се появи, когато
+                  ястията съберат повече оценки.
+                </p>
+              ) : null}
+            </div>
+          </section>
         </>
       )}
     </div>

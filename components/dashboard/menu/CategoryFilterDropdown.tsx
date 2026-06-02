@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Minus } from "lucide-react";
 
+import {
+  Menu,
+  MenuCheckboxItem,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import type { CategoryFilter } from "@/lib/menu/types";
 
 type Props = {
@@ -22,10 +28,6 @@ export function CategoryFilterDropdown({
   inactiveClass,
 }: Props) {
   const t = useTranslations("dashboard.menu");
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const masterRef = useRef<HTMLInputElement>(null);
 
   const allKeys = allCategories.map((c) => c.key);
   const effectiveSelected: string[] =
@@ -34,22 +36,6 @@ export function CategoryFilterDropdown({
     allKeys.length > 0 && effectiveSelected.length === allKeys.length;
   const noneSelected = effectiveSelected.length === 0;
   const partial = !allSelected && !noneSelected;
-
-  useEffect(() => {
-    if (masterRef.current) {
-      masterRef.current.indeterminate = partial;
-    }
-  }, [partial]);
-
-  function handleBlur(e: React.FocusEvent) {
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(e.relatedTarget as Node) &&
-      triggerRef.current !== e.relatedTarget
-    ) {
-      setOpen(false);
-    }
-  }
 
   function handleMasterToggle() {
     if (allSelected) {
@@ -124,73 +110,51 @@ export function CategoryFilterDropdown({
     !(selectedCategoryKeys.length === allKeys.length);
 
   return (
-    <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        onBlur={handleBlur}
-        className={isActive ? activeClass : inactiveClass}
+    <Menu modal={false}>
+      <MenuTrigger
+        render={
+          <button
+            type="button"
+            className={isActive ? activeClass : inactiveClass}
+          />
+        }
       >
         {triggerLabel}
         <ChevronDown size={14} />
-      </button>
-
-      {open ? (
-        <div
-          ref={menuRef}
-          role="menu"
-          aria-label={t("categoryFilterMenuLabel")}
-          tabIndex={-1}
-          onBlur={handleBlur}
-          className="absolute left-0 top-9 z-50 min-w-[260px] max-w-[320px] max-h-[360px] overflow-y-auto rounded-lg border border-[var(--rule)] bg-[var(--paper)] py-1 shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]"
-        >
-          {/* Master "Всички" row */}
-          <label className="flex cursor-pointer items-center gap-2.5 px-3 py-2 hover:bg-[var(--bg)] font-[var(--f-ui)] text-[13px] text-[var(--ink)]">
-            <input
-              ref={masterRef}
-              type="checkbox"
-              className="size-4 cursor-pointer accent-[var(--ink)]"
-              checked={allSelected}
-              onChange={handleMasterToggle}
-              onMouseDown={(e) => e.preventDefault()}
+      </MenuTrigger>
+      <MenuContent align="start" className="min-w-[260px] max-w-[320px]">
+        {/* Master "All" row — tri-state, stays open */}
+        <MenuItem closeOnClick={false} onClick={handleMasterToggle}>
+          <span className="grid size-4 shrink-0 place-items-center rounded-[4px] border border-[var(--rule)] bg-[var(--paper)]">
+            {allSelected ? (
+              <Check className="size-3 text-[var(--ink)]" strokeWidth={3} />
+            ) : partial ? (
+              <Minus className="size-3 text-[var(--ink)]" strokeWidth={3} />
+            ) : null}
+          </span>
+          <span className="flex-1">{t("chipAll")}</span>
+        </MenuItem>
+        {allCategories.map((cat) => (
+          <MenuCheckboxItem
+            key={cat.key || "__uncategorized"}
+            checked={effectiveSelected.includes(cat.key)}
+            onCheckedChange={() => handleCategoryToggle(cat.key)}
+            closeOnClick={false}
+          >
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: cat.color }}
+              aria-hidden
             />
-            <span className="flex-1">{t("chipAll")}</span>
-          </label>
-
-          {/* Per-category rows */}
-          {allCategories.map((cat) => {
-            const checked = effectiveSelected.includes(cat.key);
-            return (
-              <label
-                key={cat.key || "__uncategorized"}
-                className="flex cursor-pointer items-center gap-2.5 px-3 py-2 hover:bg-[var(--bg)] font-[var(--f-ui)] text-[13px] text-[var(--ink)]"
-              >
-                <input
-                  type="checkbox"
-                  className="size-4 cursor-pointer accent-[var(--ink)]"
-                  checked={checked}
-                  onChange={() => handleCategoryToggle(cat.key)}
-                  onMouseDown={(e) => e.preventDefault()}
-                />
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: cat.color }}
-                  aria-hidden
-                />
-                <span className="flex-1 truncate">
-                  {cat.displayName || t("uncategorized")}
-                </span>
-                <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
-                  {cat.count}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      ) : null}
-    </div>
+            <span className="flex-1 truncate">
+              {cat.displayName || t("uncategorized")}
+            </span>
+            <span className="font-[var(--f-mono)] text-[11px] text-[var(--ink-mute)]">
+              {cat.count}
+            </span>
+          </MenuCheckboxItem>
+        ))}
+      </MenuContent>
+    </Menu>
   );
 }

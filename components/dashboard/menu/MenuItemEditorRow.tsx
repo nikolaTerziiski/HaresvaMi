@@ -6,6 +6,15 @@ import { ArrowRightLeft, Tag, Trash2 } from "lucide-react";
 
 import { AliasManagerPopover } from "@/components/dashboard/menu/AliasManagerPopover";
 import { MenuItemReadRow } from "@/components/dashboard/menu/MenuItemReadRow";
+import {
+  Menu,
+  MenuContent,
+  MenuGroupLabel,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "@/components/ui/menu";
+import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { parsePrice } from "@/lib/menu/format";
 import { bgnToEur, formatEur } from "@/lib/menu/currency";
 import type { MenuItemField, MenuItemRow, RowError } from "@/lib/menu/types";
@@ -32,13 +41,10 @@ export function MenuItemEditorRow({
   onAddCategory,
 }: MenuItemEditorRowProps) {
   const t = useTranslations("dashboard.menu");
-  const [moveOpen, setMoveOpen] = useState(false);
-  const [aliasOpen, setAliasOpen] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const aliasPopoverRef = useRef<HTMLDivElement>(null);
-  const aliasBtnRef = useRef<HTMLButtonElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  // Controlled so AliasManagerPopover (which fetches on mount) only mounts when
+  // opened — never eagerly for every persisted row on menu load.
+  const [aliasOpen, setAliasOpen] = useState(false);
 
   // Autofocus the name input on first mount when requested.
   useEffect(() => {
@@ -69,29 +75,8 @@ export function MenuItemEditorRow({
     prevPriceError.current = rowErrors.price;
   }, [rowErrors.price]);
 
-  function handleMoveBlur(e: React.FocusEvent) {
-    if (
-      popoverRef.current &&
-      !popoverRef.current.contains(e.relatedTarget as Node) &&
-      buttonRef.current !== e.relatedTarget
-    ) {
-      setMoveOpen(false);
-    }
-  }
-
-  function handleAliasBlur(e: React.FocusEvent) {
-    if (
-      aliasPopoverRef.current &&
-      !aliasPopoverRef.current.contains(e.relatedTarget as Node) &&
-      aliasBtnRef.current !== e.relatedTarget
-    ) {
-      setAliasOpen(false);
-    }
-  }
-
   function handleSelectCategory(cat: string) {
     onItemChange(item.id, "category", cat);
-    setMoveOpen(false);
   }
 
   // Compute EUR equivalent live
@@ -177,93 +162,68 @@ export function MenuItemEditorRow({
       </div>
 
       {/* Alias manager */}
-      <div className="relative ml-auto sm:ml-0">
-        <button
-          ref={aliasBtnRef}
-          type="button"
-          disabled={!hasPersisted}
-          onClick={() => hasPersisted && setAliasOpen((o) => !o)}
-          onBlur={handleAliasBlur}
-          title={
-            hasPersisted ? t("aliasesButtonAria") : t("aliasesNotSavedHint")
-          }
-          aria-label={t("aliasesButtonAria")}
-          className={[
-            "grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100",
-            !hasPersisted ? "cursor-not-allowed disabled:opacity-50" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <Tag size={16} strokeWidth={1.5} />
-        </button>
-
-        {aliasOpen && hasPersisted ? (
-          <AliasManagerPopover
-            menuItemId={item.persistedId!}
-            menuItemName={item.name_bg}
-            onBlur={handleAliasBlur}
-            containerRef={aliasPopoverRef}
-          />
-        ) : null}
+      <div className="ml-auto sm:ml-0">
+        <Popover open={aliasOpen} onOpenChange={setAliasOpen}>
+          <PopoverTrigger
+            disabled={!hasPersisted}
+            render={
+              <button
+                type="button"
+                title={
+                  hasPersisted
+                    ? t("aliasesButtonAria")
+                    : t("aliasesNotSavedHint")
+                }
+                aria-label={t("aliasesButtonAria")}
+                className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] aria-expanded:opacity-100 disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+              />
+            }
+          >
+            <Tag size={16} strokeWidth={1.5} />
+          </PopoverTrigger>
+          {hasPersisted && aliasOpen ? (
+            <AliasManagerPopover
+              menuItemId={item.persistedId!}
+              menuItemName={item.name_bg}
+            />
+          ) : null}
+        </Popover>
       </div>
 
       {/* Move to category */}
-      <div className="relative">
-        <button
-          ref={buttonRef}
-          type="button"
-          onClick={() => setMoveOpen((o) => !o)}
-          onBlur={handleMoveBlur}
-          title={t("moveTo")}
-          aria-label={t("moveItemAria")}
-          className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
-        >
-          <ArrowRightLeft size={16} strokeWidth={1.5} />
-        </button>
-
-        {moveOpen ? (
-          <div
-            ref={popoverRef}
-            onBlur={handleMoveBlur}
-            tabIndex={-1}
-            className="absolute right-0 top-9 z-50 min-w-[160px] rounded-lg border border-[var(--rule)] bg-[var(--paper)] py-1 shadow-[0_8px_24px_-4px_rgba(26,21,18,0.15)]"
-          >
-            <p className="px-3 py-1.5 font-[var(--f-ui)] text-[11px] uppercase tracking-[0.12em] text-[var(--ink-mute)]">
-              {t("moveTo")}
-            </p>
-            {categories
-              .filter((cat) => cat !== item.category)
-              .map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSelectCategory(cat);
-                  }}
-                  className="flex w-full items-center px-3 py-2 text-left font-[var(--f-ui)] text-[13px] text-[var(--ink)] hover:bg-[var(--bg)]"
-                >
-                  {cat || t("uncategorized")}
-                </button>
-              ))}
-            {categories.filter((cat) => cat !== item.category).length > 0 ? (
-              <hr className="my-1 border-[var(--rule)]" />
-            ) : null}
+      <Menu modal={false}>
+        <MenuTrigger
+          render={
             <button
               type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                setMoveOpen(false);
-                onAddCategory();
-              }}
-              className="flex w-full items-center px-3 py-2 text-left font-[var(--f-ui)] text-[13px] text-[var(--accent)] hover:bg-[var(--bg)]"
-            >
-              {t("newCategory")}…
-            </button>
-          </div>
-        ) : null}
-      </div>
+              title={t("moveTo")}
+              aria-label={t("moveItemAria")}
+              className="grid size-8 place-items-center rounded text-[var(--ink-mute)] opacity-100 transition-all hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] aria-expanded:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+            />
+          }
+        >
+          <ArrowRightLeft size={16} strokeWidth={1.5} />
+        </MenuTrigger>
+        <MenuContent>
+          <MenuGroupLabel>{t("moveTo")}</MenuGroupLabel>
+          {categories
+            .filter((cat) => cat !== item.category)
+            .map((cat) => (
+              <MenuItem key={cat} onClick={() => handleSelectCategory(cat)}>
+                {cat || t("uncategorized")}
+              </MenuItem>
+            ))}
+          {categories.filter((cat) => cat !== item.category).length > 0 ? (
+            <MenuSeparator />
+          ) : null}
+          <MenuItem
+            className="text-[var(--accent)]"
+            onClick={() => onAddCategory()}
+          >
+            {t("newCategory")}…
+          </MenuItem>
+        </MenuContent>
+      </Menu>
 
       {/* Delete */}
       <button

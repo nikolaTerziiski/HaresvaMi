@@ -12,6 +12,7 @@ type MenuUnsavedBarProps = {
   validItemCount: number;
   hasValidationErrors: boolean;
   isSaving: boolean;
+  isFocusedCategory?: boolean;
   onUndo: () => void;
   onSave: () => void;
   onClearCategoryFilter: () => void;
@@ -23,6 +24,7 @@ export function MenuUnsavedBar({
   validItemCount,
   hasValidationErrors,
   isSaving,
+  isFocusedCategory = false,
   onUndo,
   onSave,
   onClearCategoryFilter,
@@ -83,7 +85,9 @@ export function MenuUnsavedBar({
           {isSaving ? (
             <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
           ) : null}
-          {isSaving ? t("saving") : t("saveMenu")}
+          {isSaving
+            ? t("saving")
+            : t(isFocusedCategory ? "saveChanges" : "saveMenu")}
         </Button>
       </div>
     </div>

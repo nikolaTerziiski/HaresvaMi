@@ -49,7 +49,7 @@ export function parsePrice(value: string): {
   const normalized = trimmed
     .replace(/\s/g, "")
     .replace(/лв\.?$/i, "")
-    .replace(",", ".");
+    .replace(/,/g, ".");
 
   if (!/^\d{1,6}(\.\d{1,2})?$/.test(normalized)) {
     return { value: null, valid: false };

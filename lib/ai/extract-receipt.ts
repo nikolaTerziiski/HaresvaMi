@@ -12,6 +12,7 @@ import {
   RETRY_RECEIPT_MODEL,
 } from "@/lib/ai/providers/gemini-receipt";
 import { insertAiUsageEvent, type TokenUsage } from "@/lib/ai/usage-logging";
+import { applyDeterministicAliasMatches } from "@/lib/receipt-aliases/match";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 
 const LOW_CONFIDENCE_THRESHOLD = 0.65;
@@ -229,10 +230,18 @@ export async function extractReceipt(
         : null,
   });
 
+  // Deterministic alias pass: a receipt line that exactly equals a known alias
+  // is forced to that dish, regardless of what the model returned.
+  const items = applyDeterministicAliasMatches(
+    result.extraction.items,
+    context.menu,
+    context.aliases,
+  );
+
   return {
     status: 200,
     body: {
-      items: result.extraction.items,
+      items,
       confidence: result.extraction.confidence,
       model: result.model,
       retryCount,

@@ -182,6 +182,8 @@ Manual saves require each dish row to have at least a name and BGN price, with
 Bulgarian validation messages that point to the exact category and dish. The
 review step shows categories as a two-column board on desktop; clicking a
 category opens a focused editor for that category instead of expanding long
-uneven cards in place. A "Готово засега" button lets the owner skip for now
-without friction and return later. The kiosk flow blocks entry if no menu items
-exist, pointing the owner back to `/dashboard/menu` to complete setup.
+uneven cards in place. Empty category starter rows keep the selected category
+visible, but they are not counted as ready products until a dish has a name and
+valid BGN price. A "Готово засега" button lets the owner skip for now without
+friction and return later. The kiosk flow blocks entry if no menu items exist,
+pointing the owner back to `/dashboard/menu` to complete setup.
