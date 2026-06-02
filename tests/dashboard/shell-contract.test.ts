@@ -20,6 +20,7 @@ const sidebarSource = source("components/dashboard/shell/Sidebar.tsx");
 const mobileTopbarSource = source(
   "components/dashboard/shell/MobileTopbar.tsx",
 );
+const bgMessagesSource = source("lib/i18n/messages/bg.json");
 const tierCardSource = source("components/dashboard/home/TierCard.tsx");
 const feedbackOverviewSource = source(
   "components/dashboard/feedback/FeedbackOverview.tsx",
@@ -57,6 +58,21 @@ test("dashboard topbar has no dead notification button or profile stub link", ()
   assert.doesNotMatch(topbarSource, /<Bell /);
   assert.doesNotMatch(topbarSource, /type="button"/);
   assert.doesNotMatch(topbarSource, /href="\/dashboard\/profile"/);
+});
+
+test("dashboard topbar is section-aware instead of greeting-led", () => {
+  assert.match(topbarSource, /"use client"/);
+  assert.match(topbarSource, /usePathname/);
+  assert.match(topbarSource, /getSectionKey\(pathname\)/);
+  assert.match(topbarSource, /sections\.\$\{sectionKey\}\.title/);
+  assert.match(topbarSource, /sections\.\$\{sectionKey\}\.hint/);
+  assert.doesNotMatch(topbarSource, /greetingKey/);
+  assert.doesNotMatch(topbarSource, /dashboard\.greetings/);
+});
+
+test("Bulgarian dashboard nav labels insights as statistics", () => {
+  assert.match(bgMessagesSource, /"insights": "Статистика"/);
+  assert.match(bgMessagesSource, /"title": "Статистика"/);
 });
 
 test("dashboard nav promotes insights above raw feedback", () => {

@@ -36,7 +36,7 @@ function formatDateRange(start: string, end: string) {
 const periodTitle: Record<InsightPeriodKey, string> = {
   week: "Какво да видиш тази седмица",
   month: "Какво да видиш този месец",
-  custom: "Прозрения за избрания период",
+  custom: "Статистика за избрания период",
 };
 
 function periodSubtitle(
@@ -92,7 +92,7 @@ export function InsightsOverview({
     <div className="w-full px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
       <section className="max-w-[760px]">
         <p className="mb-3 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
-          Прозрения
+          Статистика
         </p>
         <h1 className="m-0 font-[var(--f-display)] text-[44px] font-normal leading-[1.02] text-[var(--ink)] max-md:text-[34px]">
           {periodTitle[period.key]}

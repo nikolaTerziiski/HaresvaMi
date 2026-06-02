@@ -18,7 +18,7 @@ import {
 } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Прозрения | HaresvaMi",
+  title: "Статистика | HaresvaMi",
 };
 
 const VALID_PERIODS: InsightPeriodKey[] = ["week", "month", "custom"];

@@ -200,6 +200,10 @@ For owner setup tasks that have to be understood quickly, use a compact step str
 - Put the actual form/action card immediately below the steps.
 - Use owner-facing Bulgarian like `връзка за таблет`, `свързано устройство`, `отмени достъпа`, and `валидна до`.
 - Avoid implementation terms in UI copy. Owners should not see words like token, cookie, HttpOnly, or authorization.
+- Normal dashboard pages use the shared content frame: `max-w-6xl`, `px-10`,
+  `py-10`, `pb-20`, with `px-6` / `py-8` on mobile. Home, Tablet, Settings,
+  and first-time Menu should align to this width; only genuinely data-wide
+  views may opt out.
 
 ## Iconography
 
@@ -349,6 +353,20 @@ There is no `tailwind.config.ts` in the current app. Tailwind v4 reads project t
 
 The menu editor (`/dashboard/menu`) uses a hybrid card layout that differs from the generic dashboard card pattern. Read this section before touching any menu UI file.
 
+The first-time empty menu state has two entry cards. Manual entry always stays
+usable. The AI import card follows the server entitlement: clickable while the
+free import remains, then blurred with a centered lock overlay and a single
+terracotta `Абонирай се за Pro` CTA to plan settings.
+
+The manual-entry starter should use large selectable category tiles, not small
+chips. Use a 3-column grid on desktop/tablet and 2 columns on mobile, spanning
+the normal dashboard content width. Selected tiles turn `var(--good)` green with
+a visible check state. Custom categories are added through one dashed `+` tile
+at the end of the grid, then appear as selected category tiles beside the
+defaults. From the review step, owners may return to this starter to adjust
+categories; any category that already contains entered dish data stays selected
+so work is never silently discarded.
+
 ### Hybrid category card
 
 Each menu category renders as a full-page-width rounded card with:
@@ -379,6 +397,24 @@ After a successful save, `MenuSaveBanner` renders at the top of the viewport:
 - Text color: `text-[var(--paper)]`.
 - Animation: slides in via `banner-enter` keyframe, slides out via `banner-exit` keyframe (both defined in `app/globals.css`).
 - Auto-dismiss: the parent (`useMenuManagerFlow`) sets `show = false` after 5 seconds, triggering the exit animation.
+
+### Menu save validation dialog
+
+The bottom unsaved-changes bar stays visible only while there are unsaved menu
+edits. Its primary `Запази менюто` action stays clickable whenever the app is
+not actively saving. Validation problems are explained in a modal dialog, not by
+silently disabling the save button.
+
+- Dialog title: `Преди да запазим менюто`.
+- Messages are owner-facing and grouped by category, for example
+  `В категория „Основни“ не сте попълнили ястие.`
+- If a dish name is present but the price is empty, name the dish directly:
+  `В категория „Салати“ за ястие „Кебапче“ не сте попълнили цена.`
+- Empty category starter rows are described as empty categories, not as generic
+  missing-name fields.
+- Inline row errors remain visible after the dialog closes.
+- Destructive reset actions use `var(--bad)`; `Нова категория` stays a neutral
+  outline action in the same visual family as `Редактирай категориите`.
 
 ### Keyframes in `app/globals.css`
 

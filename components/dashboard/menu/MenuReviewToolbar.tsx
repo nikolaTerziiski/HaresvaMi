@@ -81,7 +81,7 @@ export function MenuReviewToolbar({
               type="button"
               onClick={onAddCategory}
               disabled={isSaving}
-              className="ml-auto inline-flex items-center gap-1.5 rounded border border-[var(--accent)] px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--accent)] transition-colors hover:bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] disabled:pointer-events-none disabled:opacity-50"
+              className="ml-auto inline-flex items-center gap-1.5 rounded border border-[var(--rule)] bg-[var(--paper)] px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)] disabled:pointer-events-none disabled:opacity-50"
             >
               <FolderPlus size={14} strokeWidth={1.5} />
               {t("newCategory")}
@@ -92,7 +92,7 @@ export function MenuReviewToolbar({
               type="button"
               onClick={onStartOverClick}
               disabled={isSaving}
-              className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--ink-mute)] transition-colors hover:bg-[var(--bg-2)] hover:text-[var(--ink-2)] disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-[var(--f-ui)] text-[13px] text-[var(--bad)] transition-colors hover:bg-[color-mix(in_oklab,var(--bad)_8%,transparent)] disabled:pointer-events-none disabled:opacity-50"
             >
               <RotateCcw size={14} strokeWidth={1.5} />
               {t("startOver")}

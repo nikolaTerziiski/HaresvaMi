@@ -12,7 +12,6 @@ type MenuUnsavedBarProps = {
   validItemCount: number;
   hasValidationErrors: boolean;
   isSaving: boolean;
-  canSave: boolean;
   onUndo: () => void;
   onSave: () => void;
   onClearCategoryFilter: () => void;
@@ -24,7 +23,6 @@ export function MenuUnsavedBar({
   validItemCount,
   hasValidationErrors,
   isSaving,
-  canSave,
   onUndo,
   onSave,
   onClearCategoryFilter,
@@ -79,7 +77,7 @@ export function MenuUnsavedBar({
         </button>
         <Button
           onClick={onSave}
-          disabled={!canSave}
+          disabled={isSaving}
           className="h-9 bg-[var(--accent)] px-4 text-[var(--paper)] hover:bg-[var(--plum)] disabled:bg-[color-mix(in_oklab,var(--paper)_20%,transparent)] disabled:text-[color-mix(in_oklab,var(--paper)_50%,transparent)]"
         >
           {isSaving ? (

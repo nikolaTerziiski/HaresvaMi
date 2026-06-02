@@ -6,6 +6,7 @@ import { LatestInsightBanner } from "@/components/dashboard/LatestInsightBanner"
 import { PushOptIn } from "@/components/dashboard/PushOptIn";
 import { TierCard } from "@/components/dashboard/home/TierCard";
 import { TutorialCard } from "@/components/dashboard/home/TutorialCard";
+import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
 import { PwaInstallPrompt } from "@/components/shared/PwaInstallPrompt";
 import { getDashboardHomeData } from "@/lib/dashboard/home";
 import {
@@ -28,7 +29,7 @@ export default async function DashboardHomePage() {
   const t = await getTranslations("dashboard.home");
 
   return (
-    <div className="mx-auto max-w-5xl px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
+    <div className={DASHBOARD_PAGE_FRAME_CLASS}>
       <LatestInsightBanner summary={latestInsight} />
       <section className="max-w-[520px]">
         <h2 className="m-0 mb-3 font-[var(--f-display)] text-[44px] font-normal leading-[1.02] tracking-[-0.02em] text-[var(--ink)] max-md:text-[34px]">

@@ -14,11 +14,26 @@ const menuEmptyStateSource = source(
   "components/dashboard/menu/MenuEmptyState.tsx",
 );
 const menuManagerSource = source("components/dashboard/menu/MenuManager.tsx");
+const menuPageSource = source(
+  "app/(dashboard)/dashboard/(shell)/menu/page.tsx",
+);
 const menuManualStarterSource = source(
   "components/dashboard/menu/MenuManualStarter.tsx",
 );
 const menuReviewPanelSource = source(
   "components/dashboard/menu/MenuReviewPanel.tsx",
+);
+const menuUnsavedBarSource = source(
+  "components/dashboard/menu/MenuUnsavedBar.tsx",
+);
+const menuValidationDialogSource = source(
+  "components/dashboard/menu/MenuValidationDialog.tsx",
+);
+const menuStartOverDialogSource = source(
+  "components/dashboard/menu/MenuStartOverDialog.tsx",
+);
+const menuReviewHeaderSource = source(
+  "components/dashboard/menu/MenuReviewHeader.tsx",
 );
 const menuToolbarSource = source(
   "components/dashboard/menu/MenuReviewToolbar.tsx",
@@ -48,6 +63,21 @@ test("first-time menu state offers AI upload, manual entry, and skip affordance"
   assert.match(menuEmptyPanelSource, /t\("skipForNow"\)/);
 });
 
+test("first-time menu AI path is entitlement-aware and links Pro lock to settings", () => {
+  assert.match(menuPageSource, /canExtractMenu\(restaurant\.id\)/);
+  assert.match(
+    menuPageSource,
+    /menuImportEntitlement=\{menuImportEntitlement\}/,
+  );
+  assert.match(menuManagerSource, /menuImportEntitlement: EntitlementResult/);
+  assert.match(menuEmptyStateSource, /menuImportEntitlement\.allowed/);
+  assert.match(menuEmptyStateSource, /aiLocked/);
+  assert.match(menuEmptyStateSource, /blur-\[2px\]/);
+  assert.match(menuEmptyStateSource, /<Lock /);
+  assert.match(menuEmptyStateSource, /href="\/dashboard\/settings"/);
+  assert.match(menuEmptyStateSource, /t\("aiLockedCta"\)/);
+});
+
 test("menu review surface has category tools and save feedback states", () => {
   assert.match(
     menuReviewPanelSource,
@@ -57,6 +87,28 @@ test("menu review surface has category tools and save feedback states", () => {
   assert.match(menuToolbarSource, /onAddCategory/);
   assert.match(menuToolbarSource, /selectedCategoryKeys/);
   assert.match(menuToolbarSource, /t\("searchPlaceholder"\)/);
+});
+
+test("menu review save remains clickable and opens a validation dialog", () => {
+  assert.match(menuReviewPanelSource, /MenuValidationDialog/);
+  assert.match(menuReviewPanelSource, /saveValidationMessages/);
+  assert.match(menuReviewPanelSource, /handleSaveRequest/);
+  assert.match(menuReviewPanelSource, /setValidationDialogOpen\(true\)/);
+  assert.match(menuUnsavedBarSource, /disabled=\{isSaving\}/);
+  assert.doesNotMatch(menuUnsavedBarSource, /disabled=\{!canSave\}/);
+  assert.doesNotMatch(menuUnsavedBarSource, /canSave/);
+  assert.match(menuValidationDialogSource, /validationDialog/);
+  assert.match(menuValidationDialogSource, /messages\.map/);
+  assert.match(menuValidationDialogSource, /t\("close"\)/);
+});
+
+test("menu review toolbar uses neutral new category and destructive start-over styling", () => {
+  assert.match(menuToolbarSource, /FolderPlus/);
+  assert.match(menuToolbarSource, /border-\[var\(--rule\)\]/);
+  assert.match(menuToolbarSource, /bg-\[var\(--paper\)\]/);
+  assert.match(menuToolbarSource, /RotateCcw/);
+  assert.match(menuToolbarSource, /text-\[var\(--bad\)\]/);
+  assert.match(menuStartOverDialogSource, /bg-\[var\(--bad\)\]/);
 });
 
 test("item rows expose accessible move controls and derived EUR pricing", () => {
@@ -70,19 +122,44 @@ test("item rows expose accessible move controls and derived EUR pricing", () => 
 test("MenuManager renders manual_starter branch wired to handleManualStart and handleManualBack", () => {
   assert.match(menuManagerSource, /mode === "manual_starter"/);
   assert.match(menuManagerSource, /<MenuManualStarter/);
+  assert.match(
+    menuManagerSource,
+    /initialCategories=\{flow\.manualStarterCategories\}/,
+  );
+  assert.match(
+    menuManagerSource,
+    /protectedCategories=\{flow\.protectedManualStarterCategories\}/,
+  );
   assert.match(menuManagerSource, /onContinue=\{flow\.handleManualStart\}/);
   assert.match(menuManagerSource, /onBack=\{flow\.handleManualBack\}/);
 });
 
-test("MenuManualStarter renders chip cloud, custom input, and continue/back controls", () => {
+test("MenuManualStarter renders category card grid, custom add card, and continue/back controls", () => {
   assert.match(menuManualStarterSource, /SUGGESTED_MANUAL_CATEGORIES/);
+  assert.match(menuManualStarterSource, /grid-cols-2/);
+  assert.match(menuManualStarterSource, /md:grid-cols-3/);
+  assert.match(menuManualStarterSource, /min-h-\[180px\]/);
+  assert.match(menuManualStarterSource, /bg-\[var\(--good\)\]/);
+  assert.match(menuManualStarterSource, /aria-pressed=\{isSelected\}/);
+  assert.match(menuManualStarterSource, /aria-disabled=\{isProtected\}/);
+  assert.match(menuManualStarterSource, /categoryColorFor/);
+  assert.match(menuManualStarterSource, /<Check /);
+  assert.match(menuManualStarterSource, /<Plus /);
   assert.match(menuManualStarterSource, /onContinue/);
   assert.match(menuManualStarterSource, /onBack/);
-  assert.match(menuManualStarterSource, /customInput/);
+  assert.match(menuManualStarterSource, /customCategories/);
   assert.match(
     menuManualStarterSource,
     /t\("manualStarter\.continue"\)|t\("continue"\)/,
   );
+});
+
+test("menu review exposes safe category revisit for manual-start drafts", () => {
+  assert.match(menuReviewPanelSource, /flow\.canEditManualCategories/);
+  assert.match(menuReviewPanelSource, /flow\.handleEditManualCategories/);
+  assert.match(menuReviewHeaderSource, /canEditCategories/);
+  assert.match(menuReviewHeaderSource, /onEditCategories/);
+  assert.match(menuReviewHeaderSource, /t\("editCategories"\)/);
 });
 
 test("MenuReviewToolbar renders the edit toggle button with Pencil/Check icon import", () => {

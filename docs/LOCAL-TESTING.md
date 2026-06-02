@@ -98,16 +98,33 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
 2. Open `http://localhost:3000/register` and create an owner account, or open `http://localhost:3000/login` if the owner already exists.
 3. Complete the restaurant setup form. After successful creation the app **auto-redirects to `/dashboard/menu`** — verify this redirect happens without a manual navigation step.
 4. On the empty-state menu page:
-   - Verify the first-time empty state shows the eyebrow, title, subtitle, and two entry paths (AI upload and manual entry).
+   - Verify the first-time empty state says registration is ready and asks you to add the menu before continuing.
+   - Verify the page shows two entry paths: one AI menu import and manual entry.
+   - For a Free restaurant with no menu import usage this period, verify the AI card is clickable.
+   - After the free AI import has been used, verify the AI card is blurred/locked and the `Абонирай се за Pro` button opens `/dashboard/settings`.
    - Click **"Готово засега"** and verify it dismisses the empty state without error and that the page remains navigable.
    - Return to the menu page and use **"Въведи ръчно"** to add at least the required menu items.
+   - On the manual starter, verify default categories are large selectable tiles: 3 per row on desktop/tablet, 2 per row on mobile, selected tiles turn green with a check state, and the final dashed `+` tile can add a custom category.
+   - Continue to the review step, enter text in one dish row, click **"Редактирай категориите"**, and verify the category with entered dish data stays selected while empty categories can be removed safely.
 5. Test new category creation: click **"+ Нова категория"** in the toolbar and verify a new category card appears with an editable name field.
 6. Test category rename: click an existing category name inline and rename it; verify the change persists after save.
 7. Test item move-to-category: use the per-row "move to category" popover to reassign an item; verify it appears under the new category without delete-and-re-add.
 8. Click **Запази менюто** and verify:
+   - If a selected category still has only its empty draft row, the save button
+     stays clickable and opens the **Преди да запазим менюто** dialog with a
+     category-specific message.
+   - If a product has no name, an invalid price, or duplicates another product,
+     the dialog lists the problem and the inline row validation remains visible
+     after closing it.
+   - If a product has a name but no price, the dialog names the category and
+     dish, for example `В категория „Салати“ за ястие „Кебапче“ не сте
+попълнили цена.`
    - The **top success banner** ("Успешно запазено") slides in at the top of the page.
    - The banner auto-dismisses after ~5 seconds.
    - The **bottom unsaved-changes bar** clears once the new save baseline is set.
+   - In the review toolbar, **Нова категория** is a neutral outline action and
+     **Започни отначало** is visibly red/destructive. The start-over confirmation
+     CTA is also destructive.
 9. Open Dashboard -> `Таблет`.
 10. Create a tablet session:
     - check that the top of the page shows the setup steps: name device, create link, open on tablet, connected

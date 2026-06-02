@@ -120,6 +120,36 @@
       "role": {
         "owner": "Owner"
       },
+      "sections": {
+        "home": {
+          "title": "Home",
+          "hint": "The first steps before the tablet starts collecting feedback."
+        },
+        "menu": {
+          "title": "Menu",
+          "hint": "The dishes customers will rate after payment."
+        },
+        "menuImport": {
+          "title": "AI menu import",
+          "hint": "Upload the menu, review the suggestions, and save only what is right."
+        },
+        "insights": {
+          "title": "Insights",
+          "hint": "Which dishes are moving up, down, or waiting for more feedback."
+        },
+        "feedback": {
+          "title": "Feedback",
+          "hint": "The latest tablet ratings, dish by dish."
+        },
+        "tablet": {
+          "title": "Tablet",
+          "hint": "Pair the device that will sit at checkout."
+        },
+        "settings": {
+          "title": "Settings",
+          "hint": "Plan, limits, and restaurant settings."
+        }
+      },
       "notifications": "Notifications",
       "openMenu": "Menu",
       "closeMenu": "Close",
@@ -128,11 +158,6 @@
         "en": "EN"
       },
       "logout": "Sign out"
-    },
-    "greetings": {
-      "morning": "Good morning",
-      "afternoon": "Good afternoon",
-      "evening": "Good evening"
     },
     "home": {
       "welcome": {
@@ -329,6 +354,7 @@
       "moveItemAria": "Move item to another category",
       "newCategory": "New category",
       "startOver": "Start over",
+      "editCategories": "Edit categories",
       "startOverConfirmTitle": "Start the menu from scratch?",
       "startOverConfirmDesc": "All current items will be cleared from the review. Nothing is saved to your menu until you press Save.",
       "startOverConfirmCta": "Yes, start over",
@@ -352,8 +378,12 @@
         "remove": "Remove"
       },
       "firstTimeEyebrow": "Step 02 · Menu",
-      "firstTimeTitle": "Now let's add your menu.",
-      "firstTimeSubtitle": "This is the step before customers start rating your dishes. Upload a photo or enter items by hand — whichever feels easier.",
+      "firstTimeTitle": "Registration is ready. Now we add the menu.",
+      "firstTimeSubtitle": "To move forward, we need to add the dishes customers will rate. You can start with one AI import or enter them by hand.",
+      "aiLockedEyebrow": "Pro feature",
+      "aiLockedTitle": "AI import is locked",
+      "aiLockedBody": "One AI import is included on the free plan. More imports are in Pro.",
+      "aiLockedCta": "Subscribe to Pro",
       "skipForNow": "Done for now — I'll do this later",
       "descriptionPlaceholder": "Short description — fresh tomatoes, white cheese",
       "categoryFilterMenuLabel": "Filter by category",
@@ -378,6 +408,18 @@
       "showAll": "Show all",
       "expandCategoryAria": "Toggle category {name}",
       "itemCountPlural": "{count, plural, one {# dish} other {# dishes}}",
+      "validationDialog": {
+        "title": "Before we save the menu",
+        "body": "Fix these things and try again.",
+        "close": "Got it",
+        "uncategorizedCategory": "uncategorised",
+        "needOneItem": "Add at least one item to save the menu.",
+        "emptyCategory": "Category “{category}” does not have a dish filled in.",
+        "missingName": "Category “{category}” has an item without a name.",
+        "missingPrice": "Category “{category}” has “{dish}” without a price.",
+        "invalidPrice": "Category “{category}” has an item with an invalid price.",
+        "duplicateProducts": "There are duplicate items: {names}."
+      },
       "manualStarter": {
         "eyebrow": "Step 02 · Menu",
         "title": "What do we start with?",
@@ -388,6 +430,7 @@
         "continue": "Continue",
         "back": "Back",
         "selectedCount": "{count} selected",
+        "protectedLabel": "has dishes",
         "minOne": "Pick at least one category."
       },
       "errors": {
@@ -395,6 +438,7 @@
         "fileTooLarge": "The file is too large. Upload an image or PDF up to 10 MB.",
         "emptyExtraction": "We could not find menu items in this file. Try a clearer photo or enter them manually.",
         "nameRequired": "Add an item name.",
+        "priceRequired": "Add an item price.",
         "invalidPrice": "Price must be a number, for example 8.90.",
         "duplicateName": "This item is already added.",
         "fixBeforeSave": "Fix the highlighted fields before saving.",
@@ -447,7 +491,7 @@
           "eyebrow": "Limit",
           "title": "This month's limit has been reached",
           "body": "Used {used} of {limit} imports this month. The Pro plan gets 10/month.",
-          "cta": "Upgrade to Pro",
+          "cta": "Subscribe to Pro",
           "backToMenu": "← back to menu"
         },
         "review": {

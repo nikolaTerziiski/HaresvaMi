@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { BillingActions } from "@/components/dashboard/billing/BillingActions";
+import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
 import { ReputationSettings } from "@/components/dashboard/settings/ReputationSettings";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { canScanReceipt, canUseReputation } from "@/lib/billing/entitlements";
@@ -172,7 +173,7 @@ export default async function SettingsBillingPage() {
     isPro && googleReviewUrl ? await renderReviewQrSvg(googleReviewUrl) : null;
 
   return (
-    <div className="mx-auto max-w-5xl px-10 py-10 pb-20 max-md:px-6 max-md:py-8">
+    <div className={DASHBOARD_PAGE_FRAME_CLASS}>
       <section className="max-w-[620px]">
         <p className="m-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
           {t("eyebrow")}

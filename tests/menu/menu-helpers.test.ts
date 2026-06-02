@@ -17,6 +17,7 @@ import { validateRows } from "@/lib/menu/validation";
 
 const validationMessages = {
   nameRequired: "Name is required",
+  priceRequired: "Price is required",
   invalidPrice: "Invalid price",
   duplicateName: "Duplicate name",
 };
@@ -102,6 +103,17 @@ test("menu row validation blocks invalid edited rows", () => {
   assert.equal(result.hasErrors, true);
   assert.equal(result.rowErrors["missing-name"].name_bg, "Name is required");
   assert.equal(result.rowErrors["bad-price"].price, "Invalid price");
+});
+
+test("menu row validation requires price for named dishes", () => {
+  const result = validateRows(
+    [row({ id: "missing-price", category: "Salads", name_bg: "Kebapche" })],
+    validationMessages,
+  );
+
+  assert.equal(result.hasErrors, true);
+  assert.equal(result.rowErrors["missing-price"].price, "Price is required");
+  assert.deepEqual(result.validItems, []);
 });
 
 test("category filters count non-empty rows and merge category keys", () => {

@@ -22,7 +22,6 @@ export type DashboardHomeData = {
   user: User;
   restaurant: OwnerRestaurant;
   ownerFirstName: string;
-  greetingKey: "morning" | "afternoon" | "evening";
   menuCount: number;
   feedbackCount: number;
   tabletPaired: boolean;
@@ -46,20 +45,6 @@ function currentPeriod(): string {
   const year = now.getUTCFullYear();
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
-}
-
-function greetingKey(): "morning" | "afternoon" | "evening" {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: "Europe/Sofia",
-      hour: "numeric",
-      hour12: false,
-    }).format(new Date()),
-  );
-
-  if (hour < 11) return "morning";
-  if (hour < 18) return "afternoon";
-  return "evening";
 }
 
 function deriveFirstName(user: User): string {
@@ -178,7 +163,6 @@ export const getDashboardHomeData = cache(
       user,
       restaurant,
       ownerFirstName: deriveFirstName(user),
-      greetingKey: greetingKey(),
       menuCount,
       feedbackCount,
       tabletPaired,

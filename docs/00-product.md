@@ -72,6 +72,7 @@ Owner sees in dashboard:
 - 1 location
 - Up to 50 completed feedback sessions per month
 - Up to 5 successful AI receipt scans per month
+- 1 AI menu import as an activation hook
 - Manual item selection remains available when AI scans are exhausted
 - Basic dashboard
 - Bulgarian only
@@ -173,7 +174,12 @@ The menu is the first thing an owner configures after creating their restaurant.
 
 The empty-state menu page has two paths:
 
-- **AI upload** — owner photographs or uploads their existing printed menu; Gemini extracts items.
+- **AI upload** — owner photographs or uploads their existing printed menu; Gemini extracts items. Free restaurants get 1 AI menu import as an activation hook, then the card is visually locked with a Pro subscription CTA.
 - **Manual entry** — owner types items one by one.
 
-Both paths are available from the same empty state. A "Готово засега" button lets the owner skip for now without friction and return later. The kiosk flow blocks entry if no menu items exist, pointing the owner back to `/dashboard/menu` to complete setup.
+Both paths live in the same empty state. Manual entry always remains available.
+Manual saves require each dish row to have at least a name and BGN price, with
+Bulgarian validation messages that point to the exact category and dish. A
+"Готово засега" button lets the owner skip for now without friction and return
+later. The kiosk flow blocks entry if no menu items exist, pointing the owner
+back to `/dashboard/menu` to complete setup.

@@ -9,6 +9,7 @@ The v1 source of truth is `lib/billing/plans.ts`. Every tier has explicit numeri
 - 1 restaurant
 - 50 completed feedback sessions per calendar month (resets on the 1st)
 - 5 successful AI receipt scans per calendar month (resets on the 1st)
+- 1 AI menu import per calendar month (activation hook)
 - Manual item selection remains available even when AI scans are exhausted
 - Basic dashboard (overall ratings, last 30 days)
 - Bulgarian customer interface only
@@ -531,10 +532,24 @@ paste an arbitrary off-platform link into a column the kiosk/print path trusts.
 
 ## AI menu import
 
-Pro restaurants (and trial/override Pro) can build their menu by uploading photos or
-PDFs of an existing printed menu instead of typing every dish. The flow lives under
-`/dashboard/menu/import-ai` and is gated by `canExtractMenu()` (override-aware; see
-rule 7) with `MenuTierLockedCard` shown to ineligible tiers.
+Restaurants can build their menu by uploading photos or PDFs of an existing
+printed menu instead of typing every dish. Free restaurants get 1 AI menu import
+for the current usage period as an activation hook. Pro restaurants (and
+trial/override Pro) get 10 imports/month. The flow lives under
+`/dashboard/menu/import-ai` and is gated by `canExtractMenu()` (override-aware;
+see rule 7) with `MenuTierLockedCard` shown after the available import limit is
+used.
+
+The first-time menu empty state mirrors the server entitlement. If the free AI
+import remains, the AI card links to `/dashboard/menu/import-ai`. After the free
+import is used, the card is blurred and locked with an "Абонирай се за Pro" CTA
+to `/dashboard/settings`. Manual entry stays available regardless of AI import
+status.
+
+Manual menu saves validate before writing to `menu_items`. A category-only draft
+row is reported as an empty category. A row with a dish name must also include a
+BGN price; otherwise the save is blocked and the owner sees a category + dish
+message such as `В категория „Салати“ за ястие „Кебапче“ не сте попълнили цена.`
 
 ### Flow
 

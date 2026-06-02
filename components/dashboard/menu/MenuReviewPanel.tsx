@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { MenuGroupedItems } from "@/components/dashboard/menu/MenuGroupedItems";
 import { MenuReviewHeader } from "@/components/dashboard/menu/MenuReviewHeader";
@@ -8,6 +8,7 @@ import { MenuReviewToolbar } from "@/components/dashboard/menu/MenuReviewToolbar
 import { MenuSaveBanner } from "@/components/dashboard/menu/MenuSaveBanner";
 import { MenuStartOverDialog } from "@/components/dashboard/menu/MenuStartOverDialog";
 import { MenuUnsavedBar } from "@/components/dashboard/menu/MenuUnsavedBar";
+import { MenuValidationDialog } from "@/components/dashboard/menu/MenuValidationDialog";
 import type { MenuManagerFlow } from "@/hooks/useMenuManagerFlow";
 
 type MenuReviewPanelProps = {
@@ -15,6 +16,8 @@ type MenuReviewPanelProps = {
 };
 
 export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
+
   // After the first render of review mode, clear the focus hint so it
   // doesn't re-trigger on subsequent renders.
   useEffect(() => {
@@ -24,6 +27,15 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function handleSaveRequest() {
+    if (flow.saveValidationMessages.length > 0) {
+      setValidationDialogOpen(true);
+      return;
+    }
+
+    flow.handleSave();
+  }
+
   return (
     <div className="relative w-full pb-[120px]">
       <MenuSaveBanner show={flow.showSaveBanner} />
@@ -32,6 +44,8 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
         <MenuReviewHeader
           totalItems={flow.totalItems}
           categoryCount={flow.allCategories.length}
+          canEditCategories={flow.canEditManualCategories}
+          onEditCategories={flow.handleEditManualCategories}
         />
 
         {flow.error ? (
@@ -77,9 +91,8 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
         validItemCount={flow.validation.validItems.length}
         hasValidationErrors={flow.validation.hasErrors}
         isSaving={flow.isSaving}
-        canSave={flow.canSave}
         onUndo={flow.handleUndo}
-        onSave={flow.handleSave}
+        onSave={handleSaveRequest}
         onClearCategoryFilter={flow.clearCategoryFilter}
       />
 
@@ -87,6 +100,12 @@ export function MenuReviewPanel({ flow }: MenuReviewPanelProps) {
         open={flow.confirmStartOverOpen}
         onOpenChange={flow.setConfirmStartOverOpen}
         onConfirm={flow.handleStartOver}
+      />
+
+      <MenuValidationDialog
+        open={validationDialogOpen}
+        messages={flow.saveValidationMessages}
+        onOpenChange={setValidationDialogOpen}
       />
     </div>
   );

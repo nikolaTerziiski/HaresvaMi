@@ -3,6 +3,7 @@ import type { MenuItemRow, RowError, ValidationResult } from "@/lib/menu/types";
 
 export type MenuValidationMessages = {
   nameRequired: string;
+  priceRequired: string;
   invalidPrice: string;
   duplicateName: string;
 };
@@ -22,6 +23,7 @@ export function validateRows(
 
     const name = normalizeText(row.name_bg);
     const category = normalizeText(row.category);
+    const price = normalizeText(row.price);
     const description = normalizeText(row.description_bg);
     const parsedPrice = parsePrice(row.price);
     const errors: RowError = {};
@@ -30,7 +32,9 @@ export function validateRows(
       errors.name_bg = messages.nameRequired;
     }
 
-    if (!parsedPrice.valid) {
+    if (name && !price) {
+      errors.price = messages.priceRequired;
+    } else if (!parsedPrice.valid) {
       errors.price = messages.invalidPrice;
     }
 

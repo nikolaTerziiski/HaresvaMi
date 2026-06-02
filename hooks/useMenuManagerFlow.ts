@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -10,12 +10,12 @@ import {
   categoryKey,
   createEmptyRow,
   createRowsFromInitialItems,
-  getDirtyRows,
-  isBlankNewRow,
-  rowsDifferFromInitial,
 } from "@/lib/menu/format";
-import { buildCategoryFilters, buildGroupedItems } from "@/lib/menu/grouping";
+import { reconcileManualCategoryRows } from "@/lib/menu/manual-categories";
+import * as menuSaveState from "@/lib/menu/save-state";
 import { useMenuViewState } from "@/hooks/useMenuViewState";
+import { useMenuSaveBanner } from "@/hooks/useMenuSaveBanner";
+import { useMenuReviewDerivedState } from "@/hooks/useMenuReviewDerivedState";
 import type {
   InitialMenuItem,
   MenuItemField,
@@ -50,8 +50,8 @@ export function useMenuManagerFlow({
   const [selectedCategoryKeys, setSelectedCategoryKeys] = useState<
     string[] | null
   >(null);
-  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
-  const [showSaveBanner, setShowSaveBanner] = useState(false);
+  const [manualDraftActive, setManualDraftActive] = useState(false);
+  const { setLastSavedAt, showSaveBanner } = useMenuSaveBanner();
 
   const {
     editMode,
@@ -63,91 +63,50 @@ export function useMenuManagerFlow({
     renameCategoryKey,
   } = useMenuViewState(initialItems.length);
 
-  // Mutable baseline used for hasUnsavedChanges comparison.
   const baselineRef = useRef<InitialMenuItem[]>(initialItems);
-
-  // Id of the first new row to autofocus after handleManualStart.
   const focusItemIdRef = useRef<string | null>(null);
 
-  const validationMessages = useMemo(
-    () => ({
-      nameRequired: t("errors.nameRequired"),
-      invalidPrice: t("errors.invalidPrice"),
-      duplicateName: t("errors.duplicateName"),
-    }),
-    [t],
-  );
-  const validation = useMemo(
-    () => validateRows(items, validationMessages),
-    [items, validationMessages],
-  );
-  const hasUnsavedChanges = useMemo(
-    () =>
-      removedExistingIds.length > 0 ||
-      rowsDifferFromInitial(items, baselineRef.current),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, removedExistingIds],
-  );
-  const totalItems = useMemo(
-    () => items.filter((item) => !isBlankNewRow(item)).length,
-    [items],
-  );
-  const allCategories = useMemo(() => buildCategoryFilters(items), [items]);
-  const groupedItems = useMemo(
-    () =>
-      buildGroupedItems({
-        items,
-        searchQuery,
-        selectedCategoryKeys,
-      }),
-    [items, searchQuery, selectedCategoryKeys],
-  );
-  const isFiltering =
-    searchQuery.trim().length > 0 || selectedCategoryKeys !== null;
-
-  // True when there are unsaved changes but all dirty rows are in hidden categories.
-  const hasOnlyHiddenChanges = useMemo(() => {
-    if (!hasUnsavedChanges) return false;
-    if (selectedCategoryKeys === null) return false;
-    if (removedExistingIds.length > 0) return false;
-    const dirtyRows = getDirtyRows(items, baselineRef.current);
-    if (dirtyRows.length === 0) return false;
-    return dirtyRows.every(
-      (row) => !selectedCategoryKeys.includes(categoryKey(row.category)),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasUnsavedChanges, items, selectedCategoryKeys, removedExistingIds]);
-
-  const canSave =
-    !isSaving &&
-    !validation.hasErrors &&
-    validation.validItems.length >= MIN_MENU_ITEMS_FOR_NEXT_STEP;
-
-  function clearCategoryFilter() {
-    setSelectedCategoryKeys(null);
-  }
-
-  function handleManualEntry() {
-    setMode("manual_starter");
-  }
+  const {
+    validationMessages,
+    validation,
+    saveValidationMessages,
+    hasUnsavedChanges,
+    hasOnlyHiddenChanges,
+    totalItems,
+    allCategories,
+    manualStarterCategories,
+    protectedManualStarterCategories,
+    groupedItems,
+    isFiltering,
+  } = useMenuReviewDerivedState({
+    items,
+    baselineItems: baselineRef.current,
+    removedExistingIds,
+    selectedCategoryKeys,
+    searchQuery,
+  });
 
   function handleManualStart(categories: string[]) {
-    const newRows = categories
-      .map((cat) => cat.trim())
-      .filter(Boolean)
-      .map((cat) => createEmptyRow(cat));
+    const result = reconcileManualCategoryRows(items, categories);
 
-    if (newRows.length === 0) return;
+    if (result.rows.length === 0) return;
 
-    focusItemIdRef.current = newRows[0].id;
-    setItems(newRows);
+    focusItemIdRef.current =
+      result.addedRowIds[0] ?? (items.length === 0 ? result.rows[0].id : null);
+    setItems(result.rows);
+    setManualDraftActive(true);
     setEditMode(true);
-    expandAllFromItems(newRows);
+    expandAllFromItems(result.rows);
     setMode("review");
   }
 
   function handleManualBack() {
-    setMode("empty");
+    setMode(manualDraftActive && items.length > 0 ? "review" : "empty");
+  }
+
+  function handleEditManualCategories() {
+    setSelectedCategoryKeys(null);
+    setMode("manual_starter");
   }
 
   function handleStartOver() {
@@ -162,6 +121,7 @@ export function useMenuManagerFlow({
     setError(null);
     setSearchQuery("");
     setSelectedCategoryKeys(null);
+    setManualDraftActive(false);
     setMode("empty");
     setConfirmStartOverOpen(false);
   }
@@ -169,6 +129,7 @@ export function useMenuManagerFlow({
   function handleUndo() {
     setItems(createRowsFromInitialItems(baselineRef.current));
     setRemovedExistingIds([]);
+    if (baselineRef.current.length === 0) setManualDraftActive(false);
     setError(null);
   }
 
@@ -232,16 +193,6 @@ export function useMenuManagerFlow({
     );
   }
 
-  useEffect(() => {
-    if (!lastSavedAt) return;
-    setShowSaveBanner(true);
-    const timer = setTimeout(() => {
-      setShowSaveBanner(false);
-      setLastSavedAt(null);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [lastSavedAt]);
-
   async function handleSave() {
     const currentValidation = validateRows(items, validationMessages);
 
@@ -267,35 +218,18 @@ export function useMenuManagerFlow({
         removedExistingIds,
       });
 
-      const newBaseline: InitialMenuItem[] = items
-        .filter((row) => !isBlankNewRow(row))
-        .map((row, index) => ({
-          id: row.persistedId ?? row.id,
-          name_bg: row.name_bg,
-          category: row.category || null,
-          price:
-            currentValidation.validItems.find(
-              (v) => v.persistedId === row.persistedId,
-            )?.price ?? null,
-          description_bg: row.description_bg || null,
-          sort_order: index,
-        }));
-
-      baselineRef.current = newBaseline;
-
-      setItems((currentItems) =>
-        currentItems.map((row) => ({
-          ...row,
-          persistedId: row.persistedId ?? row.id,
-        })),
+      baselineRef.current = menuSaveState.buildSavedMenuBaseline(
+        items,
+        currentValidation.validItems,
       );
+
+      setItems(menuSaveState.markRowsPersisted);
       setRemovedExistingIds([]);
       setLastSavedAt(new Date());
       setIsSaving(false);
       setSelectedCategoryKeys(null);
+      setManualDraftActive(false);
       setEditMode(false);
-      // expandedCategories preserved as-is
-
       router.refresh();
     } catch (saveError) {
       console.error(saveError);
@@ -308,13 +242,15 @@ export function useMenuManagerFlow({
     mode,
     error,
     isSaving,
-    canSave,
+    saveValidationMessages,
     hasUnsavedChanges,
     hasOnlyHiddenChanges,
-    lastSavedAt,
     showSaveBanner,
     totalItems,
     allCategories,
+    manualStarterCategories,
+    protectedManualStarterCategories,
+    canEditManualCategories: manualDraftActive && mode === "review",
     groupedItems,
     isFiltering,
     searchQuery,
@@ -331,9 +267,10 @@ export function useMenuManagerFlow({
     clearFocusItemId: () => {
       focusItemIdRef.current = null;
     },
-    handleManualEntry,
+    handleManualEntry: () => setMode("manual_starter"),
     handleManualStart,
     handleManualBack,
+    handleEditManualCategories,
     handleStartOver,
     handleUndo,
     handleItemChange,
@@ -344,7 +281,7 @@ export function useMenuManagerFlow({
     handleSave,
     toggleCategory,
     setCategoryExpanded,
-    clearCategoryFilter,
+    clearCategoryFilter: () => setSelectedCategoryKeys(null),
   };
 }
 

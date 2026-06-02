@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { PwaInstallPrompt } from "@/components/shared/PwaInstallPrompt";
+import { DASHBOARD_PAGE_FRAME_CLASS } from "@/components/dashboard/shell/page-frame";
 import { TabletSetupActions } from "@/components/dashboard/tablet/TabletSetupActions";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { listKioskSessions } from "@/lib/kiosk/session-token";
@@ -45,7 +46,7 @@ export default async function TabletPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-10 py-8 pb-20 max-md:px-6 max-md:py-7">
+    <div className={DASHBOARD_PAGE_FRAME_CLASS}>
       <section className="max-w-[680px]">
         <p className="mb-3 mt-0 font-[var(--f-mono)] text-[10px] uppercase tracking-[0.1em] text-[var(--accent)]">
           Режим таблет

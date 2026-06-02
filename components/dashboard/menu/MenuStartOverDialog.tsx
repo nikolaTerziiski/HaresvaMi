@@ -39,7 +39,7 @@ export function MenuStartOverDialog({
           </Button>
           <Button
             onClick={onConfirm}
-            className="bg-[var(--accent)] text-[var(--paper)] hover:bg-[var(--plum)]"
+            className="bg-[var(--bad)] text-[var(--paper)] hover:bg-[color-mix(in_oklab,var(--bad)_85%,var(--ink))]"
           >
             {t("startOverConfirmCta")}
           </Button>

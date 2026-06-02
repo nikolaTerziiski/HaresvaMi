@@ -206,14 +206,17 @@
   background: var(--rule);
   transition: background 0.2s;
 }
-.strengthWeak {
+.pwMeter i.strengthWeak {
   background: var(--bad);
+  background-color: var(--bad) !important;
 }
-.strengthFair {
+.pwMeter i.strengthFair {
   background: var(--accent-2);
+  background-color: var(--accent-2) !important;
 }
-.strengthStrong {
+.pwMeter i.strengthStrong {
   background: var(--good);
+  background-color: var(--good) !important;
 }
 .pwLabel {
   font-family: var(--f-mono);

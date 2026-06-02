@@ -26,8 +26,8 @@ export default async function DashboardShellLayout({
           tier={data.tier}
         />
         <Topbar
+          restaurantName={data.restaurant.name}
           ownerFirstName={data.ownerFirstName}
-          greetingKey={data.greetingKey}
         />
         <main className="flex-1">{children}</main>
       </div>
