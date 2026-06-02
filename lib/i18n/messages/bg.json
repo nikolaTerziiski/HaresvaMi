@@ -408,6 +408,13 @@
       "showAll": "Покажи всички",
       "expandCategoryAria": "Покажи/скрий категория {name}",
       "itemCountPlural": "{count, plural, one {# ястие} other {# ястия}}",
+      "categoryBoard": {
+        "open": "Отвори категорията",
+        "back": "Всички категории",
+        "emptyPreview": "Още няма въведени ястия.",
+        "moreItems": "+{count} още",
+        "problems": "{count, plural, one {# проблем} other {# проблема}}"
+      },
       "validationDialog": {
         "title": "Преди да запазим менюто",
         "body": "Поправи тези неща и пробвай пак.",

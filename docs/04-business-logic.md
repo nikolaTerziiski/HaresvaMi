@@ -550,6 +550,8 @@ Manual menu saves validate before writing to `menu_items`. A category-only draft
 row is reported as an empty category. A row with a dish name must also include a
 BGN price; otherwise the save is blocked and the owner sees a category + dish
 message such as `В категория „Салати“ за ястие „Кебапче“ не сте попълнили цена.`
+The review UI groups categories as a board and opens one focused category editor
+at a time so categories with many dishes do not stretch a two-column layout.
 
 ### Flow
 

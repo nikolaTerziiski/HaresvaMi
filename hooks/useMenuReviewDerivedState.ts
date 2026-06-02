@@ -101,6 +101,16 @@ export function useMenuReviewDerivedState({
     [items],
   );
 
+  const allGroupedItems = useMemo(
+    () =>
+      buildGroupedItems({
+        items,
+        searchQuery: "",
+        selectedCategoryKeys: null,
+      }),
+    [items],
+  );
+
   const groupedItems = useMemo(
     () =>
       buildGroupedItems({
@@ -143,6 +153,7 @@ export function useMenuReviewDerivedState({
     allCategories,
     manualStarterCategories,
     protectedManualStarterCategories,
+    allGroupedItems,
     groupedItems,
     isFiltering,
   };

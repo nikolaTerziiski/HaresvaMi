@@ -19,6 +19,7 @@ type MenuGroupCardProps = {
   focusItemId?: string;
   readOnly?: boolean;
   expanded?: boolean;
+  showCollapseToggle?: boolean;
   onToggleExpand?: () => void;
   onAddItemInCategory: (categoryName: string) => void;
   onAddCategory: () => void;
@@ -34,6 +35,7 @@ export function MenuGroupCard({
   focusItemId,
   readOnly = false,
   expanded = true,
+  showCollapseToggle = true,
   onToggleExpand,
   onAddItemInCategory,
   onAddCategory,
@@ -75,7 +77,7 @@ export function MenuGroupCard({
     ? group.items.filter((item) => !isBlankNewRow(item))
     : group.items;
 
-  const chevron = (
+  const chevron = showCollapseToggle ? (
     <ChevronDown
       size={16}
       strokeWidth={1.5}
@@ -84,7 +86,7 @@ export function MenuGroupCard({
         expanded ? "rotate-0" : "-rotate-90",
       ].join(" ")}
     />
-  );
+  ) : null;
 
   const colorDot = (
     <span
@@ -114,12 +116,21 @@ export function MenuGroupCard({
             type="button"
             aria-expanded={expanded}
             aria-label={t("expandCategoryAria", { name: groupLabel })}
-            onClick={onToggleExpand}
-            className="flex w-full items-baseline gap-4 px-6 py-5 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_3%,transparent)]"
+            onClick={showCollapseToggle ? onToggleExpand : undefined}
+            className={[
+              "flex w-full items-baseline gap-4 px-6 py-5 text-left",
+              showCollapseToggle
+                ? "transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_3%,transparent)]"
+                : "cursor-default",
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            <span className="relative top-[-2px] shrink-0 text-[var(--ink-mute)]">
-              {chevron}
-            </span>
+            {showCollapseToggle ? (
+              <span className="relative top-[-2px] shrink-0 text-[var(--ink-mute)]">
+                {chevron}
+              </span>
+            ) : null}
             {colorDot}
             <h2 className="font-[var(--f-display)] text-[26px] font-normal leading-none text-[var(--ink)]">
               {groupLabel}
@@ -130,14 +141,16 @@ export function MenuGroupCard({
       ) : (
         <header className="flex items-baseline gap-4 border-b border-[var(--rule)] px-6 py-5">
           {/* Chevron toggle — larger hit area in edit mode */}
-          <button
-            type="button"
-            aria-label={t("expandCategoryAria", { name: groupLabel })}
-            onClick={onToggleExpand}
-            className="relative top-[-2px] -m-1 flex shrink-0 items-center p-1 text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
-          >
-            {chevron}
-          </button>
+          {showCollapseToggle ? (
+            <button
+              type="button"
+              aria-label={t("expandCategoryAria", { name: groupLabel })}
+              onClick={onToggleExpand}
+              className="relative top-[-2px] -m-1 flex shrink-0 items-center p-1 text-[var(--ink-mute)] transition-colors hover:text-[var(--ink)]"
+            >
+              {chevron}
+            </button>
+          ) : null}
 
           {colorDot}
 

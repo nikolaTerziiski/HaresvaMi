@@ -367,14 +367,32 @@ defaults. From the review step, owners may return to this starter to adjust
 categories; any category that already contains entered dish data stays selected
 so work is never silently discarded.
 
-### Hybrid category card
+### Category review board
 
-Each menu category renders as a full-page-width rounded card with:
+The menu review step should not render every category as a full-width expanded
+band by default. Use a category board first:
+
+- Desktop/tablet: two category cards per row.
+- Mobile: one category card per row.
+- Category cards show category name, dish count, a short 2-3 dish preview, and a
+  small warning chip when rows in that category have validation problems.
+- Clicking a category opens a focused category editor with a clear
+  `Всички категории` back path.
+- Do not expand category cards in place; uneven dish counts create broken
+  two-column rows and wasted space.
+- The board, focused editor, and bottom save bar align to the shared `max-w-6xl`
+  dashboard content width so rows do not stretch across very wide monitors.
+
+### Focused category card
+
+Inside the focused category editor, the selected menu category renders as a
+rounded card with:
 
 - **Colored dot header** — a small filled circle in the category's assigned color, followed by the category name. The name is click-to-edit inline; clicking it switches to an `<input>` in place, saving on blur or Enter.
 - **Tinted background** — `background: color-mix(in srgb, var(--category-color) 4%, var(--paper))`. The 4% tint is subtle enough to feel warm, not garish.
 - **Divider-separated item rows inside** — each item sits in a row separated by a 1 px `var(--rule)` line. No nested card borders.
-- **Full page width** — matches the sticky unsaved-changes bar at the bottom so the page feels flush.
+- **Contained width** — matches the focused editor width, not the entire
+  viewport. This keeps dish names, prices, and actions visually connected.
 
 ### Price display
 

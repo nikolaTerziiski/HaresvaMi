@@ -76,6 +76,7 @@ export function useMenuManagerFlow({
     allCategories,
     manualStarterCategories,
     protectedManualStarterCategories,
+    allGroupedItems,
     groupedItems,
     isFiltering,
   } = useMenuReviewDerivedState({
@@ -251,6 +252,7 @@ export function useMenuManagerFlow({
     manualStarterCategories,
     protectedManualStarterCategories,
     canEditManualCategories: manualDraftActive && mode === "review",
+    allGroupedItems,
     groupedItems,
     isFiltering,
     searchQuery,

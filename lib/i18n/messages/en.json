@@ -408,6 +408,13 @@
       "showAll": "Show all",
       "expandCategoryAria": "Toggle category {name}",
       "itemCountPlural": "{count, plural, one {# dish} other {# dishes}}",
+      "categoryBoard": {
+        "open": "Open category",
+        "back": "All categories",
+        "emptyPreview": "No dishes entered yet.",
+        "moreItems": "+{count} more",
+        "problems": "{count, plural, one {# problem} other {# problems}}"
+      },
       "validationDialog": {
         "title": "Before we save the menu",
         "body": "Fix these things and try again.",

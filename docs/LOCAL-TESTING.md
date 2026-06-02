@@ -106,10 +106,11 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
    - Return to the menu page and use **"Въведи ръчно"** to add at least the required menu items.
    - On the manual starter, verify default categories are large selectable tiles: 3 per row on desktop/tablet, 2 per row on mobile, selected tiles turn green with a check state, and the final dashed `+` tile can add a custom category.
    - Continue to the review step, enter text in one dish row, click **"Редактирай категориите"**, and verify the category with entered dish data stays selected while empty categories can be removed safely.
-5. Test new category creation: click **"+ Нова категория"** in the toolbar and verify a new category card appears with an editable name field.
-6. Test category rename: click an existing category name inline and rename it; verify the change persists after save.
-7. Test item move-to-category: use the per-row "move to category" popover to reassign an item; verify it appears under the new category without delete-and-re-add.
-8. Click **Запази менюто** and verify:
+5. On the review step, verify categories render as a board: 2 cards per row on desktop/tablet and 1 per row on mobile. Click a category card and verify it opens a focused editor with a **"Всички категории"** back button instead of expanding in place.
+6. Test new category creation: click **"+ Нова категория"** in the toolbar, verify a new category card appears, then open it from the board.
+7. Test category rename: open a category, click its name inline, rename it, return to **"Всички категории"**, and verify the board shows the new name.
+8. Test item move-to-category: inside the focused category editor, use the per-row "move to category" popover to reassign an item; verify it appears under the new category without delete-and-re-add.
+9. Click **Запази менюто** and verify:
    - If a selected category still has only its empty draft row, the save button
      stays clickable and opens the **Преди да запазим менюто** dialog with a
      category-specific message.
@@ -125,17 +126,17 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
    - In the review toolbar, **Нова категория** is a neutral outline action and
      **Започни отначало** is visibly red/destructive. The start-over confirmation
      CTA is also destructive.
-9. Open Dashboard -> `Таблет`.
-10. Create a tablet session:
+10. Open Dashboard -> `Таблет`.
+11. Create a tablet session:
     - check that the top of the page shows the setup steps: name device, create link, open on tablet, connected
     - enter `Име на устройството`, for example `Таблет на бара`
     - click `Създай връзка за таблет`
     - use `Копирай връзката` or `Отвори връзката`
     - optionally test `Стартирай на това устройство`; it should sign out this browser and open tablet mode here
-11. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
-12. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
-13. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
-14. On `/kiosk/scan`, submit manual feedback:
+12. Open the generated `/kiosk/connect?token=ks_...` link in the tablet browser.
+13. Verify that `/kiosk/connect` redirects to `/kiosk/scan`.
+14. With the tablet still connected, open `http://localhost:3000/` in that tablet browser and verify it redirects directly to `/kiosk/scan`, not the landing page.
+15. On `/kiosk/scan`, submit manual feedback:
     - click `Избери ръчно`
     - select at least one menu item
     - click `Продължи с избраните`
@@ -145,19 +146,19 @@ This avoids mixing the owner Supabase session with the kiosk HttpOnly cookie.
     - rate at least one item from 1 to 5 stars, or choose the secondary `Харесва ми` / `Не ми харесва`
     - click `Готово`
     - verify the thank-you screen auto-resets back to the staff preparation screen
-15. Return to the owner browser and open Dashboard -> `Отзиви`.
-16. Verify the new feedback appears in the dashboard after refresh if needed.
-17. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
-18. Return to Dashboard -> `Таблет`.
-19. Test the kiosk exit affordance in the tablet browser:
+16. Return to the owner browser and open Dashboard -> `Отзиви`.
+17. Verify the new feedback appears in the dashboard after refresh if needed.
+18. In the owner browser, open `http://localhost:3000/` and verify it redirects directly to `/dashboard`.
+19. Return to Dashboard -> `Таблет`.
+20. Test the kiosk exit affordance in the tablet browser:
     - On `/kiosk/scan` in staff mode, tap the "Изход" pill on the far right of the header.
     - Confirm in the dialog by clicking "Излез".
     - Verify the page redirects (likely to `/login` since the owner browser session was signed out by `handleStartThisDevice`, or to `/dashboard` if the owner session is still present).
     - Verify the kiosk cookie is gone: navigating to `/kiosk/scan` should now show "Таблетът не е свързан." instead of the kiosk scan screen.
     - Verify that the original `/kiosk/connect?token=ks_...` link still works and reconnects the device, since the session row was not revoked.
-20. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
-21. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
-22. Verify revoked access fails:
+21. In `Свързани устройства`, revoke the session with `Отмени достъпа`.
+22. In the tablet browser, refresh `/kiosk/scan` or reopen the old `/kiosk/connect?token=ks_...` link.
+23. Verify revoked access fails:
     - `/kiosk/scan` should show `Таблетът не е свързан.`
     - the old connect link should show the invalid/expired tablet-link page
 

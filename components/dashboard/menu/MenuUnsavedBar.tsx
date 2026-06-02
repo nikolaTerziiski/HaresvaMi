@@ -34,7 +34,7 @@ export function MenuUnsavedBar({
   }
 
   return (
-    <div className="sticky bottom-5 z-[60] mx-9 mt-8 max-md:mx-5">
+    <div className="sticky bottom-5 z-[60] mx-auto mt-8 w-[calc(100%-4.5rem)] max-w-6xl max-md:w-[calc(100%-2.5rem)]">
       {/* Hidden changes hint */}
       {hasOnlyHiddenChanges ? (
         <div className="mb-1.5 flex items-center gap-1 px-2 text-[12px] text-[var(--ink-mute)]">

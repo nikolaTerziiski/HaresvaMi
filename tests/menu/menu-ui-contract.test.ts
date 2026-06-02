@@ -23,6 +23,12 @@ const menuManualStarterSource = source(
 const menuReviewPanelSource = source(
   "components/dashboard/menu/MenuReviewPanel.tsx",
 );
+const menuCategoryBoardSource = source(
+  "components/dashboard/menu/MenuCategoryBoard.tsx",
+);
+const menuCategoryFocusedEditorSource = source(
+  "components/dashboard/menu/MenuCategoryFocusedEditor.tsx",
+);
 const menuUnsavedBarSource = source(
   "components/dashboard/menu/MenuUnsavedBar.tsx",
 );
@@ -89,12 +95,27 @@ test("menu review surface has category tools and save feedback states", () => {
   assert.match(menuToolbarSource, /t\("searchPlaceholder"\)/);
 });
 
+test("menu review uses a two-column category board and focused category editor", () => {
+  assert.match(menuReviewPanelSource, /MenuCategoryBoard/);
+  assert.match(menuReviewPanelSource, /MenuCategoryFocusedEditor/);
+  assert.match(menuReviewPanelSource, /activeCategoryKey/);
+  assert.match(menuReviewPanelSource, /allGroupedItems/);
+  assert.match(menuReviewPanelSource, /max-w-6xl/);
+  assert.match(menuCategoryBoardSource, /lg:grid-cols-2/);
+  assert.match(menuCategoryBoardSource, /grid-cols-1/);
+  assert.match(menuCategoryBoardSource, /categoryBoard\.open/);
+  assert.match(menuCategoryBoardSource, /categoryBoard\.problems/);
+  assert.match(menuCategoryFocusedEditorSource, /categoryBoard\.back/);
+  assert.match(menuCategoryFocusedEditorSource, /showCollapseToggle=\{false\}/);
+});
+
 test("menu review save remains clickable and opens a validation dialog", () => {
   assert.match(menuReviewPanelSource, /MenuValidationDialog/);
   assert.match(menuReviewPanelSource, /saveValidationMessages/);
   assert.match(menuReviewPanelSource, /handleSaveRequest/);
   assert.match(menuReviewPanelSource, /setValidationDialogOpen\(true\)/);
   assert.match(menuUnsavedBarSource, /disabled=\{isSaving\}/);
+  assert.match(menuUnsavedBarSource, /max-w-6xl/);
   assert.doesNotMatch(menuUnsavedBarSource, /disabled=\{!canSave\}/);
   assert.doesNotMatch(menuUnsavedBarSource, /canSave/);
   assert.match(menuValidationDialogSource, /validationDialog/);
