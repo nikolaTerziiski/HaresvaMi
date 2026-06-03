@@ -8,6 +8,7 @@ import {
 } from "@/lib/feedback/submit-feedback";
 import { feedbackSubmissionSchema } from "@/lib/feedback/schema";
 import { authorizeKioskOrOwnerRestaurant } from "@/lib/kiosk/authorization";
+import { checkRateLimit } from "@/lib/api/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +22,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(authorization.body, {
         status: authorization.status,
       });
+    }
+
+    const rateLimit = checkRateLimit({
+      key: `feedback-submit:${authorization.restaurantId}`,
+      limit: 60,
+      windowMs: 60_000,
+    });
+
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.max(
+        1,
+        Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
+      );
+      return NextResponse.json(
+        {
+          error: "rate_limited",
+          message: "Too many feedback submissions. Please slow down.",
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Limit": String(rateLimit.limit),
+            "X-RateLimit-Remaining": String(rateLimit.remaining),
+          },
+        },
+      );
     }
 
     const result = await submitFeedback({
@@ -48,10 +79,7 @@ export async function POST(request: NextRequest) {
     console.error("API Error in /feedback:", error);
 
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Unable to submit feedback.",
-      },
+      { error: "internal_error", message: "Unable to submit feedback." },
       { status: 500 },
     );
   }

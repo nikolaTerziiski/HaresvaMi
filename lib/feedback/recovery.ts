@@ -22,6 +22,7 @@ export async function saveRecoveryComment({
     .eq("overall_rating", "dislike")
     .not("completed_at", "is", null)
     .gt("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+    .is("recovery_comment", null)
     .select("id")
     .maybeSingle();
 

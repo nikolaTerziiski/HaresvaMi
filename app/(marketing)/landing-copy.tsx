@@ -1,5 +1,3 @@
-"use client";
-
 export const I18N = {
   bg: {
     navProblem: "Проблемът",

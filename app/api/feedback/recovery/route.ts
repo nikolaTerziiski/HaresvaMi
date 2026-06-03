@@ -5,6 +5,7 @@ import { canUseReputation } from "@/lib/billing/entitlements";
 import { recoveryCommentSchema } from "@/lib/feedback/schema";
 import { saveRecoveryComment } from "@/lib/feedback/recovery";
 import { authorizeKioskOrOwnerRestaurant } from "@/lib/kiosk/authorization";
+import { checkRateLimit } from "@/lib/api/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,6 +23,36 @@ export async function POST(request: NextRequest) {
 
     if (!(await canUseReputation(body.restaurantId))) {
       return NextResponse.json({ ok: false }, { status: 403 });
+    }
+
+    const rateLimit = checkRateLimit({
+      key: `feedback-recovery:${authorization.restaurantId}`,
+      limit: 20,
+      windowMs: 60_000,
+    });
+
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.max(
+        1,
+        Math.ceil((rateLimit.resetAt - Date.now()) / 1000),
+      );
+      return NextResponse.json(
+        {
+          error: "rate_limited",
+          message: "Too many recovery attempts. Please slow down.",
+          limit: rateLimit.limit,
+          remaining: rateLimit.remaining,
+          retryAfter,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Limit": String(rateLimit.limit),
+            "X-RateLimit-Remaining": String(rateLimit.remaining),
+          },
+        },
+      );
     }
 
     const result = await saveRecoveryComment({
@@ -55,12 +86,7 @@ export async function POST(request: NextRequest) {
     console.error("API Error in /feedback/recovery:", error);
 
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to save recovery comment.",
-      },
+      { error: "internal_error", message: "Unable to save recovery comment." },
       { status: 500 },
     );
   }

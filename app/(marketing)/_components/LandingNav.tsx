@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import type { LandingCopy, Lang } from "../landing-copy";
 import navStyles from "./LandingNav.module.css";
@@ -10,20 +12,29 @@ import { MarketingButton } from "./MarketingButton";
 type LandingNavProps = {
   copy: LandingCopy;
   lang: Lang;
-  scrolled: boolean;
-  onLanguageChange: (lang: Lang) => void;
 };
 
-export function LandingNav({
-  copy,
-  lang,
-  scrolled,
-  onLanguageChange,
-}: LandingNavProps) {
+export function LandingNav({ copy, lang }: LandingNavProps) {
+  const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const selectLang = (next: Lang) => {
+    if (next === lang) return;
+    document.cookie = `landing-lang=${next};path=/;max-age=31536000;samesite=lax`;
+    router.refresh();
+  };
+
   return (
     <nav className={`${styles.nav} ${scrolled ? styles.navScrolled : ""}`}>
       <div className={`${styles.wrap} ${styles.navInner}`}>
-        <a href="#" className={styles.brand}>
+        <a href="/" className={styles.brand}>
           <span className={styles.brandMark}>
             <span>h</span>
           </span>
@@ -37,16 +48,24 @@ export function LandingNav({
           <a href="#faq">{copy.navFaq}</a>
         </div>
         <div className={styles.navRight}>
-          <div className={styles.lang} role="group">
+          <div
+            className={styles.lang}
+            role="group"
+            aria-label="Език / Language"
+          >
             <button
+              type="button"
+              aria-pressed={lang === "bg"}
               className={`${styles.langBtn} ${lang === "bg" ? styles.langBtnActive : ""}`}
-              onClick={() => onLanguageChange("bg")}
+              onClick={() => selectLang("bg")}
             >
               BG
             </button>
             <button
+              type="button"
+              aria-pressed={lang === "en"}
               className={`${styles.langBtn} ${lang === "en" ? styles.langBtnActive : ""}`}
-              onClick={() => onLanguageChange("en")}
+              onClick={() => selectLang("en")}
             >
               EN
             </button>

@@ -1,5 +1,3 @@
-"use client";
-
 import type { LandingCopy } from "../landing-copy";
 import styles from "../page.module.css";
 
@@ -15,7 +13,7 @@ export function DashboardPreview({ copy }: DashboardPreviewProps) {
           <div className={styles.sectionIndex}>03 / Таблото</div>
           <h2 className={styles.sectionTitle}>{copy.dashTitle}</h2>
         </div>
-        <div className={styles.dashFrame}>
+        <div className={styles.dashFrame} inert>
           <DashboardTopbar />
           <div className={styles.dashBody}>
             <DashboardSidebar />

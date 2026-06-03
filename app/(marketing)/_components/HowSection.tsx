@@ -1,23 +1,59 @@
 "use client";
 
-import type { RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { LandingCopy } from "../landing-copy";
 import styles from "../page.module.css";
 
 type HowSectionProps = {
-  activeStep: number;
   copy: LandingCopy;
-  sectionRef: RefObject<HTMLElement | null>;
-  onStepChange: (step: number) => void;
 };
 
-export function HowSection({
-  activeStep,
-  copy,
-  sectionRef,
-  onStepChange,
-}: HowSectionProps) {
+export function HowSection({ copy }: HowSectionProps) {
+  const [activeStep, setActiveStep] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const onScroll = () => {
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height - vh;
+      const passed = Math.max(0, Math.min(total, -rect.top));
+      const pct = total > 0 ? passed / total : 0;
+      setActiveStep(Math.min(4, Math.floor(pct * 5)));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    let timer: number | undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (timer === undefined) {
+            let idx = 0;
+            timer = window.setInterval(() => {
+              idx = (idx + 1) % 5;
+              setActiveStep(idx);
+            }, 2600);
+          }
+        } else if (timer !== undefined) {
+          window.clearInterval(timer);
+          timer = undefined;
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(section);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      io.disconnect();
+      if (timer !== undefined) window.clearInterval(timer);
+    };
+  }, []);
+
   return (
     <section className={styles.how} id="how" ref={sectionRef}>
       <div className={styles.wrap}>
@@ -31,7 +67,7 @@ export function HowSection({
               <div
                 key={i}
                 className={`${styles.howStep} ${activeStep === i ? styles.howStepActive : ""}`}
-                onClick={() => onStepChange(i)}
+                onClick={() => setActiveStep(i)}
               >
                 <div className={styles.howStepNum}>{step.n}</div>
                 <h3>{step.t}</h3>

@@ -1,5 +1,3 @@
-"use client";
-
 import type { LandingCopy } from "../landing-copy";
 import styles from "../page.module.css";
 

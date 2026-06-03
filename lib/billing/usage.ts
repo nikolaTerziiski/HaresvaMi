@@ -148,6 +148,20 @@ export async function tryIncrementFeedbackUsage(input: {
   return data as number | null;
 }
 
+export async function decrementFeedbackUsage(input: {
+  restaurantId: string;
+  period: string;
+}): Promise<void> {
+  const supabase = createSupabaseServiceClient();
+  const { error } = await supabase.rpc("decrement_feedback_usage", {
+    p_restaurant_id: input.restaurantId,
+    p_period: input.period,
+  });
+  if (error) {
+    console.error("Failed to decrement feedback usage:", error);
+  }
+}
+
 export async function getActiveScanCreditGrants(
   restaurantId: string,
   at = new Date(),

@@ -550,6 +550,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      decrement_feedback_usage: {
+        Args: { p_restaurant_id: string; p_period: string };
+        Returns: undefined;
+      };
       increment_feedback_usage_if_under_limit: {
         Args: {
           p_restaurant_id: string;

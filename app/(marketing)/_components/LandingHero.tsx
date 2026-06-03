@@ -1,5 +1,3 @@
-"use client";
-
 import type { LandingCopy } from "../landing-copy";
 import heroStyles from "./LandingHero.module.css";
 import styles from "../page.module.css";
@@ -84,7 +82,7 @@ function HeroStats({ copy }: LandingHeroProps) {
 
 function HeroVisual() {
   return (
-    <div className={styles.heroVisual}>
+    <div className={styles.heroVisual} inert>
       <div className={styles.tableSurface} />
       <div className={styles.receipt}>
         <div className={styles.receiptHead}>МЕХАНА КЪЩАТА</div>

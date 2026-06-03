@@ -1,20 +1,11 @@
 import type { InsightPeriod, InsightPeriodKey } from "@/lib/insights/types";
+import {
+  sofiaStartOfDayUtc,
+  sofiaEndOfDayUtc,
+  sofiaDateStr,
+} from "@/lib/insights/timezone";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-function toSofiaStartOfDay(dateStr: string): Date {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(
-    new Date(year, month - 1, day).toLocaleString("en-US", {
-      timeZone: "Europe/Sofia",
-    }),
-  );
-}
-
-function toSofiaEndOfDay(dateStr: string): Date {
-  const start = toSofiaStartOfDay(dateStr);
-  return new Date(start.getTime() + DAY_MS - 1);
-}
 
 function isValidDateStr(value: string | undefined): value is string {
   if (!value) return false;
@@ -34,8 +25,8 @@ export function resolveInsightPeriod(input: {
     isValidDateStr(input.from) &&
     isValidDateStr(input.to)
   ) {
-    const currentFrom = toSofiaStartOfDay(input.from);
-    const currentTo = toSofiaEndOfDay(input.to);
+    const currentFrom = sofiaStartOfDayUtc(input.from);
+    const currentTo = sofiaEndOfDayUtc(input.to);
     const lengthMs = currentTo.getTime() - currentFrom.getTime();
     const previousTo = new Date(currentFrom.getTime() - 1);
     const previousFrom = new Date(previousTo.getTime() - lengthMs);
@@ -50,10 +41,11 @@ export function resolveInsightPeriod(input: {
   }
 
   const days = input.key === "month" ? 30 : 7;
-  const currentTo = now;
-  const currentFrom = new Date(currentTo.getTime() - days * DAY_MS);
-  const previousTo = currentFrom;
-  const previousFrom = new Date(previousTo.getTime() - days * DAY_MS);
+  const todayStr = sofiaDateStr(now);
+  const currentTo = sofiaEndOfDayUtc(todayStr);
+  const currentFrom = new Date(currentTo.getTime() - days * DAY_MS + 1);
+  const previousTo = new Date(currentFrom.getTime() - 1);
+  const previousFrom = new Date(previousTo.getTime() - days * DAY_MS + 1);
 
   return {
     key: input.key === "month" ? "month" : "week",

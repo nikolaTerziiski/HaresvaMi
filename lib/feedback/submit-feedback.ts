@@ -6,6 +6,7 @@ import {
 } from "@/lib/billing/entitlements-core";
 import {
   getCurrentUsagePeriod,
+  decrementFeedbackUsage,
   getMonthlyUsage,
   tryIncrementFeedbackUsage,
 } from "@/lib/billing/usage";
@@ -156,14 +157,7 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
     .single();
 
   if (sessionError) {
-    await supabase
-      .from("usage_counters")
-      .update({ feedback_count: newCount - 1 })
-      .eq("restaurant_id", input.restaurantId)
-      .eq("period", period)
-      .then(({ error }) => {
-        if (error) console.error("Failed to decrement feedback usage:", error);
-      });
+    await decrementFeedbackUsage({ restaurantId: input.restaurantId, period });
 
     throw new Error(
       `Unable to create feedback session: ${sessionError.message}`,
@@ -186,15 +180,7 @@ export async function submitFeedback(input: FeedbackSubmissionInput) {
 
     if (ratingsError) {
       await deleteSession(session.id);
-      await supabase
-        .from("usage_counters")
-        .update({ feedback_count: newCount - 1 })
-        .eq("restaurant_id", input.restaurantId)
-        .eq("period", period)
-        .then(({ error }) => {
-          if (error)
-            console.error("Failed to decrement feedback usage:", error);
-        });
+      await decrementFeedbackUsage({ restaurantId: input.restaurantId, period });
 
       throw new Error(
         `Unable to create feedback ratings: ${ratingsError.message}`,

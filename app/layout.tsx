@@ -29,12 +29,36 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://haresvami.bg";
+
 export const metadata: Metadata = {
-  title: "HaresvaMi",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "HaresvaMi — обратна връзка за ресторанта ти",
+    template: "%s · HaresvaMi",
+  },
   description:
-    "Обратна връзка за ресторанта — какво наистина харесват клиентите ти.",
+    "Обратна връзка за ресторанта — какво наистина харесват клиентите ти. Дискретни оценки на ястията от всеки таблет, без смяна на POS-а.",
   applicationName: "HaresvaMi",
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "HaresvaMi",
+    title: "HaresvaMi — обратна връзка за ресторанта ти",
+    description:
+      "Какво наистина харесват клиентите ти — дискретни оценки на ястията от всеки таблет.",
+    url: siteUrl,
+    locale: "bg_BG",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HaresvaMi — обратна връзка за ресторанта ти",
+    description:
+      "Какво наистина харесват клиентите ти — дискретни оценки на ястията от всеки таблет.",
+  },
   icons: {
     icon: "/favicon.ico",
   },
@@ -44,7 +68,6 @@ export const viewport: Viewport = {
   themeColor: "#C24D2C",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
 };
 
