@@ -12,6 +12,9 @@ import {
 } from "@/lib/kiosk/session-crypto";
 import { KioskSessionError } from "@/lib/kiosk/session-errors";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
+
+type KioskSessionRow = Database["public"]["Tables"]["kiosk_sessions"]["Row"];
 
 type CreateKioskSessionInput = {
   restaurantId: string;
@@ -82,8 +85,17 @@ async function assertOwnerRestaurant(restaurantId: string, ownerId: string) {
   }
 }
 
-function asKioskSession(row: unknown) {
-  return row as KioskSession;
+function asKioskSession(row: Omit<KioskSessionRow, "token_hash">): KioskSession {
+  return {
+    id: row.id,
+    restaurant_id: row.restaurant_id,
+    label: row.label,
+    status: row.status,
+    expires_at: row.expires_at,
+    last_used_at: row.last_used_at,
+    created_by: row.created_by,
+    created_at: row.created_at,
+  };
 }
 
 export async function createKioskSession({

@@ -4,19 +4,14 @@ type FeedbackCommentsListProps = {
   comments: FeedbackCommentSummary[];
 };
 
-function relativeTime(dateStr: string): string {
-  const now = new Date();
-  const then = new Date(dateStr);
-  const diffMs = now.getTime() - then.getTime();
-  const diffMin = Math.floor(diffMs / 60_000);
-  const diffHours = Math.floor(diffMs / 3_600_000);
-  const diffDays = Math.floor(diffMs / 86_400_000);
-
-  if (diffMin < 1) return "сега";
-  if (diffMin < 60) return `${diffMin} мин`;
-  if (diffHours < 24) return `${diffHours} ч`;
-  if (diffDays < 2) return "вчера";
-  return `${diffDays} дни`;
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("bg-BG", {
+    timeZone: "Europe/Sofia",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 type Sentiment = "pos" | "neg" | "neutral";
@@ -74,7 +69,7 @@ export function FeedbackCommentsList({ comments }: FeedbackCommentsListProps) {
               const sentiment = getSentiment(comment);
               const dishLabel =
                 comment.type === "item" ? comment.itemName : "Общ коментар";
-              const when = relativeTime(comment.completedAt);
+              const when = formatDate(comment.completedAt);
 
               return (
                 <li

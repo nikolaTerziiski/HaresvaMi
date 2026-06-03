@@ -26,7 +26,7 @@ export default async function LandingPage() {
       <HowSection copy={copy} />
       <DashboardPreview copy={copy} />
       <PricingSection copy={copy} />
-      <FaqSection />
+      <FaqSection copy={copy} />
       <FinalCta copy={copy} />
       <MarketingFooter />
     </div>

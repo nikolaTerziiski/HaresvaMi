@@ -31,7 +31,7 @@ export function LandingHero({ copy }: LandingHeroProps) {
         <HeroVisual />
       </div>
 
-      <HeroStrip />
+      <HeroStrip pills={copy.pills} />
     </header>
   );
 }
@@ -147,19 +147,8 @@ function HeroVisual() {
   );
 }
 
-function HeroStrip() {
-  const stripItems = [
-    "Работи с всеки Android таблет",
-    "Инсталация под 30 минути",
-    "Без промяна на POS-а",
-    "Български интерфейс, разбира абревиатури",
-    "Данните остават твои",
-    "Работи с всеки Android таблет",
-    "Инсталация под 30 минути",
-    "Без промяна на POS-а",
-    "Български интерфейс, разбира абревиатури",
-    "Данните остават твои",
-  ];
+function HeroStrip({ pills }: { pills: readonly string[] }) {
+  const stripItems = [...pills, ...pills];
 
   return (
     <div className={styles.wrap}>

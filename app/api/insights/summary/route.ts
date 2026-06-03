@@ -15,14 +15,23 @@ import {
   loadInsightRatings,
   loadInsightSessions,
 } from "@/lib/insights/queries";
-import type { InsightPeriod } from "@/lib/insights/types";
+import { resolveInsightPeriod } from "@/lib/insights/period";
+import type { InsightPeriod, InsightPeriodKey } from "@/lib/insights/types";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
 } from "@/lib/supabase/server";
 
 type RequestBody = {
-  period: InsightPeriod;
+  period: {
+    key: InsightPeriodKey;
+    currentFrom: string;
+    currentTo: string;
+    // previousFrom / previousTo from the client are intentionally ignored;
+    // the server re-derives them below.
+    previousFrom?: string;
+    previousTo?: string;
+  };
   force?: boolean;
 };
 
@@ -78,17 +87,44 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  const { period, force = false } = body;
+  const { period: clientPeriod, force = false } = body;
 
   if (
-    !period?.key ||
-    !period.currentFrom ||
-    !period.currentTo ||
-    !period.previousFrom ||
-    !period.previousTo
+    !clientPeriod?.key ||
+    !clientPeriod.currentFrom ||
+    !clientPeriod.currentTo
   ) {
     return NextResponse.json({ error: "invalid_period" }, { status: 400 });
   }
+
+  // Re-derive the full period server-side so client-supplied previousFrom /
+  // previousTo cannot be tampered with.
+  const currentFromStr = clientPeriod.currentFrom.slice(0, 10);
+  const currentToStr = clientPeriod.currentTo.slice(0, 10);
+
+  if (clientPeriod.key === "custom") {
+    const MAX_CUSTOM_DAYS = 90;
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const spanMs =
+      new Date(currentToStr).getTime() - new Date(currentFromStr).getTime();
+    const spanDays = Math.ceil(spanMs / DAY_MS) + 1; // inclusive
+    if (spanDays > MAX_CUSTOM_DAYS) {
+      return NextResponse.json(
+        {
+          error: "custom_range_too_large",
+          message: `Персонализираният период не може да надвишава ${MAX_CUSTOM_DAYS} дни.`,
+          maxDays: MAX_CUSTOM_DAYS,
+        },
+        { status: 400 },
+      );
+    }
+  }
+
+  const period: InsightPeriod = resolveInsightPeriod({
+    key: clientPeriod.key,
+    from: currentFromStr,
+    to: currentToStr,
+  });
 
   if (force) {
     const monthStart = new Date();

@@ -14,33 +14,27 @@ export type MenuItemRow = Database["public"]["Tables"]["menu_items"]["Row"];
 
 export async function loadCompletedSessions(restaurantId: string) {
   const supabase = await createSupabaseServerClient();
-  const sessions: FeedbackSessionRow[] = [];
-  let from = 0;
+  const ninetyDaysAgo = new Date(
+    Date.now() - 90 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
-  while (true) {
-    const { data, error } = await supabase
-      .from("feedback_sessions")
-      .select("*")
-      .eq("restaurant_id", restaurantId)
-      .not("completed_at", "is", null)
-      .order("completed_at", { ascending: false })
-      .range(from, from + PAGE_SIZE - 1);
+  const { data, error } = await supabase
+    .from("feedback_sessions")
+    .select(
+      "id, restaurant_id, completed_at, created_at, overall_rating, overall_comment",
+    )
+    .eq("restaurant_id", restaurantId)
+    .not("completed_at", "is", null)
+    .gte("completed_at", ninetyDaysAgo)
+    .order("completed_at", { ascending: false });
 
-    if (error) {
-      throw new Error(
-        `Unable to load completed feedback sessions: ${error.message}`,
-      );
-    }
-
-    const page = data ?? [];
-    sessions.push(...page);
-
-    if (page.length < PAGE_SIZE) {
-      return sessions;
-    }
-
-    from += PAGE_SIZE;
+  if (error) {
+    throw new Error(
+      `Unable to load completed feedback sessions: ${error.message}`,
+    );
   }
+
+  return (data ?? []) as FeedbackSessionRow[];
 }
 
 export async function loadRatingsForSessions(sessionIds: string[]) {
@@ -62,7 +56,7 @@ export async function loadRatingsForSessions(sessionIds: string[]) {
     while (true) {
       const { data, error } = await supabase
         .from("feedback_ratings")
-        .select("*")
+        .select("id, session_id, menu_item_id, rating, comment, created_at")
         .in("session_id", chunk)
         .order("created_at", { ascending: false })
         .range(from, from + PAGE_SIZE - 1);
@@ -93,7 +87,7 @@ export async function loadRestaurantMenuItems(restaurantId: string) {
   while (true) {
     const { data, error } = await supabase
       .from("menu_items")
-      .select("*")
+      .select("id, restaurant_id, name_bg, deleted_at")
       .eq("restaurant_id", restaurantId)
       .order("name_bg", { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -102,7 +96,7 @@ export async function loadRestaurantMenuItems(restaurantId: string) {
       throw new Error(`Unable to load menu items: ${error.message}`);
     }
 
-    const page = data ?? [];
+    const page = (data ?? []) as MenuItemRow[];
     menuItems.push(...page);
 
     if (page.length < PAGE_SIZE) {

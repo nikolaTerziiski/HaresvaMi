@@ -93,6 +93,44 @@ export const I18N = {
     ),
     finalSub:
       "14 дни Pro без карта. Ако след това не виждаш стойност — просто не плащаш. Без номера.",
+    pills: [
+      "Работи с всеки Android таблет",
+      "Инсталация под 30 минути",
+      "Без промяна на POS-а",
+      "Български интерфейс, разбира абревиатури",
+      "Данните остават твои",
+    ],
+    faqTitle: (
+      <>
+        Това, което <em>сигурно</em> се питаш.
+      </>
+    ),
+    faq: [
+      {
+        q: '„Нямам таблет."',
+        a: "Всеки Android таблет от последните 5 години работи. Ако нямаш, стар таблет от 100-120 лв от Ozone също става. Не продаваме хардуер — не искаме да си заключен.",
+      },
+      {
+        q: '„Сервитьорите ми са заети."',
+        a: "Един тап на касата. Средно 4 секунди допълнително време при плащане. Всеки сервитьор го научава за 90 секунди. Промяна на навика — под седмица.",
+      },
+      {
+        q: '„Клиентите ще се дразнят."',
+        a: "В реални тестове 7 от 10 клиенти попълват. Защо — защото им отнема 30 секунди, вижда се кое харесват конкретно, и го правят, докато все още чакат рестото.",
+      },
+      {
+        q: '„Чете ли абревиатури като PK, кеб, шоп?"',
+        a: "Да. И с всяка касова бележка, която сканираш, AI-ят научава твоите абревиатури конкретно. След 20-30 бона — почти 100% точност за твоето меню.",
+      },
+      {
+        q: '„Не искам да сменям POS-а си."',
+        a: "Не се налага. HaresvaMi работи с печатния бон, който вече принтираш. Не се свързваме с касовия апарат, не трябва интеграция, не сме POS.",
+      },
+      {
+        q: '„Чий собственост са данните?"',
+        a: "Твои. Напълно. Експорт в CSV по всяко време. Нулеви проблеми с GDPR — клиентът не оставя имейл, телефон или име. Само оценки.",
+      },
+    ],
   },
   en: {
     navProblem: "Problem",
@@ -187,6 +225,44 @@ export const I18N = {
     ),
     finalSub:
       "14 days Pro no card. If you don't see value after — just don't pay. No strings.",
+    pills: [
+      "Works with any Android tablet",
+      "Setup in under 30 minutes",
+      "No changes to your POS",
+      "Bulgarian interface, understands abbreviations",
+      "Your data stays yours",
+    ],
+    faqTitle: (
+      <>
+        What you&apos;re <em>probably</em> wondering.
+      </>
+    ),
+    faq: [
+      {
+        q: "\"I don't have a tablet.\"",
+        a: "Any Android tablet from the last 5 years works. If you don't have one, a cheap second-hand tablet (around €60) does the job. We don't sell hardware — we don't want to lock you in.",
+      },
+      {
+        q: "\"My waiters are busy.\"",
+        a: "One tap at the till — about 4 extra seconds per payment. Any waiter learns it in 90 seconds, and the habit sticks in under a week.",
+      },
+      {
+        q: "\"Customers will find it annoying.\"",
+        a: "In real tests, 7 in 10 customers complete it. Why? It takes 30 seconds, it's about the exact dishes they had, and they do it while still waiting for their change.",
+      },
+      {
+        q: "\"Does it read abbreviations like PK, keb, shop?\"",
+        a: "Yes. And with every receipt you scan, the AI learns your specific abbreviations. After 20–30 receipts it's near-100% accurate for your menu.",
+      },
+      {
+        q: "\"I don't want to change my POS.\"",
+        a: "You don't have to. HaresvaMi works from the printed receipt you already produce — no connection to your register, no integration, and we're not a POS.",
+      },
+      {
+        q: "\"Who owns the data?\"",
+        a: "You do, entirely. Export to CSV anytime. No GDPR headaches — customers leave no email, phone, or name. Just ratings.",
+      },
+    ],
   },
 } as const;
 

@@ -46,38 +46,6 @@ export async function getEligibleRestaurants(): Promise<EligibleRestaurant[]> {
 }
 
 /**
- * Count completed feedback sessions in the given time window for a restaurant.
- * Uses service role so the cron can access all restaurants' data.
- */
-export async function countRatingsInWindow(
-  restaurantId: string,
-  from: string,
-  to: string,
-): Promise<number> {
-  const supabase = createSupabaseServiceClient();
-
-  // Count feedback_ratings rows whose session completed in the window.
-  const { count, error } = await supabase
-    .from("feedback_ratings")
-    .select("id", { count: "exact", head: true })
-    .eq(
-      "session_id",
-      // Subquery not directly supported; join via in() on session ids.
-      // Instead we count sessions and use that as the proxy. See the
-      // hasEnoughRatings helper below which fetches session ids first.
-      restaurantId,
-    );
-
-  if (error) {
-    throw new Error(
-      `Unable to count ratings for restaurant ${restaurantId}: ${error.message}`,
-    );
-  }
-
-  return count ?? 0;
-}
-
-/**
  * Returns true when the restaurant has at least MIN_CURRENT_RATINGS (3) rating
  * rows in completed sessions within the current 7-day window.
  */
@@ -89,13 +57,16 @@ export async function hasEnoughRatings(
   const supabase = createSupabaseServiceClient();
 
   // Step 1: get session ids in window.
+  // Capped at 1000 to prevent the downstream in()-list from exceeding PostgREST's
+  // URL length limit; MIN_CURRENT_RATINGS (3) is well below this bound.
   const { data: sessions, error: sessionsError } = await supabase
     .from("feedback_sessions")
     .select("id")
     .eq("restaurant_id", restaurantId)
     .not("completed_at", "is", null)
     .gte("completed_at", from)
-    .lte("completed_at", to);
+    .lte("completed_at", to)
+    .limit(1000);
 
   if (sessionsError) {
     throw new Error(
