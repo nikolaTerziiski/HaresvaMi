@@ -1,0 +1,13 @@
+{
+  "base": "http://localhost:3000",
+  "state": "populated",
+  "captured": [
+    "screenshots\\review\\insights-statistika-populated-desktop.png",
+    "screenshots\\review\\insights-statistika-populated-tablet.png",
+    "screenshots\\review\\insights-statistika-populated-mobile.png",
+    "screenshots\\review\\feedback-otzivi-populated-desktop.png",
+    "screenshots\\review\\feedback-otzivi-populated-tablet.png",
+    "screenshots\\review\\feedback-otzivi-populated-mobile.png"
+  ],
+  "skipped": []
+}
