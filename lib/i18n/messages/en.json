@@ -75,7 +75,11 @@
       "recoverySubmit": "Send",
       "recoverySubmitting": "Sending...",
       "recoverySkip": "Skip",
-      "recoveryThanks": "Thanks for telling us. We'll take care of it."
+      "recoveryThanks": "Thanks for telling us. We'll take care of it.",
+      "googleTitle": "Loved it? Tell Google.",
+      "googleBody": "Scan the code with your phone and leave a quick review. It means a lot to the restaurant.",
+      "googleScanHint": "Point your phone's camera at the code",
+      "googleDone": "Done"
     },
     "exit": {
       "button": "Exit",

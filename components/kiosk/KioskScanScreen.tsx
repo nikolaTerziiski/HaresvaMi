@@ -5,6 +5,7 @@ import { useState } from "react";
 import { KioskExitDialog } from "@/components/kiosk/scan/KioskExitDialog";
 import { CustomerPanel } from "@/components/kiosk/scan/CustomerPanel";
 import { ExhaustedNotice } from "@/components/kiosk/scan/ExhaustedNotice";
+import { GooglePanel } from "@/components/kiosk/scan/GooglePanel";
 import { ManualPanel } from "@/components/kiosk/scan/ManualPanel";
 import { ProcessingOverlay } from "@/components/kiosk/scan/ProcessingOverlay";
 import { ReadyPanel } from "@/components/kiosk/scan/ReadyPanel";
@@ -36,11 +37,12 @@ export function KioskScanScreen({
   const isCustomerFacing =
     flow.mode === "customer" ||
     flow.mode === "reputation" ||
+    flow.mode === "google" ||
     flow.mode === "thanks";
   const audience: "staff" | "customer" | "thanks" =
     flow.mode === "customer" || flow.mode === "reputation"
       ? "customer"
-      : flow.mode === "thanks"
+      : flow.mode === "google" || flow.mode === "thanks"
         ? "thanks"
         : "staff";
 
@@ -92,6 +94,15 @@ export function KioskScanScreen({
               restaurantId={restaurant.id}
               sentiment={flow.sentiment}
               sessionId={flow.sessionId}
+              onDone={restaurant.googleReviewQrSvg ? flow.showGoogle : flow.showThanks}
+            />
+          ) : null}
+
+          {flow.mode === "google" ? (
+            <GooglePanel
+              copy={copy}
+              qrSvg={restaurant.googleReviewQrSvg}
+              reviewUrl={restaurant.googleReviewUrl}
               onDone={flow.showThanks}
             />
           ) : null}

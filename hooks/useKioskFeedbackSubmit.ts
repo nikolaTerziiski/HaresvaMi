@@ -16,6 +16,7 @@ type UseKioskFeedbackSubmitInput = {
   copy: KioskScanCopy;
   restaurantId: string;
   reputationEnabled: boolean;
+  hasGoogleReview: boolean;
   selectedItems: SelectedItem[];
   extractedItems: SelectedItem[];
   itemRatings: Record<string, number>;
@@ -30,6 +31,7 @@ export function useKioskFeedbackSubmit({
   copy,
   restaurantId,
   reputationEnabled,
+  hasGoogleReview,
   selectedItems,
   extractedItems,
   itemRatings,
@@ -79,9 +81,16 @@ export function useKioskFeedbackSubmit({
       setSentiment(sentiment);
       setSessionId(response.sessionId);
       setStatusMessage(null);
-      setMode(
-        reputationEnabled && sentiment === "unhappy" ? "reputation" : "thanks",
-      );
+
+      let nextMode: ScreenMode;
+      if (reputationEnabled && sentiment === "unhappy") {
+        nextMode = "reputation";
+      } else if (hasGoogleReview) {
+        nextMode = "google";
+      } else {
+        nextMode = "thanks";
+      }
+      setMode(nextMode);
     } catch {
       setStatusMessage(copy.feedbackFailed);
     } finally {

@@ -65,3 +65,6 @@ build.stderr.log
 
 # OS
 Thumbs.db
+
+# Claude skill artifacts (design-review, etc.)
+.jez/

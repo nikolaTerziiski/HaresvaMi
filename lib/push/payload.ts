@@ -25,3 +25,18 @@ export function buildInsightPayload(
     tag: "weekly-insight",
   };
 }
+
+/**
+ * Construct a push notification payload for a low-rating alert.
+ *
+ * Only the restaurant name is included — no PII such as customer comments,
+ * owner emails, user IDs, or restaurant IDs leak into the notification body.
+ */
+export function buildLowRatingPushPayload(restaurantName: string): PushPayload {
+  return {
+    title: "Нов отрицателен отзив",
+    body: `„${restaurantName}" получи нисък рейтинг. Виж таблото.`,
+    url: "/dashboard/feedback",
+    tag: "low-rating",
+  };
+}

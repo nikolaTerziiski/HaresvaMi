@@ -2,6 +2,8 @@ export type KioskRestaurant = {
   id: string;
   name: string;
   reputationEnabled: boolean;
+  googleReviewUrl: string | null;
+  googleReviewQrSvg: string | null;
 };
 
 export type KioskMenuItem = {
@@ -120,6 +122,10 @@ export type KioskScanCopy = {
   recoverySubmitting: string;
   recoverySkip: string;
   recoveryThanks: string;
+  googleTitle: string;
+  googleBody: string;
+  googleScanHint: string;
+  googleDone: string;
 };
 
 export type ScreenMode =
@@ -129,6 +135,7 @@ export type ScreenMode =
   | "ready"
   | "customer"
   | "reputation"
+  | "google"
   | "thanks";
 
 export type KioskScanScreenProps = {

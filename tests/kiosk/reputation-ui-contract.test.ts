@@ -77,7 +77,11 @@ test("RecoveryForm does NOT call onDone in a finally block (must not discard err
 test("KioskScanScreen treats reputation as customer-facing", () => {
   assert.match(
     kioskScanScreenSource,
-    /flow\.mode === "customer"\s*\|\|\s*flow\.mode === "reputation"\s*\|\|\s*flow\.mode === "thanks"/,
+    /flow\.mode === "customer"\s*\|\|\s*flow\.mode === "reputation"\s*\|\|/,
+  );
+  assert.match(
+    kioskScanScreenSource,
+    /flow\.mode === "google"\s*\|\|\s*flow\.mode === "thanks"/,
   );
 });
 

@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { KioskScanScreen } from "@/components/kiosk/KioskScanScreen";
 import { getCurrentOwnerState } from "@/lib/auth/owner";
 import { canScanReceipt, canUseReputation } from "@/lib/billing/entitlements";
+import { renderReviewQrSvg } from "@/lib/reputation/qr";
 import {
   KIOSK_SESSION_COOKIE,
   verifyKioskToken,
@@ -70,7 +71,7 @@ async function loadKioskRestaurant(restaurantId: string) {
   const supabase = createSupabaseServiceClient();
   const { data, error } = await supabase
     .from("restaurants")
-    .select("id, name, tier, subscription_status, trial_ends_at")
+    .select("id, name, tier, subscription_status, trial_ends_at, google_review_url")
     .eq("id", restaurantId)
     .maybeSingle();
 
@@ -84,10 +85,18 @@ async function loadKioskRestaurant(restaurantId: string) {
 
   const reputationEnabled = await canUseReputation(data.id);
 
+  const googleReviewUrl =
+    reputationEnabled && data.google_review_url ? data.google_review_url : null;
+  const googleReviewQrSvg = googleReviewUrl
+    ? await renderReviewQrSvg(googleReviewUrl)
+    : null;
+
   return {
     id: data.id,
     name: data.name,
     reputationEnabled,
+    googleReviewUrl,
+    googleReviewQrSvg,
   } satisfies KioskRestaurant;
 }
 
@@ -205,6 +214,10 @@ export default async function KioskScanPage() {
         recoverySubmitting: t("recoverySubmitting"),
         recoverySkip: t("recoverySkip"),
         recoveryThanks: t("recoveryThanks"),
+        googleTitle: t("googleTitle"),
+        googleBody: t("googleBody"),
+        googleScanHint: t("googleScanHint"),
+        googleDone: t("googleDone"),
       }}
     />
   );

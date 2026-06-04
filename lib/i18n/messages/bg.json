@@ -75,7 +75,11 @@
       "recoverySubmit": "Изпрати",
       "recoverySubmitting": "Изпращаме...",
       "recoverySkip": "Прескочи",
-      "recoveryThanks": "Благодарим, че ни каза. Ще се погрижим."
+      "recoveryThanks": "Благодарим, че ни каза. Ще се погрижим.",
+      "googleTitle": "Хареса ли ти? Кажи и в Google.",
+      "googleBody": "Сканирай кода с твоя телефон и остави отзив за минута. Помага много на ресторанта.",
+      "googleScanHint": "Насочи камерата на телефона си към кода",
+      "googleDone": "Готово"
     },
     "exit": {
       "button": "Изход",
